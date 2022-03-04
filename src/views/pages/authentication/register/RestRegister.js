@@ -19,7 +19,9 @@ import {
     OutlinedInput,
     TextField,
     Typography,
-    useMediaQuery
+    useMediaQuery,
+    Select,
+    MenuItem,
 } from '@material-ui/core';
 
 // third party
@@ -30,11 +32,11 @@ import axios from 'axios';
 // project imports
 import useScriptRef from '../../../../hooks/useScriptRef';
 import AnimateButton from './../../../../ui-component/extended/AnimateButton';
-import { strengthColor, strengthIndicator } from '../../../../utils/password-strength';
+// import { strengthColor, strengthIndicator } from '../../../../utils/password-strength';
 
 // assets
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
+// import Visibility from '@material-ui/icons/Visibility';
+// import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 // style constant
 const useStyles = makeStyles((theme) => ({
@@ -82,66 +84,61 @@ const RestRegister = ({ ...others }) => {
     let history = useHistory();
     const scriptedRef = useScriptRef();
     const matchDownSM = useMediaQuery((theme) => theme.breakpoints.down('sm'));
-    const [showPassword, setShowPassword] = React.useState(false);
+    // const [showPassword, setShowPassword] = React.useState(false);
     const [checked, setChecked] = React.useState(true);
 
-    const [strength, setStrength] = React.useState(0);
-    const [level, setLevel] = React.useState('');
+    // const [strength, setStrength] = React.useState(0);
+    // const [level, setLevel] = React.useState('');
 
-    const handleClickShowPassword = () => {
-        setShowPassword(!showPassword);
-    };
+    // const handleClickShowPassword = () => {
+    //     setShowPassword(!showPassword);
+    // };
 
-    const handleMouseDownPassword = (event) => {
-        event.preventDefault();
-    };
+    // const handleMouseDownPassword = (event) => {
+    //     event.preventDefault();
+    // };
 
-    const changePassword = (value) => {
-        const temp = strengthIndicator(value);
-        setStrength(temp);
-        setLevel(strengthColor(temp));
-    };
+    // const changePassword = (value) => {
+    //     const temp = strengthIndicator(value);
+    //     setStrength(temp);
+    //     setLevel(strengthColor(temp));
+    // };
 
-    useEffect(() => {
-        changePassword('123456');
-    }, []);
+    // useEffect(() => {
+    //     changePassword('123456');
+    // }, []);
 
     return (
         <React.Fragment>
             <Formik
                 initialValues={{
-                    username: '',
+                    firstName: '',
+                    lastName: '',
                     email: '',
-                    password: '',
+                    role:'',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({
                     email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-                    username: Yup.string().required('Username is required'),
-                    password: Yup.string().max(255).required('Password is required')
+                    firstName: Yup.string().required('First name is required'),
+                    lastName: Yup.string().required('Last name is required'),
+                    role: Yup.string().required('Role is required'),
                 })}
-                onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
+                onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
                     try {
-                        axios
-                            .post( configData.API_SERVER + 'auth/signup', {
-                                username: values.username,
-                                password: values.password,
-                                email: values.email
+                        try {
+                            await axios.post( configData.API_SERVER + 'auth/signup', {
+                                first_name: values.firstName,
+                                last_name: values.lastName,
+                                email: values.email,
+                                role: values.role,
                             })
-                            .then(function (response) {
-                                if (response.data.success) {
-                                    history.push('/login');
-                                } else {
-                                    setStatus({ success: false });
-                                    setErrors({ submit: response.data.msg });
-                                    setSubmitting(false);
-                                }
-                            })
-                            .catch(function (error) {
-                                setStatus({ success: false });
-                                setErrors({ submit: error.response.data.msg });
-                                setSubmitting(false);
-                            });
+                            history.push('/login');
+                        }catch(e) {
+                            setStatus({ success: false });
+                            setErrors({ submit: e.response.data.message });
+                            setSubmitting(false);
+                        }
                     } catch (err) {
                         console.error(err);
                         if (scriptedRef.current) {
@@ -158,20 +155,42 @@ const RestRegister = ({ ...others }) => {
                             <Grid item xs={12}>
                                 <TextField
                                     fullWidth
-                                    label="Username"
+                                    label="First name"
                                     margin="normal"
-                                    name="username"
-                                    id="username"
+                                    name="firstName"
+                                    id="firstName"
                                     type="text"
-                                    value={values.username}
+                                    value={values.firstName}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
                                     className={classes.loginInput}
-                                    error={touched.username && Boolean(errors.username)}
+                                    error={touched.firstName && Boolean(errors.firstName)}
                                 />
-                                {touched.username && errors.username && (
+                                {touched.firstName && errors.firstName && (
                                     <FormHelperText error id="standard-weight-helper-text--register">
-                                        {errors.username}
+                                        {errors.firstName}
+                                    </FormHelperText>
+                                )}
+                            </Grid>
+                        </Grid>
+                        <Grid container spacing={matchDownSM ? 0 : 2}>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    label="Last name"
+                                    margin="normal"
+                                    name="lastName"
+                                    id="lastName"
+                                    type="text"
+                                    value={values.lastName}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    className={classes.loginInput}
+                                    error={touched.lastName && Boolean(errors.lastName)}
+                                />
+                                {touched.lastName && errors.lastName && (
+                                    <FormHelperText error id="standard-weight-helper-text--register">
+                                        {errors.lastName}
                                     </FormHelperText>
                                 )}
                             </Grid>
@@ -199,7 +218,32 @@ const RestRegister = ({ ...others }) => {
                             )}
                         </FormControl>
 
-                        <FormControl fullWidth error={Boolean(touched.password && errors.password)} className={classes.loginInput}>
+                        <FormControl fullWidth>
+                            <InputLabel id="role">Role</InputLabel>
+                            
+                            <Select
+                                fullWidth
+                                label="Role"
+                                name="role"
+                                id="role"
+                                type="text"
+                                value={values.role}
+                                onBlur={handleBlur}
+                                onChange={handleChange}
+                                className={classes.loginInput}
+                                error={touched.role && Boolean(errors.role)}
+                            >                        
+                                <MenuItem value="ADMIN">Admin</MenuItem>
+                                <MenuItem value="USER">User</MenuItem>
+                            </Select>
+                                {touched.role && errors.role && (
+                                    <FormHelperText error id="standard-weight-helper-text--register">
+                                        {errors.role}
+                                    </FormHelperText>
+                                )}    
+                        </FormControl>
+
+                        {/* <FormControl fullWidth error={Boolean(touched.password && errors.password)} className={classes.loginInput}>
                             <InputLabel htmlFor="outlined-adornment-password-register">Password</InputLabel>
                             <OutlinedInput
                                 id="outlined-adornment-password-register"
@@ -264,7 +308,7 @@ const RestRegister = ({ ...others }) => {
                                 </Box>
                             </FormControl>
                         )}
-
+ */}
                         <Grid container alignItems="center" justifyContent="space-between">
                             <Grid item>
                                 <FormControlLabel
