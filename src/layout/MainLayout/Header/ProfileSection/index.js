@@ -124,6 +124,7 @@ const ProfileSection = () => {
     const account = useSelector((state) => state.account);
     const dispatcher = useDispatch();
 
+    const [username, setUsername] = React.useState("");
     const [sdm, setSdm] = React.useState(true);
     const [value, setValue] = React.useState('');
     const [notification, setNotification] = React.useState(false);
@@ -132,7 +133,6 @@ const ProfileSection = () => {
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef(null);
     const handleLogout = () => {
-        console.log(account.token);
         // axios
         //     .post(configData.API_SERVER + 'users/logout', {token: `${account.token}`}, { headers: { Authorization: `${account.token}` } })
         //     .then(function (response) {
@@ -166,6 +166,10 @@ const ProfileSection = () => {
 
         prevOpen.current = open;
     }, [open]);
+
+    React.useEffect(() => {
+        setUsername(account.user.first_name)
+    }, []);
     return (
         <React.Fragment>
             <Chip
@@ -217,7 +221,7 @@ const ProfileSection = () => {
                                             <Grid item className={classes.flex}>
                                                 <Typography variant="h4">Good Morning,</Typography>
                                                 <Typography component="span" variant="h4" className={classes.name}>
-                                                    John
+                                                    {username}
                                                 </Typography>
                                             </Grid>
                                             <Grid item>

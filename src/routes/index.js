@@ -18,7 +18,6 @@ const Routes = () => {
             <React.Fragment>
                 {/* Routes for authentication pages */}
                 <AuthenticationRoutes />
-
                 {/* Route for login */}
                 <LoginRoutes />
 
