@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid, ListItem, ListItemText } from '@material-ui/core'
+import { Fade, Grid, ListItem, ListItemText, Box } from '@material-ui/core'
 import {format} from 'timeago.js'
 import { makeStyles } from '@material-ui/styles'
 
@@ -26,16 +26,20 @@ const Message = ({message, own, mk}) => {
     const classes = useStyles()
     
     return (
-        <ListItem key={mk} >
-            <Grid container direction="row" className={own ? classes.ownMessageContainer : classes.freindMessageContainer }>
-                <Grid item xs={12}>
-                    <ListItemText align={own ? "right" : "left"} primary={message.text}></ListItemText>
-                </Grid>
-                <Grid item xs={12}>
-                    <ListItemText align={own ? "right" : "left"} secondary={format(message.createdAt)}></ListItemText>
-                </Grid>
-            </Grid>
-        </ListItem>
+        <Box>
+            <Fade in={true}>
+                <ListItem key={mk} >
+                    <Grid container direction="row" className={own ? classes.ownMessageContainer : classes.freindMessageContainer }>
+                        <Grid item xs={12}>
+                            <ListItemText align={own ? "right" : "left"} primary={message.text}></ListItemText>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <ListItemText align={own ? "right" : "left"} secondary={format(message.createdAt)}></ListItemText>
+                        </Grid>
+                    </Grid>
+                </ListItem>
+            </Fade>
+        </Box>
 
     )
 }

@@ -168,8 +168,8 @@ const ProfileSection = () => {
     }, [open]);
 
     React.useEffect(() => {
-        setUsername(account.user.first_name)
-    }, []);
+        setUsername(account?.user.first_name)
+    }, [account.user]);
     return (
         <React.Fragment>
             <Chip
@@ -221,7 +221,7 @@ const ProfileSection = () => {
                                             <Grid item className={classes.flex}>
                                                 <Typography variant="h4">Good Morning,</Typography>
                                                 <Typography component="span" variant="h4" className={classes.name}>
-                                                    {username}
+                                                    {username ? username : ""}
                                                 </Typography>
                                             </Grid>
                                             <Grid item>

@@ -1,12 +1,14 @@
 import React from 'react';
 import axios from 'axios'
+import { io } from "socket.io-client"
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/styles';
-import {Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab } from '@material-ui/core';
+import {Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Fade } from '@material-ui/core';
 import SendIcon from '@material-ui/icons/Send';
 import Room from '../../components/Room'
 import Message from '../../components/Message'
-import configData from '../../../config';
+import configData from '../../../config'
+
 
 const useStyles = makeStyles({
     table: {
@@ -39,9 +41,40 @@ const Chat = () => {
     const [rooms, setRooms] = React.useState([])
     const [currentChat, setCurrentChat] = React.useState(null)
     const [messages, setMessages] = React.useState(null)
+    const [newMessage, setNewMessage] = React.useState("")
+    const [onlineUsers, setOnlineUsers] = React.useState([])
+    const [arrivalMessage, setArrivalMessage] = React.useState(null)
+    const [existInRoom, setExistInRoom] = React.useState(null)
+    const socket = React.useRef(io("ws://localhost:8900"))
     const account = useSelector(state => state.account)
+    const scrollRef = React.useRef(null)
     const userFirstName = account.user.first_name
     const userLastName = account.user.last_name
+
+    React.useEffect(()=>{
+        socket.current = io("ws://localhost:8900")
+        socket.current.on("getMessage", data => {
+            setArrivalMessage({
+                sender: data.senderId,
+                text: data.text,
+                createdAt: Date.now()
+            })
+        })
+    },[])
+
+    React.useEffect(()=>{
+        arrivalMessage && 
+        currentChat?.members.includes(arrivalMessage.sender) && 
+        setMessages(prev => [...prev, arrivalMessage])
+    },[arrivalMessage])
+
+    React.useEffect(()=>{
+        socket.current.emit("addUser", account.user._id)
+        socket.current.on("getUsers", users => {
+            setOnlineUsers(users)
+        })
+    },[account.user])
+
     React.useEffect(()=>{
         async function fetchUsers() {
             try {
@@ -66,30 +99,59 @@ const Chat = () => {
         getRooms()
     }, [account])
 
+    
+
 /*****************T E S T I N G */
     // React.useEffect(()=>{
-    //     console.log(currentChat);
-    // },[currentChat])
+    //     console.log(onlineUsers);
+    // },[onlineUsers])
 /******************************* */
+    const [id, setId] = React.useState("")
 
-    const userHasRoom = async (id) => {
-        try {
-            const res = await axios.get(configData.API_SERVER + "rooms/" + id)
-            if(res.data.length > 0) 
-                setCurrentChat(res.data)
-            else {
+    React.useEffect(()=>{
+        const createUser = async () => {
+            if(existInRoom === false) {
                 try {
+                    console.log("Room is about to be created...")
                     const members = {
                         senderId: account.user._id,
                         receiverId: id
                     }
                     const res = await axios.post(configData.API_SERVER + "rooms", members)
-                    setRooms(rooms + res.data)
                     setCurrentChat(res.data)
                 } catch(err) {
                     console.log(err)
                 }
-            }        
+            }
+        }
+        createUser()
+    },[existInRoom])
+
+    const userHasRoom = async (id) => {
+        try {
+            setId(id)
+            const res = await axios.get(configData.API_SERVER + "rooms/" + id)
+
+            if(res.data.length === 0) {
+                return
+            }
+            const resp = res.data.map(room => {
+                if(room.members.includes(account.user._id)){
+                    setCurrentChat(room)
+                    return true
+                }
+                else {
+                    return false
+                }
+            })
+
+            if(resp.includes(true)) {
+                setExistInRoom(true)
+
+            } else {
+                setExistInRoom(false)
+            }
+
         } catch (error) {
             console.log(error)
         }
@@ -99,7 +161,7 @@ const Chat = () => {
     React.useEffect(()=>{
         const getMessages = async () => {
             try {
-                const res = await axios.get(configData.API_SERVER + "messages/" + currentChat[0]?._id)
+                const res = await axios.get(configData.API_SERVER + "messages/" + currentChat?._id)
                 setMessages(res.data)
             } catch (error) {
                 console.log(error.message)
@@ -108,6 +170,32 @@ const Chat = () => {
         getMessages()
     }, [currentChat])
 
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        const message= {
+            roomId: currentChat._id,
+            sender: account.user._id,
+            text: newMessage
+        }
+        const receiverId = currentChat.members.find(m => m !== account.user._id)
+        socket.current.emit("sendMessage", {
+            senderId: account.user._id,
+            receiverId,
+            text: newMessage
+        })
+        try {
+            const res = await axios.post(configData.API_SERVER+"messages", message)
+            setMessages([...messages, res.data])
+            setNewMessage("")
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
+    React.useEffect(()=>{
+        scrollRef.current?.scrollIntoView({behavior: "smooth"})
+    },[messages])
     return (
         <div>
             <Grid container>
@@ -133,7 +221,13 @@ const Chat = () => {
                     {
                         users.map((user, index) => (
                             <List onClick={()=>userHasRoom(user._id)}>
-                                <Room users={user} room={rooms} currentUser={account.user} key={index}/>
+                                <Room 
+                                    users={user} 
+                                    room={rooms} 
+                                    onlineUsers={onlineUsers}
+                                    currentUser={account.user} 
+                                    mk={index} 
+                                    key={index}/>
                             </List>
                         ))
                     }
@@ -141,20 +235,29 @@ const Chat = () => {
                 <Grid item xs={9}>
                     <List className={classes.messageArea}>
                         {
-                            currentChat ? 
-                                messages?.map((m, i) => (
-                                    <Message message={m} own={m.sender === account.user._id} key={i} mk={i}/>
-                                ))
+                            currentChat? 
+                                messages? 
+                                    messages.map((m, i) => (
+                                        <Message message={m} own={m.sender === account.user._id} key={i} mk={i}/>
+                                    )) 
+                                :
+                                    <p align="center">You no conversation with this user, start now!</p> 
                             : <p align="center">Open conversation to start chat!</p>
                         }
+                        <div ref={scrollRef} />
                     </List>
                     <Divider />
                     <Grid container style={{padding: '20px'}}>
                         <Grid item xs={11}>
-                            <TextField id="outlined-basic-email" label="Type Something" fullWidth />
+                            <TextField 
+                            id="outlined-basic-email" 
+                            label="Type Something" 
+                            fullWidth 
+                            onChange={(e)=>{setNewMessage(e.target.value)}}
+                            value={newMessage}/>
                         </Grid>
                         <Grid item xs={1} align="right">
-                            <Fab color="primary" aria-label="add"><SendIcon /></Fab>
+                            <Fab color="primary" aria-label="add" onClick={handleSubmit}><SendIcon /></Fab>
                         </Grid>
                     </Grid>
                 </Grid>
