@@ -1,5 +1,5 @@
 // assets
-import { IconBrandFramer, IconTypography, IconPalette, IconShadow, IconWindmill, IconLayoutGridAdd, IconMessage } from '@tabler/icons';
+import { IconBrandFramer, IconTypography, IconPalette, IconShadow, IconWindmill, IconLayoutGridAdd, IconMessage, IconUsers } from '@tabler/icons';
 
 // constant
 const icons = {
@@ -9,22 +9,23 @@ const icons = {
     IconWindmill: IconWindmill,
     IconBrandFramer: IconBrandFramer,
     IconLayoutGridAdd: IconLayoutGridAdd,
-    IconChat: IconMessage
+    IconChat: IconMessage,
+    IconUsers: IconUsers,
 };
 
 //-----------------------|| UTILITIES MENU ITEMS ||-----------------------//
 
-export const chat = {
-    id: 'chat',
-    title: 'Community',
+export const management = {
+    id: 'management',
+    title: 'Management',
     type: 'group',
     children: [
         {
-            id: 'chat-video',
-            title: 'Chat',
+            id: 'manage-users',
+            title: 'Users',
             type: 'item',
-            url: '/chat',
-            icon: icons['IconChat'],
+            url: '/management',
+            icon: icons['IconUsers'],
             breadcrumbs: false
         }
     ]

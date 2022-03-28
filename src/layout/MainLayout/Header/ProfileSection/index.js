@@ -168,7 +168,9 @@ const ProfileSection = () => {
     }, [open]);
 
     React.useEffect(() => {
-        setUsername(account?.user.first_name)
+        if(account.user) {
+            setUsername(account?.user.first_name)
+        }
     }, [account.user]);
     return (
         <React.Fragment>

@@ -5,6 +5,7 @@ import { Route, Switch, useLocation } from 'react-router-dom';
 import MainLayout from './../layout/MainLayout';
 import Loadable from '../ui-component/Loadable';
 import AuthGuard from './../utils/route-guard/AuthGuard';
+import AdminGuard from './../utils/route-guard/AdminGuard';
 
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('../views/dashboard/Default')));
@@ -16,6 +17,7 @@ const UtilsShadow = Loadable(lazy(() => import('../views/utilities/Shadow')));
 const UtilsMaterialIcons = Loadable(lazy(() => import('../views/utilities/MaterialIcons')));
 const UtilsTablerIcons = Loadable(lazy(() => import('../views/utilities/TablerIcons')));
 const CompsChat = Loadable(lazy(() => import('../views/pages/messenger/chat')));
+const management = Loadable(lazy(() => import('../views/pages/management/index')));
 
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('../views/sample-page')));
@@ -35,7 +37,10 @@ const MainRoutes = () => {
                 '/utils/util-shadow',
                 '/icons/tabler-icons',
                 '/icons/material-icons',
+
                 '/chat',
+                
+                '/management',
 
                 '/sample-page'
             ]}
@@ -51,6 +56,9 @@ const MainRoutes = () => {
                         <Route path="/icons/tabler-icons" component={UtilsTablerIcons} />
                         <Route path="/icons/material-icons" component={UtilsMaterialIcons} />
                         <Route path="/chat" component={CompsChat} />
+                        <AdminGuard>
+                            <Route path="/management" component={management} />
+                        </AdminGuard>
 
                         <Route path="/sample-page" component={SamplePage} />
                     </AuthGuard>

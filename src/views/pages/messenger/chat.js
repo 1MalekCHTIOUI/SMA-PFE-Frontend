@@ -3,11 +3,12 @@ import axios from 'axios'
 import { io } from "socket.io-client"
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/styles';
-import {Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Fade } from '@material-ui/core';
+import {Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab } from '@material-ui/core';
 import SendIcon from '@material-ui/icons/Send';
 import Room from '../../components/Room'
 import Message from '../../components/Message'
 import configData from '../../../config'
+import MainCard from "../../../ui-component/cards/MainCard"
 
 
 const useStyles = makeStyles({
@@ -197,12 +198,7 @@ const Chat = () => {
         scrollRef.current?.scrollIntoView({behavior: "smooth"})
     },[messages])
     return (
-        <div>
-            <Grid container>
-                <Grid item xs={12} >
-                    <Typography variant="h5" className="header-message">Chat</Typography>
-                </Grid>
-            </Grid>
+        <MainCard title="Chat">
             <Grid container component={Paper} className={classes.chatSection}>
                 <Grid item xs={3} className={classes.borderRight500}>
                     <List>
@@ -262,7 +258,7 @@ const Chat = () => {
                     </Grid>
                 </Grid>
             </Grid>
-        </div>
+        </MainCard>
     );
 }
 
