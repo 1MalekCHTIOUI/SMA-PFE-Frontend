@@ -133,7 +133,7 @@ const RestRegister = ({ ...others }) => {
                                 email: values.email,
                                 role: values.role,
                             })
-                            history.push('/login');
+                            history.push('/management');
                         }catch(e) {
                             setStatus({ success: false });
                             setErrors({ submit: e.response.data.message });

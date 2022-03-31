@@ -251,7 +251,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, ...others }) => {
                                     variant="contained"
                                     color="secondary"
                                 >
-                                    Sign UP
+                                    Apply
                                 </Button>
                             </AnimateButton>
                         </Box>

@@ -1,13 +1,49 @@
 import React from 'react';
-import {DataGrid} from "@material-ui/data-grid";
+import {DataGrid} from "@material-ui/data-grid"
 import moment from 'moment'
-import { Box, Button,Container,Grid } from '@material-ui/core';
+import axios from 'axios'
+import configData from "../../config"
+import { Box, Button,Container,Grid, Alert, AlertTitle, Dialog, DialogTitle, DialogContent, Typography, DialogActions  } from '@material-ui/core'
 import { IconCheck, IconX, IconBackspace } from '@tabler/icons'
 import { makeStyles } from '@material-ui/styles';
 import MuiTypography from '@material-ui/core/Typography'
 import { Transition } from 'react-transition-group'
 import Form from "./Form"
 import { useHistory } from 'react-router-dom';
+
+
+const ConfirmDialog = (props) => {
+    const { title, children, open, setOpen, onConfirm } = props;
+    return (
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        aria-labelledby="confirm-dialog"
+      >
+        <DialogTitle id="confirm-dialog">{title}</DialogTitle>
+        <DialogContent>{children}</DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setOpen(false)}
+          >
+            No
+          </Button>
+          <Button
+            onClick={() => {
+              setOpen(false);
+              onConfirm();
+            }}
+          >
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+  
+  
+
+
 
 
 function getFullName(params) {
@@ -35,6 +71,12 @@ const useStyles = makeStyles((theme) => ({
     },
     invisibleContainer: {
         display: "none"
+    },
+    buttons: { 
+        display:"flex",
+        alignItems: "center",
+        justifyContent: "space-evenly",
+        
     }
 }))
 const defaultStyle = {
@@ -44,15 +86,36 @@ const defaultStyle = {
     justifyContent: 'space-between',
     marginBottom: "1rem"
 }
-
+const formStyle = {
+    transition: `opacity 300ms ease-in-out`,
+    opacity: 0,
+    margin: "0 auto",
+    width: "70%",
+    marginBottom: "1rem"
+}
+const alertStyle = {
+    transition: `opacity 300ms ease-in-out`,
+    opacity: 0,
+    display:"flex",
+    justifyContent: "center",
+    width: "40%",
+    marginBottom: "1rem"
+}
 const transitionStyles = {
     entering: { opacity: 0 },
     entered: { opacity: 1 },
     exiting: { opacity: 1 },
     exited: { opacity: 0 }
 }
-const Usertable = ({data, setIsEdited}) => {
-    let history = useHistory();
+const Usertable = ({data, setIsEdited, setIsDeleted}) => {
+    let history = useHistory()
+    const [deleted, setDeleted] = React.useState(null)
+    const [users, setUsers] = React.useState([])
+    const [editedUser, setEditedUser] = React.useState(null)
+    const [isEditing, setIsEditing] = React.useState(false)
+    const [is, setIs] = React.useState(false)
+    const [open, setOpen] = React.useState(false)
+    const [deletedValues, setDeletedValues] = React.useState(null)
     const columns = [
         { field: '_id', hide:true, headerName: 'ID', width: 100},
         {
@@ -100,38 +163,72 @@ const Usertable = ({data, setIsEdited}) => {
         {
             field: 'actions',
             headerName: 'Actions',
-            autoWidth:true,
+            width: 300,
             renderCell: (cellValues) => {
                 return (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={(event) => {
-                        handleEdit(event, cellValues);
-                    }}
-                  >
-                    Edit
-                  </Button>
+                    <Container className={classes.buttons}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            disabled={cellValues.row.role.includes("ADMIN")}
+                            onClick={(event) => {
+                                handleEdit(event, cellValues);
+                            }}
+                        >
+                            Edit
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            disabled={cellValues.row.role.includes("ADMIN")}
+                            onClick={(event) => {
+                                setDeletedValues(cellValues)
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </Container>
                 );
               }
     
         },
+        
     ]
 
     const handleEdit = (e, c) => {
         setIsEditing(true)
         setEditedUser(c.row)
     }
+    React.useEffect(()=>{
+        if(deletedValues!=null && open === false) {
+            setOpen(true)
+
+        }
+    },[deletedValues])
+
+
+    const handleDelete = async () => {
+        try {
+            if(deletedValues) {
+                await axios.delete(configData.API_SERVER + "user/users/"+ deletedValues?.row._id)
+                setDeleted(deletedValues?.row)
+                setIsDeleted(deletedValues?.row)
+                setDeletedValues(null)
+            }
+
+        } catch (error) {
+            setDeleted(false)
+            setIsDeleted(false)
+            console.log(error)
+        }
+    }
+
 
     const handleUndo = () => {
         setIsEditing(false)
         setEditedUser(null)
     }
 
-    const [users, setUsers] = React.useState([])
-    const [editedUser, setEditedUser] = React.useState(null)
-    const [isEditing, setIsEditing] = React.useState(false)
-    const [is, setIs] = React.useState(false)
 
     
     React.useEffect(() => {
@@ -141,7 +238,8 @@ const Usertable = ({data, setIsEdited}) => {
             setIsEdited(false)
         }
 
-    }, [is]);
+    }, [is])
+
 
     React.useEffect(()=>{
         setUsers(data)
@@ -169,11 +267,19 @@ const Usertable = ({data, setIsEdited}) => {
 
     }, [users, data])
 
-
+    const [goOut, setGoOut] = React.useState(false)
     React.useEffect(() => {
-        console.log(isEditing)
-    }, [isEditing])
 
+        const Ts = () => {
+                if(deleted !== null) {
+                    setTimeout(() => {
+                        setGoOut(true)  
+                    }, 3000);
+                }
+            }
+        Ts()
+
+    }, [deleted])
 
     return (
         <Box
@@ -182,6 +288,40 @@ const Usertable = ({data, setIsEdited}) => {
                 width: 1,
             }}
         >
+            
+        <ConfirmDialog
+            title="Please confirm"
+            open={open}
+            setOpen={setOpen}
+            onConfirm={handleDelete}
+            values={deletedValues}
+        >
+            <Typography align="center">
+                Are you sure you want to delete this user? <br /> <strong>{deletedValues?.row.first_name} {deletedValues?.row.last_name}</strong>
+            </Typography>
+        </ConfirmDialog>
+
+
+        <Transition in={deleted} out={1000} timeout={{ 
+            appear: 300,
+            enter: 300,
+            exit:0
+            }} appear unmountOnExit>
+                {
+                    state => (deleted) && (
+                        <Container style={{...alertStyle, ...transitionStyles[state]}}>
+                            { 
+                                deleted !== null && goOut === false && (
+                                    <Alert style={{textAlign: 'center'}}severity="success">
+                                        <AlertTitle>Success</AlertTitle>
+                                        User — <strong>{deleted.first_name} {deleted.last_name}</strong> successfully deleted!
+                                    </Alert>
+                                )
+                            }
+                        </Container>
+                    )
+                }
+        </Transition>
 
         <Transition in={isEditing} timeout={{ 
             appear: 300,
@@ -192,22 +332,14 @@ const Usertable = ({data, setIsEdited}) => {
                 state => isEditing && (
                     <>
                     <Grid style={{...defaultStyle, ...transitionStyles[state]}}>
-                        <Grid container direction='row'>
-                            <MuiTypography variant="button" display="block" gutterBottom>
-                                Currently editing:
-                            </MuiTypography>
-                            <MuiTypography variant="button" display="block" gutterBottom>
-                                TEST
-                            </MuiTypography>
-                        </Grid>
                         <Grid container spacing={2} direction='row' className={classes.buttonContainer}>
-                            <Button variant="outlined" startIcon={<IconCheck />} onClick={handleEdit}> Apply</Button>
-                            <Button variant="contained" startIcon={<IconBackspace />} onClick={handleUndo}> Undo</Button>
+                            {/* <Button variant="outlined" startIcon={<IconCheck />} onClick={handleEdit}> Apply</Button> */}
+                            <Button variant="contained" startIcon={<IconBackspace />} onClick={handleUndo}>Go Back</Button>
                         </Grid>
                     </Grid>
-                    <div style={{...defaultStyle, ...transitionStyles[state]}}>
+                    <Container style={{...formStyle, ...transitionStyles[state]}}>
                         <Form user={editedUser} setIsEditing={setIsEditing} setIs={setIs} setEditedUser={setEditedUser}/>
-                    </div>
+                    </Container>
 
                     </>
                 )
@@ -218,7 +350,7 @@ const Usertable = ({data, setIsEdited}) => {
         <Transition in={!isEditing} timeout={{
             appear: 300,
             enter: 300,
-            exit:0
+            exit:100
         }} appear unmountOnExit>
             {
                 state => !isEditing && (

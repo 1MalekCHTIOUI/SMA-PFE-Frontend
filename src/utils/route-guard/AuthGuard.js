@@ -27,10 +27,9 @@ const AuthGuard = ({ children }) => {
     },[])
 
 
-    if (!isLoggedIn) {
+    if (isLoggedIn === false) {
         return <Redirect to="/login" />;
     }
-
 
 
     return children;

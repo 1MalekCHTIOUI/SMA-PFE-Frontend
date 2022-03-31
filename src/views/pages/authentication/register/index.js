@@ -11,6 +11,7 @@ import AuthCardWrapper from './../AuthCardWrapper';
 import Logo from './../../../../ui-component/Logo';
 import RestRegister from './RestRegister';
 import AuthFooter from './../../../../ui-component/cards/AuthFooter';
+import config from '../../../../config';
 
 // assets
 
@@ -66,11 +67,11 @@ const Register = () => {
                                         <Grid item container direction="column" alignItems="center" xs={12}>
                                             <Typography
                                                 component={RouterLink}
-                                                to="/login"
+                                                to={config.defaultPath}
                                                 variant="subtitle1"
                                                 sx={{ textDecoration: 'none' }}
                                             >
-                                                Have an account?
+                                                Go back to dashboard
                                             </Typography>
                                         </Grid>
                                     </Grid>

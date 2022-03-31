@@ -18,13 +18,13 @@ const LoginRoutes = () => {
     const location = useLocation();
 
     return (
-        <Route path={['/login']}>
+        <Route path={['/register']}>
             <MinimalLayout>
                 <Switch location={location} key={location.pathname}>
                     <NavMotion>
-                        <GuestGuard>
-                            <Route path="/login" component={AuthLogin} />
-                        </GuestGuard>                   
+                        <AuthGuard>
+                            <Route path="/register" component={AuthRegister} />
+                        </AuthGuard>                    
                     </NavMotion>
 
                 </Switch>

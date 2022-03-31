@@ -4,6 +4,7 @@ import { Redirect, Switch } from 'react-router-dom';
 // routes
 import MainRoutes from './MainRoutes';
 import LoginRoutes from './LoginRoutes';
+import RegisterRoutes from './RegisterRoutes';
 import AuthenticationRoutes from './AuthenticationRoutes';
 
 // project imports
@@ -19,7 +20,9 @@ const Routes = () => {
                 {/* Routes for authentication pages */}
                 <AuthenticationRoutes />
                 {/* Route for login */}
-                <LoginRoutes />
+                <LoginRoutes />                
+                {/* Route for register */}
+                <RegisterRoutes />
 
                 {/* Routes for main layouts */}
                 <MainRoutes />
