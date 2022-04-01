@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 import { Link as RouterLink } from 'react-router-dom';
-import { Grid, Container, Typography} from '@material-ui/core'
+import { Grid, Container, Typography, Divider} from '@material-ui/core'
 import Usertable from "../../components/UserTable"
 
 import configData from '../../../config'
@@ -46,11 +46,12 @@ const Management = () => {
     return (
         <MainCard title="User management">
             <Grid item xs={12}>
-                <Grid item container direction="column" alignItems="center" xs={12}>
+                <Grid container direction="column" alignItems="center" sx={{marginBottom:"1rem"}}>
                     <Typography
+                        variant="subtitle1" 
+                        gutterBottom
                         component={RouterLink}
                         to="/register"
-                        variant="subtitle1"
                         sx={{ textDecoration: 'none' }}
                     >
                         Create an account

@@ -241,6 +241,8 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
     }, [is])
 
 
+    
+
     React.useEffect(()=>{
         setUsers(data)
     }, [data])
@@ -271,7 +273,7 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
     React.useEffect(() => {
 
         const Ts = () => {
-                if(deleted !== null) {
+                if(deleted !== null || is) {
                     setTimeout(() => {
                         setGoOut(true)  
                     }, 3000);
@@ -279,7 +281,7 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
             }
         Ts()
 
-    }, [deleted])
+    }, [deleted, is])
 
     return (
         <Box
@@ -302,19 +304,27 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
         </ConfirmDialog>
 
 
-        <Transition in={deleted} out={1000} timeout={{ 
+        <Transition in={deleted || is} out={1000} timeout={{ 
             appear: 300,
             enter: 300,
             exit:0
             }} appear unmountOnExit>
                 {
-                    state => (deleted) && (
+                    state => (deleted || is) && (
                         <Container style={{...alertStyle, ...transitionStyles[state]}}>
-                            { 
+                            {
+                                deleted ? 
                                 deleted !== null && goOut === false && (
                                     <Alert style={{textAlign: 'center'}}severity="success">
                                         <AlertTitle>Success</AlertTitle>
                                         User — <strong>{deleted.first_name} {deleted.last_name}</strong> successfully deleted!
+                                    </Alert>
+                                )
+                                : 
+                                is !== null && goOut === false && (
+                                    <Alert style={{textAlign: 'center'}}severity="success">
+                                        <AlertTitle>Success</AlertTitle>
+                                        User successfully Edited!
                                     </Alert>
                                 )
                             }

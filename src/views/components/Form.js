@@ -84,7 +84,6 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, ...others }) => {
     let history = useHistory();
     const scriptedRef = useScriptRef();
     const matchDownSM = useMediaQuery((theme) => theme.breakpoints.down('sm'));
-
     return (
         <React.Fragment>
             <Formik
@@ -92,7 +91,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, ...others }) => {
                     firstName: user? user.first_name :'',
                     lastName: user? user.last_name :'',
                     email: user? user.email :'',
-                    role: user? user.role :'',
+                    role: user? user.role[0] :'',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({
@@ -111,7 +110,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, ...others }) => {
                                 email: values.email,
                                 role: values.role,
                             }
-                            const res = await axios.put( configData.API_SERVER + 'user/users/'+user._id, updatedUser)
+                            await axios.put( configData.API_SERVER + 'user/users/'+user._id, updatedUser)
                             setIsEditing(false)
                             setEditedUser(updatedUser)
                             setIs(true)

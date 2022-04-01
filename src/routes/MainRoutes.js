@@ -56,10 +56,6 @@ const MainRoutes = () => {
                         <Route path="/icons/tabler-icons" component={UtilsTablerIcons} />
                         <Route path="/icons/material-icons" component={UtilsMaterialIcons} />
                         <Route path="/chat" component={CompsChat} />
-                        <AdminGuard>
-                            <Route path="/management" component={management} />
-                        </AdminGuard>
-
                         <Route path="/sample-page" component={SamplePage} />
                     </AuthGuard>
                 </Switch>

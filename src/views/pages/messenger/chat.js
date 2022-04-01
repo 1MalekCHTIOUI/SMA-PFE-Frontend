@@ -46,6 +46,7 @@ const Chat = () => {
     const [onlineUsers, setOnlineUsers] = React.useState([])
     const [arrivalMessage, setArrivalMessage] = React.useState(null)
     const [existInRoom, setExistInRoom] = React.useState(null)
+    const [currentChatUser, setCurrentChatUser] = React.useState(null)
     const socket = React.useRef(io("ws://localhost:8900"))
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
@@ -100,7 +101,9 @@ const Chat = () => {
         getRooms()
     }, [account])
 
-    
+    React.useEffect(() =>{
+        console.log(currentChat);
+    },[currentChat])
 
 /*****************T E S T I N G */
     // React.useEffect(()=>{
@@ -128,13 +131,13 @@ const Chat = () => {
         createUser()
     },[existInRoom])
 
-    const userHasRoom = async (id) => {
+    const userHasRoom = async (user) => {
         try {
-            setId(id)
-            const res = await axios.get(configData.API_SERVER + "rooms/" + id)
-
+            setId(user._id)
+            setCurrentChatUser(user)
+            const res = await axios.get(configData.API_SERVER + "rooms/" + user._id)
             if(res.data.length === 0) {
-                return
+                console.log("No room found");
             }
             const resp = res.data.map(room => {
                 if(room.members.includes(account.user._id)){
@@ -148,7 +151,6 @@ const Chat = () => {
 
             if(resp.includes(true)) {
                 setExistInRoom(true)
-
             } else {
                 setExistInRoom(false)
             }
@@ -216,7 +218,7 @@ const Chat = () => {
                     <Divider />
                     {
                         users.map((user, index) => (
-                            <List onClick={()=>userHasRoom(user._id)}>
+                            <List onClick={()=>userHasRoom(user)}>
                                 <Room 
                                     users={user} 
                                     room={rooms} 
@@ -229,6 +231,15 @@ const Chat = () => {
                     }
                 </Grid>
                 <Grid item xs={9}>
+                    {
+                        currentChat && currentChatUser && (
+                            <Grid container xs={12} direction="row" justifyContent="center" alignItems="center">
+                                <Typography variant="outline">{currentChatUser?.first_name} {currentChatUser?.last_name}</Typography>
+                            </Grid>
+                        )
+                    }
+
+                    <Divider />
                     <List className={classes.messageArea}>
                         {
                             currentChat? 
