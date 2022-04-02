@@ -34,6 +34,7 @@ import { ACCOUNT_INITIALIZE } from './../../../../store/actions';
 // assets
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import { io } from 'socket.io-client';
 
 // style constant
 const useStyles = makeStyles((theme) => ({
@@ -113,11 +114,14 @@ const RestLogin = (props, { ...others }) => {
 
                             
                             if (response.data.status==="success") {
+
+                                // io("ws://localhost:8900").emit("addUser", response.data._id)
                                 dispatcher({
                                     type: ACCOUNT_INITIALIZE,
                                     payload: { isLoggedIn: true, user: response.data, token: response.data.token }
                                 });
                                 if (scriptedRef.current) {
+
                                     setStatus({ success: true });
                                     setSubmitting(false);
                                 }

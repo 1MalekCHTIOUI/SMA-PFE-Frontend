@@ -54,7 +54,7 @@ const Chat = () => {
     const userLastName = account.user.last_name
 
     React.useEffect(()=>{
-        socket.current = io("ws://localhost:8900")
+        // socket.current = io("ws://localhost:8900")
         socket.current.on("getMessage", data => {
             setArrivalMessage({
                 sender: data.senderId,
@@ -62,8 +62,11 @@ const Chat = () => {
                 createdAt: Date.now()
             })
         })
-    },[])
+    },[account.user])
 
+    // React.useEffect(()=>{
+    //     console.log(onlineUsers);
+    // })
     React.useEffect(()=>{
         arrivalMessage && 
         currentChat?.members.includes(arrivalMessage.sender) && 
@@ -73,9 +76,14 @@ const Chat = () => {
     React.useEffect(()=>{
         socket.current.emit("addUser", account.user._id)
         socket.current.on("getUsers", users => {
+            console.log(users);
             setOnlineUsers(users)
         })
     },[account.user])
+
+    // React.useEffect(()=>{
+    //     console.log(onlineUsers);
+    // },[onlineUsers])
 
     React.useEffect(()=>{
         async function fetchUsers() {
@@ -101,9 +109,9 @@ const Chat = () => {
         getRooms()
     }, [account])
 
-    React.useEffect(() =>{
-        console.log(currentChat);
-    },[currentChat])
+    // React.useEffect(() =>{
+    //     console.log(onlineUsers);
+    // },[])
 
 /*****************T E S T I N G */
     // React.useEffect(()=>{

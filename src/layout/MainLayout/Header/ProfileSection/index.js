@@ -139,7 +139,7 @@ const ProfileSection = () => {
                 
                 // Force the LOGOUT
                 //if (response.data.success) {
-                    dispatcher({ type: LOGOUT });
+                    dispatcher({ type: LOGOUT, payload: account.user._id });
                 //} else {
                 //    console.log('response - ', response.data.msg);
                 //}

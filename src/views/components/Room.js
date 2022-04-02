@@ -55,21 +55,31 @@ const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
 
 
 export default function Room({users, onlineUsers, currentUser, mk}) {
-    const [online, setOnline] = React.useState(false)
+    const [online, setOnline] = React.useState(null)
     const [array, setArray] = React.useState([])
     const [selectedIndex, setSelectedIndex] = React.useState(0)
     const [selectedId, setSelectedId] = React.useState()
-
     const classes = useStyles()
-
     React.useEffect(() => {
         onlineUsers && onlineUsers.map(user => {
-            if(user.userId === users._id && currentUser._id !== user.userId) {
-                setOnline(true)
+            if(currentUser._id !== user.userId) {
+                handleOnline(user.userId === users._id)
             }
         })
+        return () => {
+            setOnline(false)
+        }
     }, [users, onlineUsers]);
 
+    const handleOnline = (o) => {
+        if(o) {
+            setOnline(true)
+        }
+        else {
+            setOnline(false)
+        }
+    }
+    
     const handleClick = (e, id, index) => {
         setSelectedIndex(index)
         setSelectedId(id)
@@ -87,7 +97,7 @@ export default function Room({users, onlineUsers, currentUser, mk}) {
                                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                                 variant="dot"
                                 >
-                                    <Avatar alt="Remy Sharp" src="dsq" />
+                                    <Avatar alt={users.first_name} src=" " />
                                 </StyledBadgeOnline>
                                 :
                                 <StyledBadgeOffline
@@ -95,7 +105,7 @@ export default function Room({users, onlineUsers, currentUser, mk}) {
                                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                                 variant="dot"
                                 >
-                                    <Avatar alt="Remy Sharp" src="dsq" />
+                                    <Avatar alt={users.first_name} src=" " />
                                 </StyledBadgeOffline>
                             }
                         </ListItemIcon>
