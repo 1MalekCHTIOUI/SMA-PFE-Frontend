@@ -115,7 +115,7 @@ const RestLogin = (props, { ...others }) => {
                             
                             if (response.data.status==="success") {
 
-                                // io("ws://localhost:8900").emit("addUser", response.data._id)
+                                io("ws://localhost:8900").emit("addUser", response.data._id)
                                 dispatcher({
                                     type: ACCOUNT_INITIALIZE,
                                     payload: { isLoggedIn: true, user: response.data, token: response.data.token }
