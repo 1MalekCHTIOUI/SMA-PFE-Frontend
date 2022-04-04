@@ -348,7 +348,7 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
                         </Grid>
                     </Grid>
                     <Container style={{...formStyle, ...transitionStyles[state]}}>
-                        <Form user={editedUser} setIsEditing={setIsEditing} setIs={setIs} setEditedUser={setEditedUser}/>
+                        <Form user={editedUser} accessFrom="ADMIN-C" setIsEditing={setIsEditing} setIs={setIs} setEditedUser={setEditedUser}/>
                     </Container>
 
                     </>

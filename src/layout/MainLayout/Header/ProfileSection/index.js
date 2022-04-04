@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import configData from '../../../../config';
-
+import { useHistory } from 'react-router-dom';
 // material-ui
 import { makeStyles, useTheme } from '@material-ui/styles';
 import {
@@ -123,6 +123,7 @@ const ProfileSection = () => {
     const customization = useSelector((state) => state.customization);
     const account = useSelector((state) => state.account);
     const dispatcher = useDispatch();
+    const history = useHistory();
 
     const [username, setUsername] = React.useState("");
     const [sdm, setSdm] = React.useState(true);
@@ -248,7 +249,7 @@ const ProfileSection = () => {
                                         />
                                         <Divider />
                                         <PerfectScrollbar className={classes.ScrollHeight}>
-                                            <UpgradePlanCard />
+                                            {/* <UpgradePlanCard /> */}
                                             <Divider />
                                             <Card className={classes.card}>
                                                 <CardContent>
@@ -289,6 +290,18 @@ const ProfileSection = () => {
                                             </Card>
                                             <Divider />
                                             <List component="nav" className={classes.navContainer}>
+                                                <ListItemButton
+                                                    className={classes.listItem}
+                                                    sx={{ borderRadius: customization.borderRadius + 'px' }}
+                                                    selected={selectedIndex === 3}
+                                                    onClick={() => history.push({pathname: "/edit", state: {accessFrom: "USER-C", user: account.user}})}
+                                                >
+                                                    <ListItemIcon>
+                                                        <IconSettings stroke={1.5} size="1.3rem" />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={<Typography variant="body2">Account information</Typography>} />
+                                                </ListItemButton>
+
                                                 <ListItemButton
                                                     className={classes.listItem}
                                                     sx={{ borderRadius: customization.borderRadius + 'px' }}

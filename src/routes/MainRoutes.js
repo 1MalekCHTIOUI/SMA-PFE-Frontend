@@ -7,6 +7,7 @@ import Loadable from '../ui-component/Loadable';
 import AuthGuard from './../utils/route-guard/AuthGuard';
 import AdminGuard from './../utils/route-guard/AdminGuard';
 
+
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('../views/dashboard/Default')));
 
@@ -21,6 +22,7 @@ const management = Loadable(lazy(() => import('../views/pages/management/index')
 
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('../views/sample-page')));
+const EditPage = Loadable(lazy(() => import('../views/pages/management/editPage')));
 
 //-----------------------|| MAIN ROUTING ||-----------------------//
 
@@ -42,7 +44,8 @@ const MainRoutes = () => {
                 
                 '/management',
 
-                '/sample-page'
+                '/sample-page',
+                '/edit',
             ]}
         >
             <MainLayout>
@@ -57,6 +60,7 @@ const MainRoutes = () => {
                         <Route path="/icons/material-icons" component={UtilsMaterialIcons} />
                         <Route path="/chat" component={CompsChat} />
                         <Route path="/sample-page" component={SamplePage} />
+                        <Route path="/edit" component={EditPage} />
                     </AuthGuard>
                 </Switch>
             </MainLayout>

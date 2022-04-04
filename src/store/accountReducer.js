@@ -1,6 +1,6 @@
 // action - state management
 import { io } from 'socket.io-client';
-import { ACCOUNT_INITIALIZE, LOGIN, LOGOUT } from './actions';
+import { ACCOUNT_INITIALIZE, LOGIN, LOGOUT, ACCOUNT_UPDATED } from './actions';
 
 export const initialState = {
     token: '',
@@ -40,6 +40,13 @@ const accountReducer = (state = initialState, action) => {
                 token: '',
                 user: null,
             };
+        }
+        case ACCOUNT_UPDATED: {
+            const user = action.payload;
+            return {
+                ...state,
+                user
+            }
         }
         default: {
             return { ...state };

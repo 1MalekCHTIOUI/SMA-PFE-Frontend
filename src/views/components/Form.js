@@ -32,11 +32,13 @@ import axios from 'axios';
 // project imports
 import useScriptRef from '../../hooks/useScriptRef';
 import AnimateButton from './../../ui-component/extended/AnimateButton';
-// import { strengthColor, strengthIndicator } from '../../../../utils/password-strength';
+import { strengthColor, strengthIndicator } from '../../utils/password-strength';
 
-// assets
-// import Visibility from '@material-ui/icons/Visibility';
-// import VisibilityOff from '@material-ui/icons/VisibilityOff';
+
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import { useDispatch } from 'react-redux';
+import { ACCOUNT_UPDATED } from '../../store/actions';
 
 // style constant
 const useStyles = makeStyles((theme) => ({
@@ -79,47 +81,123 @@ const useStyles = makeStyles((theme) => ({
 
 //===========================|| API JWT - REGISTER ||===========================//
 
-const Form = ({user, setIsEditing, setIs, setEditedUser, ...others }) => {
+const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }) => {
     const classes = useStyles();
     let history = useHistory();
     const scriptedRef = useScriptRef();
     const matchDownSM = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+    const [showOldPassword, setOldShowPassword] = React.useState(false);
+    const [showPassword, setShowPassword] = React.useState(false);
+    const [xOldPassword, setXOldPassword] = React.useState("");
+    const [strength, setStrength] = React.useState(0);
+    const [level, setLevel] = React.useState('');
+    const [ifSame, setIfSame] = React.useState(null);
+
+    const handleClickShowPassword = () => {
+        setShowPassword(!showPassword);
+    };    
+    const handleClickShowOldPassword = () => {
+        setOldShowPassword(!showOldPassword);
+    };
+
+    const handleMouseDownPassword = (event) => {
+        event.preventDefault();
+    };
+
+    const changePassword = (value) => {
+        const temp = strengthIndicator(value);
+        setStrength(temp);
+        setLevel(strengthColor(temp));
+    };
+    const checkIfPasswordLegit = async(email, oldPassword) => {
+        let test = false
+        try {
+            const res = await axios.post(configData.API_SERVER+"user/compare", {email, oldPassword})
+            if(res.data.same) {
+                setIfSame(true)
+               test = true
+            } else {
+                setIfSame(false)
+                test = false
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+        return test
+    }
+
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        setXOldPassword(user.password)
+    }, [user]);
+
     return (
         <React.Fragment>
             <Formik
                 initialValues={{
-                    firstName: user? user.first_name :'',
-                    lastName: user? user.last_name :'',
-                    email: user? user.email :'',
-                    role: user? user.role[0] :'',
-                    submit: null
-                }}
-                validationSchema={Yup.object().shape({
-                    email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-                    firstName: Yup.string().required('First name is required'),
-                    lastName: Yup.string().required('Last name is required'),
-                    role: Yup.string().required('Role is required'),
-                })}
+                        firstName: user? user.first_name : '',
+                        lastName: user? user.last_name : '',
+                        email: user? user.email : '',
+                        role: user? user.role[0] : '',
+                        oldPassword: '',
+                        newPassword: '',
+                        submit: null
+                    }}
+
+                validationSchema={
+                    Yup.object().shape({
+                        email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+                        firstName: Yup.string().required('First name is required'),
+                        lastName: Yup.string().required('Last name is required'),
+                        role: Yup.string().required('Role is required'),
+                    })
+                }
                 onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
                     try {
                         try {
-                            const updatedUser = {
-                                _id: user._id,
-                                first_name: values.firstName,
-                                last_name: values.lastName,
-                                email: values.email,
-                                role: values.role,
+                            let test = await checkIfPasswordLegit(values.email, values.oldPassword)
+                            
+                            if(test===false && values.oldPassword != "" && accessFrom === "USER-C"){
+                                console.log("Old password wrong")
                             }
-                            await axios.put( configData.API_SERVER + 'user/users/'+user._id, updatedUser)
-                            setIsEditing(false)
-                            setEditedUser(updatedUser)
-                            setIs(true)
-                            history.push("/management")
+                            else {
+                                const updatedUser = {
+                                    _id: user._id,
+                                    first_name: values.firstName,
+                                    last_name: values.lastName,
+                                    email: values.email,
+                                    role: values.role,
+                                }
+                                // console.log(updatedUser);
+                                if(values.newPassword!="" && values.oldPassword!="") {
+                                    updatedUser.password = values.newPassword
+                                }
+                                try {
+                                    // console.log(updatedUser)
+                                    await axios.put( configData.API_SERVER + 'user/users/'+user._id, updatedUser)
+
+                                    if(accessFrom==="USER-C") {
+                                        dispatch({type: ACCOUNT_UPDATED, payload: updatedUser});
+                                        history.push(configData.defaultPath)
+                                    } else {
+                                        setIsEditing(false)
+                                        setEditedUser(updatedUser)
+                                        setIs(true)
+                                    }
+                                } catch (error) {
+                                    console.log(error);
+                                }
+
+
+                            } 
                         }catch(e) {
+                            console.error(e);
                             setStatus({ success: false });
-                            setErrors({ submit: e.response.data.message });
+                            setErrors({ submit: e.message });
                             setSubmitting(false);
-                            setIs(false)
+                            setIs && setIs(false)
                         }
                     } catch (err) {
                         console.error(err);
@@ -127,7 +205,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, ...others }) => {
                             setStatus({ success: false });
                             setErrors({ submit: err.message });
                             setSubmitting(false);
-                            setIs(false)
+                            setIs && setIs(false)
                         }
                     }
                 }}
@@ -201,30 +279,144 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, ...others }) => {
                             )}
                         </FormControl>
 
-                        <FormControl fullWidth>
-                            <InputLabel id="role">Role</InputLabel>
-                            
-                            <Select
-                                fullWidth
-                                label="Role"
-                                name="role"
-                                id="role"
-                                type="text"
-                                value={values.role}
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                className={classes.loginInput}
-                                error={touched.role && Boolean(errors.role)}
-                            >                        
-                                <MenuItem value="ADMIN">Admin</MenuItem>
-                                <MenuItem value="USER">User</MenuItem>
-                            </Select>
-                                {touched.role && errors.role && (
-                                    <FormHelperText error id="standard-weight-helper-text--register">
-                                        {errors.role}
+                            <FormControl fullWidth>
+                                <InputLabel id="role">Role</InputLabel>
+                                
+                                <Select
+                                    fullWidth
+                                    label="Role"
+                                    name="role"
+                                    id="role"
+                                    type="text"
+                                    value={values.role}
+                                    disabled={user.role[0] !== "ADMIN" && user.role[0] !== "USER"}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    className={classes.loginInput}
+                                    error={touched.role && Boolean(errors.role)}
+                                >                        
+                                    <MenuItem value="ADMIN">Admin</MenuItem>
+                                    <MenuItem value="USER">User</MenuItem>
+                                </Select>
+                                    {touched.role && errors.role && (
+                                        <FormHelperText error id="standard-weight-helper-text--register">
+                                            {errors.role}
+                                        </FormHelperText>
+                                    )}    
+                            </FormControl>
+                        { accessFrom==="USER-C" && (
+                            <Grid direction="row" style={{display: 'flex', justifyContent:"space-between"}}>
+                            <FormControl error={Boolean(touched.password && errors.password)} className={classes.loginInput}>
+                                <InputLabel htmlFor="outlined-adornment-old-password-register">Old password</InputLabel>
+                                <OutlinedInput
+                                    id="outlined-adornment-old-password-register"
+                                    type={showOldPassword ? 'text' : 'password'}
+                                    value={values.oldPassword}
+                                    autoComplete="new-password"
+                                    name="oldPassword"
+                                    label="Password"
+                                    error={values.oldPassword!=="" && ifSame === false}
+                                    onBlur={handleBlur}
+                                    onChange={(e) => {
+                                        handleChange(e);
+                                    }}
+                                    endAdornment={
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={handleClickShowOldPassword}
+                                                onMouseDown={handleMouseDownPassword}
+                                                edge="end"
+                                            >
+                                                {showOldPassword ? <Visibility /> : <VisibilityOff />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                    inputProps={{
+                                        classes: {
+                                            notchedOutline: classes.notchedOutline
+                                        }
+                                    }}
+                                />
+                                
+
+                                {ifSame===false && ifSame!==null && (
+                                    <FormHelperText error id="standard-weight-helper-text-password-register">
+                                        {errors.oldPassword}
                                     </FormHelperText>
-                                )}    
-                        </FormControl>
+                                )}
+                            </FormControl>
+                            <FormControl error={Boolean(touched.password && errors.password)} className={classes.loginInput}>
+                                <InputLabel htmlFor="outlined-adornment-new-password-register">New Password</InputLabel>
+                                <OutlinedInput
+                                    id="outlined-adornment-new-password-register"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={values.newPassword}
+                                    name="newPassword"
+                                    label="Password"
+                                    autoComplete="new-password"
+                                    onBlur={handleBlur}
+                                    onChange={(e) => {
+                                        handleChange(e);
+                                        changePassword(e.target.value);
+                                    }}
+                                    endAdornment={
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={handleClickShowPassword}
+                                                onMouseDown={handleMouseDownPassword}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <Visibility /> : <VisibilityOff />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                    inputProps={{
+                                        classes: {
+                                            notchedOutline: classes.notchedOutline
+                                        }
+                                    }}
+                                />
+                                
+
+                                {touched.password && errors.password && (
+                                    <FormHelperText error id="standard-weight-helper-text-password-register">
+                                        {errors.newPassword}
+                                    </FormHelperText>
+                                )}
+                            </FormControl>
+                        </Grid>
+                        )}
+
+                        {strength !== 0 && (
+                            <FormControl fullWidth>
+                                <Box
+                                    sx={{
+                                        mb: 2
+                                    }}
+                                >
+                                    <Grid container spacing={2} justifyContent="right" alignItems="right">
+                                        <Grid item>
+                                            <Box
+                                                backgroundColor={level.color}
+                                                sx={{
+                                                    width: 85,
+                                                    height: 8,
+                                                    borderRadius: '7px'
+                                                }}
+                                            ></Box>
+                                        </Grid>
+                                        <Grid item>
+                                            <Typography variant="subtitle1" fontSize="0.75rem">
+                                                {level.label}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                            </FormControl>
+                        )}
+
                         {errors.submit && (
                             <Box
                                 sx={{
