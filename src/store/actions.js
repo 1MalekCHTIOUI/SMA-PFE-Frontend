@@ -4,6 +4,11 @@ export const LOGOUT = 'LOGOUT';
 export const ACCOUNT_INITIALIZE = 'ACCOUNT_INITIALIZE';
 export const ACCOUNT_UPDATED = 'ACCOUNT_UPDATED';
 
+// action - socket reducer
+export const RECEIVING_CALL = 'RECEIVING_CALL';
+export const CALL_ACCEPTED = 'CALL_ACCEPTED';
+export const CALL_DECLINED = 'CALL_DECLINED';
+
 // action - customization reducer
 export const SET_MENU = '@customization/SET_MENU';
 export const MENU_OPEN = '@customization/MENU_OPEN';

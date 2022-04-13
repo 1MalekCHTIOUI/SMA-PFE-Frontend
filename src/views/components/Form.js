@@ -37,7 +37,7 @@ import { strengthColor, strengthIndicator } from '../../utils/password-strength'
 
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { ACCOUNT_UPDATED } from '../../store/actions';
 
 // style constant
@@ -128,6 +128,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
     }
 
     const dispatch = useDispatch()
+    const account = useSelector(state => state.account)
 
     useEffect(() => {
         setXOldPassword(user.password)
@@ -141,6 +142,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                         lastName: user? user.last_name : '',
                         email: user? user.email : '',
                         role: user? user.role[0] : '',
+                        service: user? user.service : '',
                         oldPassword: '',
                         newPassword: '',
                         submit: null
@@ -152,6 +154,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                         firstName: Yup.string().required('First name is required'),
                         lastName: Yup.string().required('Last name is required'),
                         role: Yup.string().required('Role is required'),
+                        service: Yup.string().required('Service is required'),
                     })
                 }
                 onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
@@ -168,14 +171,15 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                                     first_name: values.firstName,
                                     last_name: values.lastName,
                                     email: values.email,
-                                    role: values.role,
+                                    role: [values.role],
+                                    service: values.service,
                                 }
                                 // console.log(updatedUser);
                                 if(values.newPassword!="" && values.oldPassword!="") {
                                     updatedUser.password = values.newPassword
                                 }
                                 try {
-                                    // console.log(updatedUser)
+                                    console.log(updatedUser)
                                     await axios.put( configData.API_SERVER + 'user/users/'+user._id, updatedUser)
 
                                     if(accessFrom==="USER-C") {
@@ -278,32 +282,62 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                                 </FormHelperText>
                             )}
                         </FormControl>
-
-                            <FormControl fullWidth>
-                                <InputLabel id="role">Role</InputLabel>
-                                
-                                <Select
-                                    fullWidth
-                                    label="Role"
-                                    name="role"
-                                    id="role"
-                                    type="text"
-                                    value={values.role}
-                                    disabled={user.role[0] !== "ADMIN" && user.role[0] !== "USER"}
-                                    onBlur={handleBlur}
-                                    onChange={handleChange}
-                                    className={classes.loginInput}
-                                    error={touched.role && Boolean(errors.role)}
-                                >                        
-                                    <MenuItem value="ADMIN">Admin</MenuItem>
-                                    <MenuItem value="USER">User</MenuItem>
-                                </Select>
-                                    {touched.role && errors.role && (
-                                        <FormHelperText error id="standard-weight-helper-text--register">
-                                            {errors.role}
-                                        </FormHelperText>
-                                    )}    
-                            </FormControl>
+                        <FormControl fullWidth>
+                            <InputLabel id="role">Service</InputLabel>
+                            
+                            <Select
+                                fullWidth
+                                label="Service"
+                                name="service"
+                                id="service"
+                                type="text"
+                                value={values.service}
+                                onBlur={handleBlur}
+                                onChange={handleChange}
+                                className={classes.loginInput}
+                                error={touched.service && Boolean(errors.service)}
+                            >                        
+                                <MenuItem value="HUMAN_RESOURCES">Human resources manager</MenuItem>
+                                <MenuItem value="GRAPHIC_DESIGNER">Graphic designer</MenuItem>
+                                <MenuItem value="PRODUCT_MANAGER">Product manager</MenuItem>
+                                <MenuItem value="MAINTENANCE">Maintenance</MenuItem>
+                                <MenuItem value="FULLSTACK_DEVELOPER">Fullstack developer</MenuItem>
+                                <MenuItem value="BACKEND_DEVELOPER">Backend developer</MenuItem>
+                                <MenuItem value="FRONTEND_DEVELOPER">Frontend developer</MenuItem>
+                                <MenuItem value="UX/UI_DESIGNER">UX/UI designer</MenuItem>
+                            </Select>
+                                {touched.service && errors.service && (
+                                    <FormHelperText error id="standard-weight-helper-text--register">
+                                        {errors.service}
+                                    </FormHelperText>
+                                )}    
+                        </FormControl>
+                        <FormControl fullWidth>
+                            <InputLabel id="role">Role</InputLabel>
+                            
+                            <Select
+                                fullWidth
+                                label="Role"
+                                name="role"
+                                id="role"
+                                type="text"
+                                value={values.role}
+                                disabled={accessFrom==="USER-C" || account.user.role[0] !== "SUPER_ADMIN"}
+                                onBlur={handleBlur}
+                                onChange={handleChange}
+                                className={classes.loginInput}
+                                error={touched.role && Boolean(errors.role)}
+                            >                        
+                                {account.user.role[0] === "SUPER_ADMIN" && <MenuItem value="SUPER_ADMIN">Super Administrator</MenuItem>}
+                                <MenuItem value="ADMIN">Administrator</MenuItem>
+                                <MenuItem value="USER">User</MenuItem>
+                            </Select>
+                                {touched.role && errors.role && (
+                                    <FormHelperText error id="standard-weight-helper-text--register">
+                                        {errors.role}
+                                    </FormHelperText>
+                                )}    
+                        </FormControl>
                         { accessFrom==="USER-C" && (
                             <Grid direction="row" style={{display: 'flex', justifyContent:"space-between"}}>
                             <FormControl error={Boolean(touched.password && errors.password)} className={classes.loginInput}>

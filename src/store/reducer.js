@@ -5,6 +5,7 @@ import storage from 'redux-persist/lib/storage';
 // reducer import
 import customizationReducer from './customizationReducer';
 import accountReducer from './accountReducer';
+import socketReducer from './socketReducer';
 
 //-----------------------|| COMBINE REDUCER ||-----------------------//
 
@@ -16,6 +17,13 @@ const reducer = combineReducers({
             keyPrefix: 'berry-'
         },
         accountReducer
+    ),
+    socket: persistReducer(
+        {
+            key: 'socket',
+            storage,
+        },
+        socketReducer
     ),
     customization: customizationReducer
 });

@@ -32,6 +32,7 @@ import axios from 'axios';
 // project imports
 import useScriptRef from '../../../../hooks/useScriptRef';
 import AnimateButton from './../../../../ui-component/extended/AnimateButton';
+import { useSelector } from 'react-redux';
 // import { strengthColor, strengthIndicator } from '../../../../utils/password-strength';
 
 // assets
@@ -86,7 +87,7 @@ const RestRegister = ({ ...others }) => {
     const matchDownSM = useMediaQuery((theme) => theme.breakpoints.down('sm'));
     // const [showPassword, setShowPassword] = React.useState(false);
     const [checked, setChecked] = React.useState(true);
-
+    const account = useSelector(s => s.account)
     // const [strength, setStrength] = React.useState(0);
     // const [level, setLevel] = React.useState('');
 
@@ -217,7 +218,37 @@ const RestRegister = ({ ...others }) => {
                                 </FormHelperText>
                             )}
                         </FormControl>
-
+                        <FormControl fullWidth>
+                            <InputLabel id="role">Service</InputLabel>
+                            
+                            <Select
+                                fullWidth
+                                label="Service"
+                                name="service"
+                                id="service"
+                                type="text"
+                                value={values.service}
+                                disabled={account.user.role[0] !== "SUPER_ADMIN"}
+                                onBlur={handleBlur}
+                                onChange={handleChange}
+                                className={classes.loginInput}
+                                error={touched.service && Boolean(errors.service)}
+                            >                        
+                                <MenuItem value="HUMAN_RESOURCES">Human resources manager</MenuItem>
+                                <MenuItem value="GRAPHIC_DESIGNER">Graphic designer</MenuItem>
+                                <MenuItem value="PRODUCT_MANAGER">Product manager</MenuItem>
+                                <MenuItem value="MAINTENANCE">Maintenance</MenuItem>
+                                <MenuItem value="FULLSTACK_DEVELOPER">Fullstack developer</MenuItem>
+                                <MenuItem value="BACKEND_DEVELOPER">Backend developer</MenuItem>
+                                <MenuItem value="FRONTEND_DEVELOPER">Frontend developer</MenuItem>
+                                <MenuItem value="UX/UI_DESIGNER">UX/UI designer</MenuItem>
+                            </Select>
+                                {touched.service && errors.service && (
+                                    <FormHelperText error id="standard-weight-helper-text--register">
+                                        {errors.service}
+                                    </FormHelperText>
+                                )}    
+                        </FormControl>
                         <FormControl fullWidth>
                             <InputLabel id="role">Role</InputLabel>
                             

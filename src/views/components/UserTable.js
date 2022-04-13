@@ -1,15 +1,17 @@
 import React from 'react';
-import {DataGrid} from "@material-ui/data-grid"
+import {DataGrid, GridSearchIcon} from "@material-ui/data-grid"
 import moment from 'moment'
 import axios from 'axios'
+import PropTypes from 'prop-types'
 import configData from "../../config"
-import { Box, Button,Container,Grid, Alert, AlertTitle, Dialog, DialogTitle, DialogContent, Typography, DialogActions  } from '@material-ui/core'
+import { Box,IconButton,Button,Container,Grid, Alert, AlertTitle, Dialog, DialogTitle, DialogContent, Typography, DialogActions, TextField  } from '@material-ui/core'
 import { IconCheck, IconX, IconBackspace } from '@tabler/icons'
 import { makeStyles } from '@material-ui/styles';
 import MuiTypography from '@material-ui/core/Typography'
 import { Transition } from 'react-transition-group'
 import Form from "./Form"
 import { useHistory } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 
 const ConfirmDialog = (props) => {
@@ -42,7 +44,62 @@ const ConfirmDialog = (props) => {
   };
   
   
-
+  function escapeRegExp(value) {
+    return value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+  }
+  
+  function QuickSearchToolbar(props) {
+    return (
+      <Box
+        sx={{
+          p: 0.5,
+          pb: 0,
+        }}
+      >
+        <TextField
+          variant="standard"
+          value={props.value}
+          onChange={props.onChange}
+          placeholder="Search…"
+          InputProps={{
+            startAdornment: <GridSearchIcon fontSize="small" />,
+            endAdornment: (
+              <IconButton
+                title="Clear"
+                aria-label="Clear"
+                size="small"
+                style={{ visibility: props.value ? 'visible' : 'hidden' }}
+                onClick={props.clearSearch}
+              >
+                <IconX fontSize="small" />
+              </IconButton>
+            ),
+          }}
+          sx={{
+            width: {
+              xs: 1,
+              sm: 'auto',
+            },
+            m: (theme) => theme.spacing(1, 0.5, 1.5),
+            '& .MuiSvgIcon-root': {
+              mr: 0.5,
+            },
+            '& .MuiInput-underline:before': {
+              borderBottom: 1,
+              borderColor: 'divider',
+            },
+          }}
+        />
+      </Box>
+    );
+  }
+  
+QuickSearchToolbar.propTypes = {
+clearSearch: PropTypes.func.isRequired,
+onChange: PropTypes.func.isRequired,
+value: PropTypes.string.isRequired,
+};
+  
 
 
 
@@ -145,7 +202,13 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
         {
             field: 'email',
             headerName: 'Email',
-            width: 300,
+            width: 230,
+          
+        },
+        {
+            field: 'service',
+            headerName: 'Service',
+            width: 200,
           
         },
         {
@@ -170,7 +233,7 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
                         <Button
                             variant="contained"
                             color="primary"
-                            disabled={cellValues.row.role.includes("ADMIN")}
+                            disabled={!canEdit(cellValues)}
                             onClick={(event) => {
                                 handleEdit(event, cellValues);
                             }}
@@ -180,7 +243,7 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
                         <Button
                             variant="contained"
                             color="error"
-                            disabled={cellValues.row.role.includes("ADMIN")}
+                            disabled={!canEdit(cellValues)}
                             onClick={(event) => {
                                 setDeletedValues(cellValues)
                             }}
@@ -228,8 +291,6 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
         setIsEditing(false)
         setEditedUser(null)
     }
-
-
     
     React.useEffect(() => {
         if(is) {
@@ -239,8 +300,6 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
         }
 
     }, [is])
-
-
     
 
     React.useEffect(()=>{
@@ -249,7 +308,7 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
 
 
     const classes = useStyles()
-
+    const account = useSelector(s => s.account)
     const handleCellClick = (param, event) => {
         event.stopPropagation();
     }
@@ -283,6 +342,41 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
 
     }, [deleted, is])
 
+    const canEdit = (params) => {
+        if(account.user._id === params.row._id) {
+            return false
+        }
+        else if(
+            params.row.role.includes("SUPER_ADMIN")==false && 
+            params.row._id !== account.user._id && 
+            account.user.role.includes("SUPER_ADMIN")) {
+            return true
+        } else if (
+            account.user.role.includes("ADMIN") && params.row.role[0] !== "USER"){
+            return false
+        }
+        else {
+            return true
+        }
+    }
+
+    const [searchText, setSearchText] = React.useState('');
+    const [rows, setRows] = React.useState(data);
+  
+    const requestSearch = (searchValue) => {
+      setSearchText(searchValue);
+      const searchRegex = new RegExp(escapeRegExp(searchValue), 'i');
+      const filteredRows = data.filter((row) => {
+        return Object.keys(row).some((field) => {
+          return searchRegex.test(row[field].toString());
+        });
+      });
+      setRows(filteredRows);
+    };
+
+    React.useEffect(() => {
+        setRows(data);
+      }, [data]);
     return (
         <Box
             sx={{
@@ -333,6 +427,7 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
                 }
         </Transition>
 
+        { isEditing && 
         <Transition in={isEditing} timeout={{ 
             appear: 300,
             enter: 300,
@@ -357,22 +452,31 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
             
 
         </Transition>
-        <Transition in={!isEditing} timeout={{
+}
+        <Transition in={isEditing==false} timeout={{
             appear: 300,
             enter: 300,
             exit:100
         }} appear unmountOnExit>
             {
-                state => !isEditing && (
+                state => isEditing==false && (
                     <Container style={{...defaultStyle, ...transitionStyles[state]}}>
                         <DataGrid
                             autoHeight
+                            components={{Toolbar: QuickSearchToolbar}}
                             getRowId={row => row._id}
-                            rows={users}
+                            rows={rows}
                             columns={columns}
+                            componentsProps={{
+                                toolbar: {
+                                  value: searchText,
+                                  onChange: (event) => requestSearch(event.target.value),
+                                  clearSearch: () => requestSearch(''),
+                                },
+                              }}
                             pageSize={5}
-                            isCellEditable={(params) => !params.row.role.includes("ADMIN")}
-                            isRowSelectable={(params) => !params.row.role.includes("ADMIN")}
+                            isCellEditable={(params) => canEdit(params)}
+                            isRowSelectable={(params) => canEdit(params)}
                             checkboxSelection
                             onRowClick={handleRowClick}
                             onCellClick={handleCellClick}

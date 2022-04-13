@@ -6,6 +6,7 @@ import Usertable from "../../components/UserTable"
 
 import configData from '../../../config'
 import MainCard from '../../../ui-component/cards/MainCard'
+import { useSelector } from 'react-redux';
 
 
 const Management = () => {
@@ -24,6 +25,8 @@ const Management = () => {
         }
         fetchUsers()
     }, [])
+
+    const account = useSelector(s => s.account)
 
     React.useEffect(()=> {
         const fetchUsers = async () => {
@@ -45,19 +48,21 @@ const Management = () => {
 
     return (
         <MainCard title="User management">
-            <Grid item xs={12}>
-                <Grid container direction="column" alignItems="center" sx={{marginBottom:"1rem"}}>
-                    <Typography
-                        variant="subtitle1" 
-                        gutterBottom
-                        component={RouterLink}
-                        to="/register"
-                        sx={{ textDecoration: 'none' }}
-                    >
-                        Create an account
-                    </Typography>
+            {account.user.role[0] === "SUPER_ADMIN" && 
+                <Grid item xs={12}>
+                    <Grid container direction="column" alignItems="center" sx={{marginBottom:"1rem"}}>
+                        <Typography
+                            variant="subtitle1" 
+                            gutterBottom
+                            component={RouterLink}
+                            to="/register"
+                            sx={{ textDecoration: 'none' }}
+                        >
+                            Create an account
+                        </Typography>
+                    </Grid>
                 </Grid>
-            </Grid>
+            }
 
             <Grid container>
                 <Usertable data={users} setIsEdited={setIsEdited} setIsDeleted={setIsDeleted}/>

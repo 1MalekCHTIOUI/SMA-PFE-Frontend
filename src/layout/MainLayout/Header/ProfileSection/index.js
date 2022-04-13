@@ -112,6 +112,11 @@ const useStyles = makeStyles((theme) => ({
     badgeWarning: {
         backgroundColor: theme.palette.warning.dark,
         color: '#fff'
+    }, 
+    role: {
+        width: '100%',
+        marginBottom: '16px',
+        marginTop: '16px',
     }
 }));
 
@@ -125,7 +130,7 @@ const ProfileSection = () => {
     const dispatcher = useDispatch();
     const history = useHistory();
 
-    const [username, setUsername] = React.useState("");
+    const [data, setData] = React.useState({})
     const [sdm, setSdm] = React.useState(true);
     const [value, setValue] = React.useState('');
     const [notification, setNotification] = React.useState(false);
@@ -134,21 +139,12 @@ const ProfileSection = () => {
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef(null);
     const handleLogout = () => {
-        // axios
-        //     .post(configData.API_SERVER + 'users/logout', {token: `${account.token}`}, { headers: { Authorization: `${account.token}` } })
-        //     .then(function (response) {
-                
-                // Force the LOGOUT
-                //if (response.data.success) {
-                    dispatcher({ type: LOGOUT, payload: account.user._id });
-                //} else {
-                //    console.log('response - ', response.data.msg);
-                //}
-            // })
-            // .catch(function (error) {
-            //     console.log('error - ', error);
-            // });
+        dispatcher({ type: LOGOUT, payload: account.user._id });
     };
+    const onClickEditInformation = () => {
+        history.push({pathname: "/edit", state: {accessFrom: "USER-C", user: account.user}})
+        handleToggle()
+    }
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
     };
@@ -170,9 +166,14 @@ const ProfileSection = () => {
 
     React.useEffect(() => {
         if(account.user) {
-            setUsername(account?.user.first_name)
+            setData({
+                first_name: account?.user.first_name, 
+                service: account?.user.service.replaceAll("_", " "),
+                role: account?.user.role[0].replaceAll("_", " ")
+            })
         }
     }, [account.user]);
+
     return (
         <React.Fragment>
             <Chip
@@ -224,13 +225,15 @@ const ProfileSection = () => {
                                             <Grid item className={classes.flex}>
                                                 <Typography variant="h4">Good Morning,</Typography>
                                                 <Typography component="span" variant="h4" className={classes.name}>
-                                                    {username ? username : ""}
+                                                    {data ? data.first_name : ""}
                                                 </Typography>
                                             </Grid>
-                                            <Grid item>
-                                                <Typography variant="subtitle2">Project Admin</Typography>
+                                            <Grid item className={classes.role}>
+                                                {(data.role === "SUPER ADMIN" || data.role==="ADMIN") ? <Typography variant="h5">{`Platforme ${data.role}`}</Typography> : ""}
+                                                <Typography variant="subtitle2">{`${data.service ? data.service : ""}`}</Typography>
                                             </Grid>
                                         </Grid>
+                                        <Divider />
                                         <OutlinedInput
                                             className={classes.searchControl}
                                             id="input-search-profile"
@@ -251,50 +254,12 @@ const ProfileSection = () => {
                                         <PerfectScrollbar className={classes.ScrollHeight}>
                                             {/* <UpgradePlanCard /> */}
                                             <Divider />
-                                            <Card className={classes.card}>
-                                                <CardContent>
-                                                    <Grid container spacing={3} direction="column">
-                                                        <Grid item>
-                                                            <Grid item container alignItems="center" justifyContent="space-between">
-                                                                <Grid item>
-                                                                    <Typography variant="subtitle1">Start DND Mode</Typography>
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    <Switch
-                                                                        color="primary"
-                                                                        checked={sdm}
-                                                                        onChange={(e) => setSdm(e.target.checked)}
-                                                                        name="sdm"
-                                                                        size="small"
-                                                                    />
-                                                                </Grid>
-                                                            </Grid>
-                                                        </Grid>
-                                                        <Grid item>
-                                                            <Grid item container alignItems="center" justifyContent="space-between">
-                                                                <Grid item>
-                                                                    <Typography variant="subtitle1">Allow Notifications</Typography>
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    <Switch
-                                                                        checked={notification}
-                                                                        onChange={(e) => setNotification(e.target.checked)}
-                                                                        name="sdm"
-                                                                        size="small"
-                                                                    />
-                                                                </Grid>
-                                                            </Grid>
-                                                        </Grid>
-                                                    </Grid>
-                                                </CardContent>
-                                            </Card>
-                                            <Divider />
                                             <List component="nav" className={classes.navContainer}>
                                                 <ListItemButton
                                                     className={classes.listItem}
                                                     sx={{ borderRadius: customization.borderRadius + 'px' }}
                                                     selected={selectedIndex === 3}
-                                                    onClick={() => history.push({pathname: "/edit", state: {accessFrom: "USER-C", user: account.user}})}
+                                                    onClick={onClickEditInformation}
                                                 >
                                                     <ListItemIcon>
                                                         <IconSettings stroke={1.5} size="1.3rem" />

@@ -18,6 +18,7 @@ const UtilsShadow = Loadable(lazy(() => import('../views/utilities/Shadow')));
 const UtilsMaterialIcons = Loadable(lazy(() => import('../views/utilities/MaterialIcons')));
 const UtilsTablerIcons = Loadable(lazy(() => import('../views/utilities/TablerIcons')));
 const CompsChat = Loadable(lazy(() => import('../views/pages/messenger/chat')));
+const CompVideoChat = Loadable(lazy(() => import('../views/pages/messenger/videoChat')));
 const management = Loadable(lazy(() => import('../views/pages/management/index')));
 
 // sample page routing
@@ -41,6 +42,8 @@ const MainRoutes = () => {
                 '/icons/material-icons',
 
                 '/chat',
+
+                '/videochat/:roomCode',
                 
                 '/management',
 
@@ -59,6 +62,7 @@ const MainRoutes = () => {
                         <Route path="/icons/tabler-icons" component={UtilsTablerIcons} />
                         <Route path="/icons/material-icons" component={UtilsMaterialIcons} />
                         <Route path="/chat" component={CompsChat} />
+                        <Route path="/videochat/:roomCode" component={CompVideoChat} />
                         <Route path="/sample-page" component={SamplePage} />
                         <Route path="/edit" component={EditPage} />
                     </AuthGuard>

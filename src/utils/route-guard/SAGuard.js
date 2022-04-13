@@ -16,19 +16,19 @@ const AdminGuard = ({ children }) => {
     const account = useSelector((state) => state.account);
 
     const { user } = account;
-    const [isAdmin, setIsAdmin] = React.useState(null)
+    const [isSuperAdmin, setIsSuperAdmin] = React.useState(null)
 
 
     React.useEffect(() =>{
-        if(user && (user.role.includes("ADMIN") || user.role.includes("SUPER_ADMIN"))) {
-            setIsAdmin(true)
+        if(user && user.role.includes("SUPER_ADMIN")) {
+            setIsSuperAdmin(true)
         } else {
-            setIsAdmin(false)
+            setIsSuperAdmin(false)
         }
     },[])
 
 
-    if (isAdmin === false) {
+    if (isSuperAdmin === false) {
         return <Redirect to="/dashboard/default" />;
     }
 

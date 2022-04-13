@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 
-import {List, ListItem,ListItemText, ListItemIcon, Avatar, Badge } from '@material-ui/core';
+import {List,Container, ListItem,ListItemText, ListItemIcon, Avatar, Badge, Typography, Grid } from '@material-ui/core';
 import configData from '../../config'
 import { makeStyles, styled } from '@material-ui/styles';
 import { selectedGridRowsCountSelector } from '@material-ui/data-grid';
@@ -14,6 +14,17 @@ const useStyles = makeStyles({
         "&.active": {
             background:'red'
         }
+    },
+    badge: {
+        marginTop: "0.75rem",
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor:"#ff1744",
+        borderRadius: "3rem",
+        width: "6rem",
+        height: "1.5rem",
+        
     }
 
 })
@@ -57,7 +68,7 @@ const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
 export default function Room({users, onlineUsers, currentUser, mk}) {
     const [online, setOnline] = React.useState(null)
     const [array, setArray] = React.useState([])
-    const [selectedIndex, setSelectedIndex] = React.useState(0)
+    const [selectedIndex, setSelectedIndex] = React.useState(1)
     const [selectedId, setSelectedId] = React.useState()
     const classes = useStyles()
     React.useEffect(() => {
@@ -79,17 +90,20 @@ export default function Room({users, onlineUsers, currentUser, mk}) {
             setOnline(false)
         }
     }
-    
-    const handleClick = (e, id, index) => {
+    const [selectedKey, setSelectedKey] = React.useState(null)
+    const handleClick = (e, users, id, index) => {
+        setSelectedKey(mk)
         setSelectedIndex(index)
         setSelectedId(id)
+        console.log(selectedKey);
+        console.log(index);
     }
 
     return (
         <>
             {
                 users && users._id!==currentUser._id && (
-                    <ListItem selected={mk === selectedIndex} onClick={(e) => handleClick(e, users._id, mk)} button key={users.first_name} >
+                    <ListItem selected={selectedIndex} onClick={(e) => handleClick(e, users._id, mk)} button key={mk} >
                         <ListItemIcon>
                             { online ?
                                 <StyledBadgeOnline
@@ -109,7 +123,26 @@ export default function Room({users, onlineUsers, currentUser, mk}) {
                                 </StyledBadgeOffline>
                             }
                         </ListItemIcon>
-                        <ListItemText className={classes.items} primary={`${users.first_name} ${users.last_name}`} />
+                        <Grid container style={{display: 'flex', justifyContent: 'space-between'}}>
+                            <Grid>
+                                <ListItemText className={classes.items} primary={`${users.first_name} ${users.last_name}`} />
+                                <ListItemText className={classes.items}>
+                                    <Typography variant="subtitle2">
+                                        {users.service.replaceAll('_', ' ')}
+                                    </Typography>
+                                </ListItemText>                              
+                            </Grid>
+                            { users && (users.role[0]==="ADMIN" || users.role[0]==="SUPER_ADMIN") && (
+                                <div className={classes.badge}>
+                                    <Typography variant="subtitle2" color="#dfdfdf">
+                                            {users.role[0].replaceAll('_', ' ')}
+                                    </Typography> 
+                                </div>
+                            )} 
+
+                        </Grid>
+                        
+
                     </ListItem>
                 )
             }
