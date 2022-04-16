@@ -8,6 +8,7 @@ export const ACCOUNT_UPDATED = 'ACCOUNT_UPDATED';
 export const RECEIVING_CALL = 'RECEIVING_CALL';
 export const CALL_ACCEPTED = 'CALL_ACCEPTED';
 export const CALL_DECLINED = 'CALL_DECLINED';
+export const CLEAR_DATA = 'CLEAR_DATA';
 
 // action - customization reducer
 export const SET_MENU = '@customization/SET_MENU';

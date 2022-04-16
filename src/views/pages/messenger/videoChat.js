@@ -2,23 +2,36 @@ import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import Peer from "simple-peer";
 import styled from "styled-components";
-import {CircularProgress, Grid} from '@material-ui/core'
-import { useParams } from "react-router-dom";
-import { useHistory } from "react-router-dom";
-import { Button } from "antd";
+import {CircularProgress, Grid, Modal, Box, Button} from '@material-ui/core'
+import { useHistory, useLocation, useParams } from "react-router-dom";
+import Typography from '../../utilities/Typography';
+import MainCard from '../../../ui-component/cards/MainCard'
 const Container = styled.div`
     padding: 20px;
     display: flex;
     height: 100vh;
     width: 90%;
     margin: auto;
+    justify-content: space-evenly;
     flex-wrap: wrap;
 `;
 
 const StyledVideo = styled.video`
-    height: 40%;
-    width: 50%;
+    height: 30rem;
+    width: 30rem;
 `;
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    border: "none",
+    borderRadius: "0.25rem",
+    p: 4,
+};
 
 const Video = (props) => {
     const ref = useRef();
@@ -36,26 +49,25 @@ const Video = (props) => {
 
 
 const videoConstraints = {
-    height: window.innerHeight / 2,
-    width: window.innerWidth / 2
+    height: window.innerHeight,
+    width: window.innerWidth
 };
 
 const Room = (props) => {
     const {roomCode} = useParams()
     const [peers, setPeers] = useState([]);
-    const socketRef = useRef();
+    const socketRef = useRef(io("http://localhost:8900"));
     const userVideo = useRef();
     const peersRef = useRef([]);
     const roomID = roomCode
-
     React.useEffect(() => {
         return () => {
+            setJoinedUsers(0)
             window.location.reload(false)
         }
     },[])
     
     useEffect(() => {
-        socketRef.current = io.connect("http://localhost:8900");
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
             userVideo.current.srcObject = stream;
             socketRef.current.emit("join room", roomID);
@@ -78,16 +90,17 @@ const Room = (props) => {
                     peerID: payload.callerID,
                     peer,
                 })
-
                 setPeers(users => [...users, peer]);
             });
 
             socketRef.current.on("receiving returned signal", payload => {
                 const item = peersRef.current.find(p => p.peerID === payload.id);
                 item.peer.signal(payload.signal);
+                setJoinedUsers(joinedUsers+1)
             });
         })
     }, []);
+
 
     function createPeer(userToSignal, callerID, stream) {
         const peer = new Peer({
@@ -111,6 +124,7 @@ const Room = (props) => {
         })
 
         peer.on("signal", signal => {
+            setJoinedUsers(joinedUsers+1)
             socketRef.current.emit("returning signal", { signal, callerID })
         })
 
@@ -119,21 +133,64 @@ const Room = (props) => {
         return peer;
     }
     const history = useHistory()
+    const [joinedUsers, setJoinedUsers]= React.useState(0)
+
+    const [show, setShow] = React.useState(false)
+
+    React.useEffect(() => {
+        // console.log(peers);
+        // history.push("/chat")
+    }, [peers]);
+
+    const location = useLocation()
+    // const params = useParams()
+
+    React.useEffect(() => {
+        console.log(peers.length);
+        if(joinedUsers===1) {
+            setShow(true)
+            const timeId = setTimeout(() => {
+                setShow(false)
+              }, 3000)
+              return () => {
+                clearTimeout(timeId)
+              }
+        } else {
+            setShow(false)
+        }
+    }, [joinedUsers]);
+    React.useState(()=>{
+        if(location.state){
+            
+        } else {
+            history.push("/chat")
+        }
+    },[])
     return (
         <>
-            <Grid direction="row">
+            <Container>
+                <MainCard title="CURRENT">
                 <StyledVideo muted ref={userVideo} autoPlay playsInline />
+                </MainCard>
+                <Grid>{joinedUsers===0 && <CircularProgress/>}</Grid>
                 {peers.map((peer, index) => {
-                    if(peer.readable===false){
-                        console.log("USER DISCONNECTED")
-                    }
-                    else {
-                        console.log("USER CONNECTED")
-                        return peer.readable ? <Video muted key={index} peer={peer} /> : <CircularProgress />
-                    }
+                    return peer.readable ? <MainCard title="CURRENT"><Video muted key={index} peer={peer} /></MainCard> : console.log("LOADING");
                 })}
+
+            </Container>
+            <Modal
+                keepMounted
+                open={show}
+                aria-labelledby="keep-mounted-modal-title"
+                aria-describedby="keep-mounted-modal-description"
+            >
+                <Box sx={style}>
+                    <h3 align="center">User joined!</h3>
+                </Box>
+            </Modal>
+            <Grid justifyContent="center" direction="row">
+                <Button variant="outlined" color="error" onClick={()=>history.push("/chat")}>Hang UP</Button>
             </Grid>
-            <Button variant="outlined" color="error" onClick={()=>history.push("/chat")}>Hang UP</Button>
         </>
     );
 };

@@ -1,6 +1,6 @@
 // action - state management
 import { io } from 'socket.io-client';
-import { RECEIVING_CALL, CALL_ACCEPTED, CALL_DECLINED } from './actions';
+import { RECEIVING_CALL, CALL_ACCEPTED, CALL_DECLINED, CLEAR_DATA } from './actions';
 
 export const initialState = {
     isReceivingCall: false,
@@ -31,6 +31,13 @@ const socketReducer = (state = initialState, action) => {
                 ...state,
                 isReceivingCall: false,
                 message: "CALL DECLINED"
+            };
+        }
+        case CLEAR_DATA: {
+            return {
+                ...state,
+                isReceivingCall: false,
+                message: ""
             };
         }
         default: {

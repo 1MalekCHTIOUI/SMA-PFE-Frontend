@@ -15,7 +15,7 @@ import loader from "../../assets/images/planet.gif"
 import Videochat from '../pages/messenger/videoChat';
 import { Transition } from 'react-transition-group';
 import { useHistory, useParams } from 'react-router-dom';
-import { CALL_ACCEPTED, CALL_DECLINED, RECEIVING_CALL } from '../../store/actions';
+import { CALL_ACCEPTED, CALL_DECLINED, RECEIVING_CALL, CLEAR_DATA } from '../../store/actions';
 // import { ContextProvider } from '../../../utils/socket/SocketContext';
 
 const useStyles = makeStyles({
@@ -104,7 +104,7 @@ const Chat = ({setShowText}) => {
     const [ROOM_ID, setROOM_ID] = React.useState(null)
     // const [isReceivingCall, setIsReceivingCall] = React.useState(false)
     
-    const socket = React.useRef(io.connect("http://localhost:8900"))
+    const socket = React.useRef(io("http://localhost:8900"))
     const videoSocketRef = React.useRef();
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
@@ -113,7 +113,6 @@ const Chat = ({setShowText}) => {
     const userService = account.user.service
 
     React.useEffect(()=>{
-        videoSocketRef.current = io.connect("http://localhost:7000");
         socket.current.on("getMessage", data => {
             setArrivalMessage({
                 sender: data.senderId,
@@ -275,37 +274,42 @@ const Chat = ({setShowText}) => {
         return onlineUsers.some(user => user.userId === id)
     }
 
-    const getUserSocket = (id) => {
-        let socket = ""
-        onlineUsers.map(user => {
-            if(user.userId === id) {
-                socket = user.socketId
-            }
-        })
-        return socket
-    }
-    const getMySocket = () => {
-        let socket = ""
-        onlineUsers.map(user => {
-            if(user.userId === account.user._id) {
-                socket = user.socketId
-            }
-        })
-        return socket
-    }
+
     React.useEffect(()=>{
         scrollRef.current?.scrollIntoView({behavior: "smooth"})
     },[messages])
 
 
+    socket.current.on("getRoomID", data => setROOM_ID(data))
+
     React.useEffect(()=>{
+        socket.current.on("getCallerID", (data)=>{
+            setCallerId(data)
+        })
         socket.current.on("notif", data => {
+            console.log("receiving call");
             if(data.msg!==""){
                 dispatch({type: RECEIVING_CALL, payload: {isReceivingCall: true, message: data.msg}})
             }
         })
-        socket.current.on("getRoomID", data => setROOM_ID(data))
-    },[socket])
+    
+        socket.current.on("callAccepted", (acceptName, status) => {
+            console.log("call accepted");
+            dispatch({type: CALL_ACCEPTED})
+            socket.current.on("getRoomID", data => join(data))
+        })
+    
+        socket.current.on("callDeclined", (data) => {
+            console.log("call declined");
+            dispatch({type: CALL_DECLINED})
+            setDeclineInfo(data.msg)
+        })
+        return () => dispatch({type: CLEAR_DATA})
+    },[])
+
+
+    
+
 
 
     const handleCallButton = (val) => {
@@ -313,40 +317,37 @@ const Chat = ({setShowText}) => {
             caller: {firstName: account?.user.first_name, id: account?.user._id}, 
             id: val._id
         })
-        join()
-        set_StartCall(true)
     }
 
     const handleAnswer = () =>{
         dispatch({type: CALL_ACCEPTED})
-        // console.log(incomingCallData?.socket);
-        join()
+        socket.current.emit("acceptCall", {callerId: callerId, acceptName: `${account.user.first_name} ${account.user.last_name}`})
+        socket.current.on("getRoomID", data => join(data))
+ 
     }
-    const join = () => {
+
+    const join = (ROOM_ID) => {
         if(ROOM_ID!=null){
-            history.push(`/videochat/${ROOM_ID}`)
+            history.push({pathname: `/videochat/${ROOM_ID}`, state: {allowed: true}})
         }
     }
-    socket.current.on("getCallerID", (data)=>{
-        setCallerId(data)
-    })
+    
+
+
     const [callerId, setCallerId] = React.useState(null)
     const [declineInfo, setDeclineInfo] = React.useState(null)
 
     const handleHangup = () => {
-        callerId && socket.current.emit("declineCall", {callerId: callerId, declinerName: `${account.user.first_name} ${account.user.last_name}`})
-        dispatch({type: CALL_DECLINED})
+        if(callerId) {
+            socket.current.emit("declineCall", {callerId: callerId, declinerName: `${account.user.first_name} ${account.user.last_name}`})
+            dispatch({type: CALL_DECLINED})    
+        }
     }
-
-    socket.current.on("callDeclined", (data)=>{
-        setDeclineInfo(data.msg)
-    })
-
-
 
     const [showChat, setShowChat] = React.useState(true)
     const [inviteCode, setInviteCode] = React.useState(null)
     const {roomCode} = useParams()
+
     React.useEffect(()=>{
         setInviteCode(roomCode)
     },[])
@@ -364,7 +365,6 @@ const Chat = ({setShowText}) => {
                 setDeclineInfo(null)
                 setShow(false)
               }, 3000)
-              console.log(timeId);
               return () => {
                 clearTimeout(timeId)
               }
@@ -391,7 +391,7 @@ const Chat = ({setShowText}) => {
                             </Typography>
                             { callSocket?.isReceivingCall &&        
                                 <Container style={{display:"flex", justifyContent: "space-evenly"}} id="keep-mounted-modal-description" sx={{ mt: 2 }}>
-                                    <Button variant="outlined" color="success" onClick={handleAnswer}>Primary</Button>
+                                    <Button variant="outlined" color="success" onClick={handleAnswer}>Accept</Button>
                                     <Button variant="outlined" color="error" onClick={handleHangup}>Hangup</Button>
                                 </Container>
                             }
