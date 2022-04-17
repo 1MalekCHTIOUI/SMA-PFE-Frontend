@@ -16,6 +16,7 @@ import Videochat from '../pages/messenger/videoChat';
 import { Transition } from 'react-transition-group';
 import { useHistory, useParams } from 'react-router-dom';
 import { CALL_ACCEPTED, CALL_DECLINED, RECEIVING_CALL, CLEAR_DATA } from '../../store/actions';
+import { SocketContext } from '../../utils/socket/SocketContext';
 // import { ContextProvider } from '../../../utils/socket/SocketContext';
 
 const useStyles = makeStyles({
@@ -104,15 +105,20 @@ const Chat = ({setShowText}) => {
     const [ROOM_ID, setROOM_ID] = React.useState(null)
     // const [isReceivingCall, setIsReceivingCall] = React.useState(false)
     
-    const socket = React.useRef(io("http://localhost:8900"))
-    const videoSocketRef = React.useRef();
+    const socket = React.useRef()
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
     const userFirstName = account.user.first_name
     const userLastName = account.user.last_name
     const userService = account.user.service
 
+    React.useEffect(() => {
+        socket.current = io("http://localhost:8900")
+        return dispatch({type: CLEAR_DATA})
+    },[])
+
     React.useEffect(()=>{
+
         socket.current.on("getMessage", data => {
             setArrivalMessage({
                 sender: data.senderId,
@@ -264,10 +270,6 @@ const Chat = ({setShowText}) => {
             console.log(error);
         }
     }
-
-
-    const [selectedSocket, setSelectedSocket] = React.useState(null)
-
     
 
     const checkUserOnline = (id) => {
@@ -280,71 +282,8 @@ const Chat = ({setShowText}) => {
     },[messages])
 
 
-    socket.current.on("getRoomID", data => setROOM_ID(data))
+    const { handleCallButton } = React.useContext(SocketContext)
 
-    React.useEffect(()=>{
-        socket.current.on("getCallerID", (data)=>{
-            setCallerId(data)
-        })
-        socket.current.on("notif", data => {
-            console.log("receiving call");
-            if(data.msg!==""){
-                dispatch({type: RECEIVING_CALL, payload: {isReceivingCall: true, message: data.msg}})
-            }
-        })
-    
-        socket.current.on("callAccepted", (acceptName, status) => {
-            console.log("call accepted");
-            dispatch({type: CALL_ACCEPTED})
-            socket.current.on("getRoomID", data => join(data))
-        })
-    
-        socket.current.on("callDeclined", (data) => {
-            console.log("call declined");
-            dispatch({type: CALL_DECLINED})
-            setDeclineInfo(data.msg)
-        })
-        return () => dispatch({type: CLEAR_DATA})
-    },[])
-
-
-    
-
-
-
-    const handleCallButton = (val) => {
-        socket.current.emit("callNotif", {
-            caller: {firstName: account?.user.first_name, id: account?.user._id}, 
-            id: val._id
-        })
-    }
-
-    const handleAnswer = () =>{
-        dispatch({type: CALL_ACCEPTED})
-        socket.current.emit("acceptCall", {callerId: callerId, acceptName: `${account.user.first_name} ${account.user.last_name}`})
-        socket.current.on("getRoomID", data => join(data))
- 
-    }
-
-    const join = (ROOM_ID) => {
-        if(ROOM_ID!=null){
-            history.push({pathname: `/videochat/${ROOM_ID}`, state: {allowed: true}})
-        }
-    }
-    
-
-
-    const [callerId, setCallerId] = React.useState(null)
-    const [declineInfo, setDeclineInfo] = React.useState(null)
-
-    const handleHangup = () => {
-        if(callerId) {
-            socket.current.emit("declineCall", {callerId: callerId, declinerName: `${account.user.first_name} ${account.user.last_name}`})
-            dispatch({type: CALL_DECLINED})    
-        }
-    }
-
-    const [showChat, setShowChat] = React.useState(true)
     const [inviteCode, setInviteCode] = React.useState(null)
     const {roomCode} = useParams()
 
@@ -352,52 +291,10 @@ const Chat = ({setShowText}) => {
         setInviteCode(roomCode)
     },[])
 
-    const history = useHistory()
-
-    const [show, setShow] = React.useState(false)
-
-    React.useEffect(() => {
-
-        if(declineInfo!==null) {
-            setShow(true)
-            const timeId = setTimeout(() => {
-
-                setDeclineInfo(null)
-                setShow(false)
-              }, 3000)
-              return () => {
-                clearTimeout(timeId)
-              }
-        } else {
-            setShow(true)
-        }
-    }, [declineInfo]);
 
     return (
         <>     
             <MainCard title="Chat">
-                <div>
-                    <Modal
-                        className={classes.modal}
-                        keepMounted
-                        open={callSocket?.isReceivingCall || (declineInfo!==null && show)}
-                        aria-labelledby="keep-mounted-modal-title"
-                        aria-describedby="keep-mounted-modal-description"
-                    >
-                        <Box sx={style}>
-                            <Typography align="center" id="keep-mounted-modal-title" variant="h4" component="h2">
-                                {callSocket?.isReceivingCall && callSocket?.message}
-                                {declineInfo!==null && declineInfo}
-                            </Typography>
-                            { callSocket?.isReceivingCall &&        
-                                <Container style={{display:"flex", justifyContent: "space-evenly"}} id="keep-mounted-modal-description" sx={{ mt: 2 }}>
-                                    <Button variant="outlined" color="success" onClick={handleAnswer}>Accept</Button>
-                                    <Button variant="outlined" color="error" onClick={handleHangup}>Hangup</Button>
-                                </Container>
-                            }
-                        </Box>
-                    </Modal>
-                </div>
                 {inviteCode || startCall===false && (
                     <Grid container component={Paper} className={classes.chatSection}>
                         <Grid item xs={3} className={classes.borderRight500}>
@@ -433,9 +330,7 @@ const Chat = ({setShowText}) => {
                                         id="filter"
                                         type="text"
                                         value={filter}
-                                        // onBlur={handleBlur}
                                         onChange={handleFilter}
-                                        // className={classes.loginInput}
                                     >                        
                                     <MenuItem value="ALL">Show all</MenuItem>
                                     <MenuItem value="HUMAN_RESOURCES">Human resources manager</MenuItem>

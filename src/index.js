@@ -14,15 +14,18 @@ import config from './config';
 
 // style + assets
 import './assets/scss/style.scss';
-
+import {ContextProvider} from './utils/socket/SocketContext'
 //-----------------------|| REACT DOM RENDER  ||-----------------------//
 
 ReactDOM.render(
     <Provider store={store}>
         <PersistGate loading={null} persistor={persister}>
             <BrowserRouter basename={config.basename}>
-                <App />
+                <ContextProvider>
+                    <App />
+                </ContextProvider>
             </BrowserRouter>
+
         </PersistGate>
     </Provider>,
     document.getElementById('root')
