@@ -53,12 +53,30 @@ const videoConstraints = {
     width: window.innerWidth
 };
 
+const Modals = (props) => {
+    return <>
+        <Modal
+            keepMounted
+            open={props.show}
+            aria-labelledby="keep-mounted-modal-title"
+            aria-describedby="keep-mounted-modal-description"
+        >
+            <Box sx={style}>
+                <h3 align="center">{props.message}</h3>
+            </Box>
+        </Modal>
+        <Grid justifyContent="center" direction="row">
+        {props.allowed && <Button variant="outlined" color="error" onClick={()=>props.history.push("/chat")}>Hang UP</Button>}
+        </Grid>
+    </>
+}
 const Room = (props) => {
     const {roomCode} = useParams()
     const [peers, setPeers] = useState([]);
     const socketRef = useRef(io("http://localhost:8900"));
     const userVideo = useRef();
     const peersRef = useRef([]);
+    const location = useLocation()
     const roomID = roomCode
     React.useEffect(() => {
         return () => {
@@ -68,7 +86,8 @@ const Room = (props) => {
     },[])
     
     useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
+        
+        location.state && navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
             userVideo.current.srcObject = stream;
             socketRef.current.emit("join room", roomID);
             socketRef.current.on("all users", users => {
@@ -138,14 +157,6 @@ const Room = (props) => {
     const [show, setShow] = React.useState(false)
 
     React.useEffect(() => {
-        // console.log(peers);
-        // history.push("/chat")
-    }, [peers]);
-
-    const location = useLocation()
-    // const params = useParams()
-
-    React.useEffect(() => {
         console.log(peers.length);
         if(joinedUsers===1) {
             setShow(true)
@@ -159,12 +170,14 @@ const Room = (props) => {
             setShow(false)
         }
     }, [joinedUsers]);
+
     React.useState(()=>{
-        if(location.state){
-            
-        } else {
+        if(location.state){} 
+        else {
+            <Modals show={show} allowed={location.state} message="Your're not allowed!" />
             history.push("/chat")
         }
+
     },[])
     return (
         <>
@@ -172,25 +185,12 @@ const Room = (props) => {
                 <MainCard title="CURRENT">
                 <StyledVideo muted ref={userVideo} autoPlay playsInline />
                 </MainCard>
-                <Grid>{joinedUsers===0 && <CircularProgress/>}</Grid>
                 {peers.map((peer, index) => {
-                    return peer.readable ? <MainCard title="CURRENT"><Video muted key={index} peer={peer} /></MainCard> : console.log("LOADING");
+                    return peer.readable ? <MainCard title="CURRENT"><div>{joinedUsers===0 && <CircularProgress/>}</div><Video muted key={index} peer={peer} /></MainCard> : console.log("LOADING");
                 })}
-
+                <Modals show={show} allowed={location.state} history={history} message={"User joined!"} />
             </Container>
-            <Modal
-                keepMounted
-                open={show}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <h3 align="center">User joined!</h3>
-                </Box>
-            </Modal>
-            <Grid justifyContent="center" direction="row">
-                <Button variant="outlined" color="error" onClick={()=>history.push("/chat")}>Hang UP</Button>
-            </Grid>
+
         </>
     );
 };

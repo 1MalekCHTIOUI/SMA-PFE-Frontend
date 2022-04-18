@@ -18,12 +18,12 @@ const Modal_c = (props) => {
     return (
         <Modal
         keepMounted
-        open={props.isReceivingCall || props.callAccepted===true || props.callDeclined || props.show}
+        open={props.isReceivingCall || props.callAccepted || props.callDeclined || props.show}
         aria-labelledby="keep-mounted-modal-title"
         aria-describedby="keep-mounted-modal-description"
         >
             <Box sx={style}>
-                <h3>
+                <h3 align="center">
                     {props.isReceivingCall && props.callerMsg}
                     {props.declineInfo!==null && props.declineInfo}        
                 </h3>

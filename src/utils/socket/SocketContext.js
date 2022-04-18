@@ -2,8 +2,10 @@ import React, {createContext, useState, useRef, useEffect} from 'react'
 import {io} from 'socket.io-client'
 import {useHistory} from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import config from '../../config'
 const SocketContext = createContext()
-const socket = io('http://localhost:8900')
+
+const socket = io.connect('http://localhost:8900')
 
 const ContextProvider = ({children}) => {
     const history = useHistory()
@@ -16,19 +18,24 @@ const ContextProvider = ({children}) => {
     const [callDeclined, setCallDeclined] = useState(false)
     const [callerMsg, setCallerMsg] = useState("")
     const [isReceivingCall, setIsReceivingCall] = useState(false)
-
+    const [arrivalMessage, setArrivalMessage] = React.useState(null)
+    const [onlineUsers, setOnlineUsers] = React.useState([])
 
     React.useEffect(()=>{
-        if(account.token){
-            socket.emit("addUser", account.user._id)
-        }
+        socket.emit("addUser", account.user._id)
+        socket.on("getUsers", users => {
+            setOnlineUsers(users)
+        })
+    },[account.user])
+
+    React.useEffect(()=>{
 
         socket.on("getCallerID", (data)=>{
             setCallerId(data)
         })
 
         socket.on("notif", data => {
-            console.log("receing call");
+            console.log("receiving call");
             setCallerMsg(data.msg)
             setIsReceivingCall(true)
         })
@@ -48,12 +55,23 @@ const ContextProvider = ({children}) => {
             setDeclineInfo(data.msg)
         })
     
+        socket.on("getMessage", data => {
+            console.log("GET MESSAGE");
+            setArrivalMessage({
+                sender: data.senderId,
+                text: data.text,
+                createdAt: Date.now()
+            })
+        })
+
     },[socket])
+
 
     const cleanup = () => {
         console.log("clean");
         setCallDeclined(false)
     }
+
     const handleCallButton = (val) => {
         socket.emit("callNotif", {
             caller: {firstName: account?.user.first_name, id: account?.user._id}, 
@@ -62,6 +80,7 @@ const ContextProvider = ({children}) => {
     }
     const handleAnswer = () =>{
         setCallAccepted(true)
+        setIsReceivingCall(false)
         socket.emit("acceptCall", {callerId: callerId, acceptName: `${account.user.first_name} ${account.user.last_name}`})
 
     }
@@ -78,9 +97,17 @@ const ContextProvider = ({children}) => {
             socket.emit("declineCall", {callerId: callerId, declinerName: `${account.user.first_name} ${account.user.last_name}`})
         }
     }
+    const sendMessage = (senderId, receiverId, newMessage) => {
+        console.log(senderId, receiverId, newMessage);
+        socket.emit("sendMessage", {
+            senderId: senderId,
+            receiverId,
+            text: newMessage
+        })
+    }
     
     return (
-        <SocketContext.Provider value={{ isReceivingCall, callAccepted, declineInfo, callDeclined, callerMsg, ROOM_ID, join, cleanup, handleAnswer, handleHangup, handleCallButton }}>
+        <SocketContext.Provider value={{ isReceivingCall, arrivalMessage, onlineUsers, callAccepted, declineInfo, callDeclined, callerMsg, ROOM_ID, join,sendMessage, cleanup, handleAnswer, handleHangup, handleCallButton }}>
             {children}
         </SocketContext.Provider>
     )

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import axios from 'axios'
 import { io } from "socket.io-client"
 import { useDispatch, useSelector } from 'react-redux'
@@ -85,17 +85,15 @@ const style = {
     p: 4,
   };
 
-const Chat = ({setShowText}) => {
+const Chat = () => {
     const classes = useStyles()
-    const dispatch = useDispatch()
-    const callSocket = useSelector(s => s.socket)
     const [users, setUsers] = React.useState([])
     const [rooms, setRooms] = React.useState([])
     const [currentChat, setCurrentChat] = React.useState(null)
     const [messages, setMessages] = React.useState(null)
     const [newMessage, setNewMessage] = React.useState("")
-    const [onlineUsers, setOnlineUsers] = React.useState([])
-    const [arrivalMessage, setArrivalMessage] = React.useState(null)
+    // const [onlineUsers, setOnlineUsers] = React.useState([])
+    // const [arrivalMessage, setArrivalMessage] = React.useState(null)
     const [existInRoom, setExistInRoom] = React.useState(null)
     const [currentChatUser, setCurrentChatUser] = React.useState(null)
     const [id, setId] = React.useState("")
@@ -104,29 +102,27 @@ const Chat = ({setShowText}) => {
     const [filteredList, setFilteredList] = React.useState([])
     const [ROOM_ID, setROOM_ID] = React.useState(null)
     // const [isReceivingCall, setIsReceivingCall] = React.useState(false)
-    
-    const socket = React.useRef()
+
+    const {arrivalMessage, onlineUsers, sendMessage} = useContext(SocketContext)
+
+
+    // const socket = React.useRef(io("http://localhost:8900"))
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
     const userFirstName = account.user.first_name
     const userLastName = account.user.last_name
     const userService = account.user.service
 
-    React.useEffect(() => {
-        socket.current = io("http://localhost:8900")
-        return dispatch({type: CLEAR_DATA})
-    },[])
-
-    React.useEffect(()=>{
-
-        socket.current.on("getMessage", data => {
-            setArrivalMessage({
-                sender: data.senderId,
-                text: data.text,
-                createdAt: Date.now()
-            })
-        })
-    },[account.user])
+    // React.useEffect(()=>{
+    //     socket.current.on("getMessage", data => {
+    //         console.log("GET MESSAGE");
+    //         setArrivalMessage({
+    //             sender: data.senderId,
+    //             text: data.text,
+    //             createdAt: Date.now()
+    //         })
+    //     })
+    // },[])
 
     React.useEffect(()=>{
         setFilteredList(users.filter(user => user._id !== account.user._id))
@@ -152,12 +148,12 @@ const Chat = ({setShowText}) => {
         setMessages(prev => [...prev, arrivalMessage])
     },[arrivalMessage])
 
-    React.useEffect(()=>{
-        socket.current.emit("addUser", account.user._id)
-        socket.current.on("getUsers", users => {
-            setOnlineUsers(users)
-        })
-    },[account.user])
+    // React.useEffect(()=>{
+    //     socket.current.emit("addUser", account.user._id)
+    //     socket.current.on("getUsers", users => {
+    //         setOnlineUsers(users)
+    //     })
+    // },[account.user])
 
     // React.useEffect(()=>{
     //     console.log(onlineUsers);
@@ -237,6 +233,7 @@ const Chat = ({setShowText}) => {
     }
 
 
+
     React.useEffect(()=>{
         const getMessages = async () => {
             try {
@@ -257,11 +254,7 @@ const Chat = ({setShowText}) => {
             text: newMessage
         }
         const receiverId = currentChat.members.find(m => m !== account.user._id)
-        socket.current.emit("sendMessage", {
-            senderId: account.user._id,
-            receiverId,
-            text: newMessage
-        })
+        sendMessage(message.sender, receiverId, newMessage)
         try {
             const res = await axios.post(configData.API_SERVER+"messages", message)
             setMessages([...messages, res.data])
@@ -375,7 +368,7 @@ const Chat = ({setShowText}) => {
                                         messages && messages.map((m, i) => (
                                             <Message message={m} own={m.sender === account.user._id} key={i} mk={i}/>
                                         ))
-                                    : <Container className={classes.center}><img  src={loader} /></Container>
+                                    : <Container className={classes.center}><img src={loader} /></Container>
                                 }
                                 {
                                     messages?.length === 0 && currentChat && <Typography variant="subtitle2" align="center">You no conversation with this user, start now!</Typography>
@@ -384,6 +377,7 @@ const Chat = ({setShowText}) => {
                                 <div ref={scrollRef} />
                             </List>
                             <Divider />
+                            {currentChat && 
                             <Grid container style={{padding: '20px'}}>
                                 <Grid item xs={11}>
                                     <TextField 
@@ -397,6 +391,7 @@ const Chat = ({setShowText}) => {
                                     <Fab color="primary" aria-label="add" onClick={handleSubmit}><SendIcon /></Fab>
                                 </Grid>
                             </Grid>
+                            }
                         </Grid>
                     </Grid>
                 )}
