@@ -148,7 +148,7 @@ export default function Room({users, onlineUsers, currentUser, mk}) {
                 users && users._id!==currentUser._id && (
                     <Grid direction="row" style={{display: 'flex', position:"relative"}} onMouseEnter={handleMouseOver} onMouseLeave={handleMouseOut} >
                         <Grid direction="row" style={{display: 'flex', justifyContent:"space-between"}}>    
-                            <Card fullname={`${users.first_name} ${users.last_name}`} setShowCard={setShowCard} showCard={showCard} users={users}  />
+                            <Card fullname={`${users.first_name} ${users.last_name}`} setShowCard={setShowCard} showCard={showCard} users={users} online={online} />
                         </Grid>
                         <Grid item xs={12}>
                             <ListItem button key={mk} >                                    

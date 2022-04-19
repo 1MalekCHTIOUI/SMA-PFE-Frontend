@@ -1,5 +1,5 @@
 import { Box, Container, Fade, Grid, Modal, Typography } from '@material-ui/core';
-import {Facebook, GitHub, LinkedIn, AdminPanelSettings, Work, Close, Verified} from '@material-ui/icons';
+import {Facebook, GitHub, LinkedIn, AdminPanelSettings, Work, Close, Verified, CloudQueue, CloudOff} from '@material-ui/icons';
 import React from 'react';
 import moment from 'moment'
 import { makeStyles } from '@material-ui/styles';
@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
 
 }))
 
-const Card = ({fullname, users, showCard, setShowCard}) => {
+const Card = ({fullname, users, showCard, setShowCard, online}) => {
     const classes = useStyles()
 
     return (
@@ -42,6 +42,8 @@ const Card = ({fullname, users, showCard, setShowCard}) => {
                         <p className="front__text-para"><Work className="front-icons" />{capitalizeFirstLetter(users.service)}</p>
                         <p className="front__text-para"><Verified className="front-icons" />Joined: {moment(users.createdAt).format("D MMM YYYY")}</p>
                         {users && users?.role[0]!=="USER" && <p className="front__text-para"><AdminPanelSettings className="front-icons" />{capitalizeFirstLetter(users?.role[0])}</p>}
+                        {online && <p className="front__text-status" > <CloudQueue style={{color:"#00C853"}} className="front-icons"/> Online</p> }
+                        {!online && <p className="front__text-status" style={{color:"#F44336"}}> <CloudOff style={{color:"#F44336"}} className="front-icons"/> Offline</p> }
                         <span className="front__text-hover">Social media</span>
                     </div>
                     </div>
