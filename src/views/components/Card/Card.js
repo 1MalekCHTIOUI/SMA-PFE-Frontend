@@ -1,0 +1,66 @@
+import { Box, Container, Fade, Grid, Modal, Typography } from '@material-ui/core';
+import {Facebook, GitHub, LinkedIn, AdminPanelSettings, Work, Close, Verified} from '@material-ui/icons';
+import React from 'react';
+import moment from 'moment'
+import { makeStyles } from '@material-ui/styles';
+import {capitalizeFirstLetter, replaceDash} from '../../../utils/scripts'; 
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    bgcolor: '',
+    border: 'none',
+    outline:'none',
+    p: 4,
+};
+
+const useStyles = makeStyles(theme => ({
+
+}))
+
+const Card = ({fullname, users, showCard, setShowCard}) => {
+    const classes = useStyles()
+
+    return (
+        <Modal style={{outline: "none"}}
+            open={showCard}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+            >
+
+            <Fade in={showCard}>
+            <Box sx={style}>
+            <Close style={{cursor:"pointer", color:"white"}} onClick={() => setShowCard(false)}/>
+            <div className="outer-div">
+                <div className="inner-div">
+                    <div className="front">
+                    <div className="front__bkg-photo"></div>
+                    <div className="front__face-photo"></div>
+                    <div className="front__text">
+                        <h3 className="front__text-header">{fullname}</h3>
+                        <p className="front__text-para"><Work className="front-icons" />{capitalizeFirstLetter(users.service)}</p>
+                        <p className="front__text-para"><Verified className="front-icons" />Joined: {moment(users.createdAt).format("D MMM YYYY")}</p>
+                        {users && users?.role[0]!=="USER" && <p className="front__text-para"><AdminPanelSettings className="front-icons" />{capitalizeFirstLetter(users?.role[0])}</p>}
+                        <span className="front__text-hover">Social media</span>
+                    </div>
+                    </div>
+                    <div className="back">
+                    <div className="social-media-wrapper">
+                        <a href="#" className="social-icon"><GitHub /></a>
+                        <a href="#" className="social-icon"><LinkedIn /></a>
+                        <a href="#" className="social-icon"><Facebook /></a>
+                    </div>
+                    </div>
+
+                </div>
+            </div>
+
+            </Box>
+            </Fade>
+            </Modal>
+
+    )
+}
+
+export default Card;

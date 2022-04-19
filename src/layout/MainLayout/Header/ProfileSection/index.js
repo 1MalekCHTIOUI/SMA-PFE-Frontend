@@ -229,7 +229,7 @@ const ProfileSection = () => {
                                                 </Typography>
                                             </Grid>
                                             <Grid item className={classes.role}>
-                                                {(data.role === "SUPER ADMIN" || data.role==="ADMIN") ? <Typography variant="h5">{`Platforme ${data.role}`}</Typography> : ""}
+                                                {(data.role === "SUPER ADMIN" || data.role==="ADMIN") ? <Typography variant="h5">{`${data.role}`}</Typography> : ""}
                                                 <Typography variant="subtitle2">{`${data.service ? data.service : ""}`}</Typography>
                                             </Grid>
                                         </Grid>

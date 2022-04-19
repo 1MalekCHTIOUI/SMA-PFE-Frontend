@@ -100,7 +100,7 @@ const useStyles = makeStyles((theme) => ({
 
 //===========================|| DASHBOARD DEFAULT - EARNING CARD ||===========================//
 
-const EarningCard = ({ isLoading }) => {
+const EarningCard = ({ isLoading, onlineUsers, roles }) => {
     const classes = useStyles();
 
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -112,67 +112,28 @@ const EarningCard = ({ isLoading }) => {
     const handleClose = () => {
         setAnchorEl(null);
     };
-
+    // console.log(roles);
     return (
         <React.Fragment>
             {isLoading ? (
                 <SkeletonEarningCard />
             ) : (
                 <MainCard border={false} className={classes.card} contentClass={classes.content}>
-                    <Grid container direction="column">
-                        <Grid item>
-                            <Grid container justifyContent="space-between">
-                                <Grid item>
-                                    <Avatar variant="rounded" className={classes.avatar}>
-                                        <img src={EarningIcon} alt="Notification" />
-                                    </Avatar>
-                                </Grid>
-                                <Grid item>
-                                    <Avatar
-                                        variant="rounded"
-                                        className={classes.avatarRight}
-                                        aria-controls="menu-earning-card"
-                                        aria-haspopup="true"
-                                        onClick={handleClick}
-                                    >
-                                        <MoreHorizIcon fontSize="inherit" />
-                                    </Avatar>
-                                    <Menu
-                                        id="menu-earning-card"
-                                        anchorEl={anchorEl}
-                                        keepMounted
-                                        open={Boolean(anchorEl)}
-                                        onClose={handleClose}
-                                        variant="selectedMenu"
-                                        anchorOrigin={{
-                                            vertical: 'bottom',
-                                            horizontal: 'right'
-                                        }}
-                                        transformOrigin={{
-                                            vertical: 'top',
-                                            horizontal: 'right'
-                                        }}
-                                    >
-                                        <MenuItem onClick={handleClose}>
-                                            <GetAppTwoToneIcon fontSize="inherit" className={classes.menuItem} /> Import Card
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <FileCopyTwoToneIcon fontSize="inherit" className={classes.menuItem} /> Copy Data
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <PictureAsPdfTwoToneIcon fontSize="inherit" className={classes.menuItem} /> Export
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <ArchiveTwoToneIcon fontSize="inherit" className={classes.menuItem} /> Archive File
-                                        </MenuItem>
-                                    </Menu>
-                                </Grid>
-                            </Grid>
-                        </Grid>
                         <Grid item>
                             <Grid container alignItems="center">
-                                <Grid item>
-                                    <Typography className={classes.cardHeading}>$500.00</Typography>
+                                <Grid container>
+                                    <Grid item style={{display: 'flex', justifyContent:'space-evenly'}}>
+                                        <Typography className={classes.cardHeading} style={{ borderRight: '0.1em solid grey', paddingRight:"0.5rem", borderRadius: "1rem"}}>{onlineUsers.length}</Typography>
+                                        <Grid container style={{display: "block", margin:"auto"}}>
+                                            {
+                                                roles.map(role => {
+                                                    return <div style={{display: "flex", justifyContent: "center"}}>
+                                                        <Typography className={classes.subHeading}>+ {role.count + " "+ role.role}</Typography>
+                                                    </div> 
+                                                })
+                                            }
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
                                 <Grid item>
                                     <Avatar className={classes.avatarCircle}>
@@ -182,9 +143,8 @@ const EarningCard = ({ isLoading }) => {
                             </Grid>
                         </Grid>
                         <Grid item sx={{ mb: 1.25 }}>
-                            <Typography className={classes.subHeading}>Total Earning</Typography>
+                            <Typography className={classes.subHeading}>Online Users</Typography>
                         </Grid>
-                    </Grid>
                 </MainCard>
             )}
         </React.Fragment>

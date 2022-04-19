@@ -22,10 +22,13 @@ const ContextProvider = ({children}) => {
     const [onlineUsers, setOnlineUsers] = React.useState([])
 
     React.useEffect(()=>{
-        socket.emit("addUser", account.user._id)
-        socket.on("getUsers", users => {
-            setOnlineUsers(users)
-        })
+        if(account.token){
+            socket.emit("addUser", account.user._id)
+            socket.on("getUsers", users => {
+                setOnlineUsers(users)
+            })
+        }
+
     },[account.user])
 
     React.useEffect(()=>{
