@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 
-import {List,Container, ListItem,ListItemText, ListItemIcon, Avatar, Badge, Typography, Grid, Menu, MenuItem, Divider } from '@material-ui/core';
+import {List,Container,CircularProgress, ListItem,ListItemText, ListItemIcon, Avatar, Badge, Typography, Grid, Menu, MenuItem, Divider, Button } from '@material-ui/core';
 import configData from '../../config'
 import { makeStyles, styled } from '@material-ui/styles';
 import { selectedGridRowsCountSelector } from '@material-ui/data-grid';
@@ -81,10 +81,8 @@ const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
   }));
 
 
-export default function Room({users, onlineUsers, currentUser, mk}) {
+export default function Room({users, onlineUsers, currentUser, mk, group}) {
     const [online, setOnline] = React.useState(null)
-    const [array, setArray] = React.useState([])
-    const [selectedIndex, setSelectedIndex] = React.useState(1)
     const [isHovering, setIsHovering] = React.useState(false)
     const classes = useStyles()
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -98,7 +96,7 @@ export default function Room({users, onlineUsers, currentUser, mk}) {
     };
 
     React.useEffect(() => {
-        onlineUsers && onlineUsers.map(user => {
+            !group && onlineUsers && onlineUsers.map(user => {
             if(currentUser._id !== user.userId) {
                 handleOnline(user.userId === users._id)
             }
@@ -116,34 +114,33 @@ export default function Room({users, onlineUsers, currentUser, mk}) {
             setOnline(false)
         }
     }
-    // const handleClick = (e, users, id, index) => {
-    //     setSelectedKey(mk)
-    //     setSelectedIndex(index)
-    //     setSelectedId(id)
-    //     console.log(selectedKey);
-    //     console.log(index);
-    // }
+
     const handleMouseOver = () => {
-        console.log("hover");
         setIsHovering(true);
     };
-    
-    // React.useEffect(() => {
-    //     console.log(menuActive ? "active" : "not active");
-    // },[menuActive])
+
     const handleMouseOut = () => {
-        console.log("no hover");
         setIsHovering(false);
     };
     const [showCard, setShowCard] = React.useState(false)
     const showProfile = () => {
-        console.log(users);
         setShowCard(true)
         return () => setShowCard(false)
     }
 
     return (
         <>
+            {!users && group && group.type==='PUBLIC' && (
+                <Grid item xs={12}>
+                    <ListItem button>
+                        <ListItemIcon>
+                            <Avatar alt={group.name} src=" " />
+                        </ListItemIcon>
+                        <ListItemText className={classes.items} primary={group.name} />
+                    </ListItem>
+                </Grid>
+  
+            )}
             {
                 users && users._id!==currentUser._id && (
                     <Grid direction="row" style={{display: 'flex', position:"relative"}} onMouseEnter={handleMouseOver} onMouseLeave={handleMouseOut} >

@@ -17,6 +17,7 @@ import { Transition } from 'react-transition-group';
 import { useHistory, useParams } from 'react-router-dom';
 import { CALL_ACCEPTED, CALL_DECLINED, RECEIVING_CALL, CLEAR_DATA } from '../../store/actions';
 import { SocketContext } from '../../utils/socket/SocketContext';
+import config from '../../config';
 // import { ContextProvider } from '../../../utils/socket/SocketContext';
 
 const useStyles = makeStyles({
@@ -35,7 +36,7 @@ const useStyles = makeStyles({
     },
     messageArea: {
         height: '70vh',
-        overflowY: 'auto'
+        overflowY: 'scroll'
     },
     items: {
         marginLeft:"0.1rem",
@@ -50,8 +51,16 @@ const useStyles = makeStyles({
         "&:hover": {
             cursor: "pointer",
         }
+    },
+    spaceBetween: {
+        display: 'flex',
+        justifyContent: 'space-evenly',
+        alignItems:"center",
+        padding:"10px"
+    }, 
+    paddingBottom: {
+        paddingBottom:"20px"
     }
-
 });
 
 const transitionStyles = {
@@ -83,7 +92,37 @@ const style = {
     border: "none",
     borderRadius: "0.25rem",
     p: 4,
-  };
+};
+
+const ModalC = ({groupName, setGroupName, handleChange, classes, openMenu, setOpenMenu, handleClose, createGroup}) => {
+
+    return <Modal
+        open={openMenu}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        >
+        <Box sx={style}>
+
+            <Typography className={classes.spaceBetween} id="modal-modal-title" variant="h6" component="h2">
+            Create a group chat
+            </Typography>
+
+            <TextField 
+                id="outlined-basic-email" 
+                label="Group name" 
+                variant="outlined"
+                value={groupName}
+                onChange={handleChange}
+                fullWidth />
+
+            <Container className={classes.spaceBetween}>
+                <Button variant="outlined" color="primary" onClick={createGroup}>Create</Button>
+                <Button variant="outlined" color="error" onClick={()=>{setOpenMenu(false);setGroupName("")}}>Go back</Button>
+            </Container>
+        </Box>
+        </Modal>
+}
 
 const Chat = () => {
     const classes = useStyles()
@@ -92,8 +131,6 @@ const Chat = () => {
     const [currentChat, setCurrentChat] = React.useState(null)
     const [messages, setMessages] = React.useState(null)
     const [newMessage, setNewMessage] = React.useState("")
-    // const [onlineUsers, setOnlineUsers] = React.useState([])
-    // const [arrivalMessage, setArrivalMessage] = React.useState(null)
     const [existInRoom, setExistInRoom] = React.useState(null)
     const [currentChatUser, setCurrentChatUser] = React.useState(null)
     const [id, setId] = React.useState("")
@@ -101,28 +138,21 @@ const Chat = () => {
     const [filter, setFilter] = React.useState("")
     const [filteredList, setFilteredList] = React.useState([])
     const [ROOM_ID, setROOM_ID] = React.useState(null)
-    // const [isReceivingCall, setIsReceivingCall] = React.useState(false)
+    const [name, setName] = React.useState('');
+    const [foundUsers, setFoundUsers] = React.useState(null);
+    const [inviteCode, setInviteCode] = React.useState(null)
+    const [groupName, setGroupName] = React.useState('')
+    
+    const [openMenu, setOpenMenu] = React.useState(false)
 
-    const {arrivalMessage, onlineUsers, sendMessage} = useContext(SocketContext)
-
-
-    // const socket = React.useRef(io("http://localhost:8900"))
+    const {arrivalMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
+
+    const {roomCode} = useParams()
     const userFirstName = account.user.first_name
     const userLastName = account.user.last_name
     const userService = account.user.service
-
-    // React.useEffect(()=>{
-    //     socket.current.on("getMessage", data => {
-    //         console.log("GET MESSAGE");
-    //         setArrivalMessage({
-    //             sender: data.senderId,
-    //             text: data.text,
-    //             createdAt: Date.now()
-    //         })
-    //     })
-    // },[])
 
     React.useEffect(()=>{
         setFilteredList(users.filter(user => user._id !== account.user._id))
@@ -130,6 +160,10 @@ const Chat = () => {
 
     const handleFilter = (e) => {
         setFilter(e.target.value)
+    }
+
+    const handleChange = (e) => {
+        setGroupName(e.target.value)
     }
 
     React.useEffect(()=>{
@@ -147,17 +181,6 @@ const Chat = () => {
         currentChat?.members.includes(arrivalMessage.sender) && 
         setMessages(prev => [...prev, arrivalMessage])
     },[arrivalMessage])
-
-    // React.useEffect(()=>{
-    //     socket.current.emit("addUser", account.user._id)
-    //     socket.current.on("getUsers", users => {
-    //         setOnlineUsers(users)
-    //     })
-    // },[account.user])
-
-    // React.useEffect(()=>{
-    //     console.log(onlineUsers);
-    // },[onlineUsers])
 
     React.useEffect(()=>{
         async function fetchUsers() {
@@ -204,6 +227,8 @@ const Chat = () => {
     },[existInRoom])
 
     const userHasRoom = async (user) => {
+        console.log("userHasRoom called");
+
         try {
             setId(user._id)
             setCurrentChatUser(user)
@@ -212,7 +237,7 @@ const Chat = () => {
                 console.log("No room found");
             }
             const resp = res.data.map(room => {
-                if(room.members.includes(account.user._id)){
+                if(room.members.includes(account.user._id) && room.type==='PRIVATE'){
                     setCurrentChat(room)
                     return true
                 }
@@ -233,9 +258,9 @@ const Chat = () => {
     }
 
 
-
     React.useEffect(()=>{
         const getMessages = async () => {
+            console.log("Get messages");
             try {
                 const res = await axios.get(configData.API_SERVER + "messages/" + currentChat?._id)
                 setMessages(res.data)
@@ -264,30 +289,92 @@ const Chat = () => {
         }
     }
     
-
     const checkUserOnline = (id) => {
         return onlineUsers.some(user => user.userId === id)
     }
-
 
     React.useEffect(()=>{
         scrollRef.current?.scrollIntoView({behavior: "smooth"})
     },[messages])
 
 
-    const { handleCallButton } = React.useContext(SocketContext)
-
-    const [inviteCode, setInviteCode] = React.useState(null)
-    const {roomCode} = useParams()
-
     React.useEffect(()=>{
         setInviteCode(roomCode)
     },[])
 
+    
+    React.useEffect(()=>{
+        setFoundUsers(filteredList)
+    }, [filteredList])
 
+
+
+    const searchFilter = (e) => {
+      const keyword = e.target.value;
+      if (keyword !== '') {
+        const results = foundUsers.filter((user) => {
+          return user.first_name.toLowerCase().startsWith(keyword.toLowerCase());
+        });
+        setFoundUsers(results);
+
+      } else {
+        setFoundUsers(filteredList);
+      }
+
+      setName(keyword);
+    };
+    // const [newGroup, setNewGroup] = useState(null)
+    const createGroup = async () => {
+        const data = {
+            name: groupName,
+            type: "PUBLIC"
+        }
+        try{
+            await axios.post(config.API_SERVER+"rooms/newGroup", data)
+            // setNewGroup(group.data);
+
+        }catch(e){console.log(e)}
+    }
+
+    const [userGroups, setUserGroups] = React.useState([])
+
+    React.useEffect(()=>{
+        const getUserGroups = async() => {
+            console.log("getUserGroups called");
+            try {
+                const res = await axios.get(configData.API_SERVER + "rooms/" + account.user._id)
+                res.data.map(room => {
+                    if(room.type==='PUBLIC'){
+                        if(userGroups.length > 0) {
+                            userGroups.map(item => {
+                                if (item._id !== room._id) {
+                                    setUserGroups([...userGroups, room])
+                                }
+                            })
+                        } else {
+                            setUserGroups([...userGroups, room])
+                        }
+
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        getUserGroups()
+    },[account])
+    const getGroupRoom = (group) => {
+        console.log(group._id);
+        setCurrentChat(group)
+    }
+
+    React.useEffect(() => {
+        console.log(currentChat);
+    }, [currentChat])
     return (
         <>     
             <MainCard title="Chat">
+                {<ModalC handleChange={handleChange} setGroupName={setGroupName} groupName={groupName} classes={classes} setOpenMenu={setOpenMenu} createGroup={createGroup} openMenu={openMenu}/>}
                 {inviteCode || startCall===false && (
                     <Grid container component={Paper} className={classes.chatSection}>
                         <Grid item xs={3} className={classes.borderRight500}>
@@ -308,9 +395,19 @@ const Chat = () => {
                             
                                 </ListItem>
                             </List>
+                            <Grid item xs={12} style={{padding: '10px'}}>
+                                <Button variant="outlined" onClick={()=>setOpenMenu(true)}>Create Group Chat</Button>
+                            </Grid>
                             <Divider />
                             <Grid item xs={12} style={{padding: '10px'}}>
-                                <TextField id="outlined-basic-email" label="Search" variant="outlined" fullWidth />
+                                <TextField 
+                                    id="outlined-basic-email" 
+                                    label="Search" 
+                                    variant="outlined" 
+                                    value={name} 
+                                    className={classes.select}
+                                    onChange={searchFilter} 
+                                    fullWidth />
                             </Grid>
                             <Divider />
                             <Grid item xs={12} style={{padding: '10px'}}>
@@ -338,18 +435,33 @@ const Chat = () => {
                                 </FormControl>
                                                             
                             </Grid>
-                                {filteredList.map((user, index) => (
+                                <Divider />
+                                <Typography variant="overline">Groups</Typography>
+                                <Container className={classes.center}>
+                                    {userGroups.length===0 &&<Typography variant="subtitle2">No groups</Typography> }
+                                </Container>
+                                {userGroups?.map(group => (
+                                    <List onClick={()=>getGroupRoom(group)}>
+                                        <Room
+                                            group={group}
+                                            currentUser={account.user} />
+                                    </List>
+                                ))}
+
+
+                                <Divider />
+                                <Typography variant="overline">Users</Typography>
+                                {foundUsers?.map((user, index) => (
                                     <List onClick={()=>userHasRoom(user)}>
-                                        <Room 
-                                            users={user} 
-                                            room={rooms} 
+                                        <Room
+                                            users={user}
+                                            room={rooms}
                                             onlineUsers={onlineUsers}
-                                            currentUser={account.user} 
-                                            mk={index} 
+                                            currentUser={account.user}
+                                            mk={index}
                                             key={index}/>
                                     </List>
-                                ))
-                            }
+                                ))}
                         </Grid>
                         <Grid item xs={9}>
                             {
@@ -362,11 +474,11 @@ const Chat = () => {
                             }
 
                             <Divider />
-                            <List className={classes.messageArea}>
+                            <Container className={classes.messageArea}>
                                 {
                                     currentChat? 
                                         messages && messages.map((m, i) => (
-                                            <Message message={m} own={m.sender === account.user._id} key={i} mk={i}/>
+                                            <Message message={m} own={m.sender === account.user._id} type={currentChat.type} key={i} mk={i}/>
                                         ))
                                     : <Container className={classes.center}><img src={loader} /></Container>
                                 }
@@ -375,7 +487,7 @@ const Chat = () => {
 
                                 }
                                 <div ref={scrollRef} />
-                            </List>
+                            </Container>
                             <Divider />
                             {currentChat && 
                             <Grid container style={{padding: '20px'}}>
