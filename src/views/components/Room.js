@@ -127,11 +127,17 @@ export default function Room({users, onlineUsers, currentUser, mk, group}) {
         setShowCard(true)
         return () => setShowCard(false)
     }
+    const [loading, setLoading] = React.useState(true)
+
+    React.useEffect(()=>{
+        setLoading(false)
+        // console.log(group);
+    }, [group])
 
     return (
         <>
-            {!users && group && group.type==='PUBLIC' && (
-                <Grid item xs={12}>
+            {group && (
+                <Grid item>
                     <ListItem button>
                         <ListItemIcon>
                             <Avatar alt={group.name} src=" " />
@@ -139,8 +145,8 @@ export default function Room({users, onlineUsers, currentUser, mk, group}) {
                         <ListItemText className={classes.items} primary={group.name} />
                     </ListItem>
                 </Grid>
-  
             )}
+            {/* {loading && <CircularProgress />} */}
             {
                 users && users._id!==currentUser._id && (
                     <Grid direction="row" style={{display: 'flex', position:"relative"}} onMouseEnter={handleMouseOver} onMouseLeave={handleMouseOut} >

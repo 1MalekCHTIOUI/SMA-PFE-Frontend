@@ -10,7 +10,7 @@ const useStyles = makeStyles({
 
     freindMessageContainer: {
         margin: "0 100 0 auto",
-        width:"30vw",
+        width:"30%",
         // minWidth:"fit-content",
         backgroundColor: "#d6d6d6",
         padding:"0.3rem",
@@ -18,7 +18,7 @@ const useStyles = makeStyles({
     },
     ownMessageContainer: {
         margin: "0 0 0 auto",
-        width:"30vw",
+        width:"30%",
         // minWidth:"fit-content",
         backgroundColor: "#b0d7ff",
         padding:"0.3rem",
@@ -29,6 +29,9 @@ const useStyles = makeStyles({
         display:"flex", 
         justifyContent:"space-evenly",
         alignItems: "center",
+    },
+    message: {
+        wordBreak: 'break-all',
     }
 
 })
@@ -63,7 +66,7 @@ const Message = ({message, own, mk, type}) => {
                             </Grid>
                         }
  
-                        <Grid item xs={12}>
+                        <Grid item className={classes.message}>
                             <ListItemText align={own ? "right" : "left"} primary={message.text}></ListItemText>
                         </Grid>
                         <Grid item xs={12}>

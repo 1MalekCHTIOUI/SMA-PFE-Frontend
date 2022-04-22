@@ -4,9 +4,11 @@ import { io } from "socket.io-client"
 import { useDispatch, useSelector } from 'react-redux'
 import { v4 as uuidV4 } from 'uuid'
 import { makeStyles } from '@material-ui/styles';
-import {Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Container, MenuItem, Select, FormControl, InputLabel, Button, Modal } from '@material-ui/core';
+import {Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Container, MenuItem, Select, FormControl, InputLabel, Button, Modal, Checkbox, OutlinedInput } from '@material-ui/core';
+import {Alert, AlertTitle, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core'
+
 import SendIcon from '@material-ui/icons/Send';
-import {VideoCall} from '@material-ui/icons';
+import {Add, Check, PersonRemove, Remove, VideoCall, Delete} from '@material-ui/icons';
 import Room from './Room'
 import Message from './Message'
 import configData from '../../config'
@@ -60,6 +62,19 @@ const useStyles = makeStyles({
     }, 
     paddingBottom: {
         paddingBottom:"20px"
+    },
+    toolbar: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems:"center",
+    },
+    tool: {
+        cursor: 'pointer',
+        marginRight: "0.75rem",
+        marginLeft: "0.75rem",
+        "&:hover": {
+            background:"rgba(0,0,0,0.1)"
+        }
     }
 });
 
@@ -93,9 +108,46 @@ const style = {
     borderRadius: "0.25rem",
     p: 4,
 };
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+const ConfirmDialog = (props) => {
+    const { title, children, openConfirm, setOpenConfirm, onClose, onConfirm } = props;
+    return (
+      <Dialog
+        open={openConfirm}
+        onClose={onClose}
+        aria-labelledby="confirm-dialog"
+      >
+        <DialogTitle id="confirm-dialog">{title}</DialogTitle>
+        <DialogContent>{children}</DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setOpenConfirm(false)}
+          >
+            No
+          </Button>
+          <Button
+            onClick={() => {
+              onConfirm();
+            }}
+          >
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+};
 
-const ModalC = ({groupName, setGroupName, handleChange, classes, openMenu, setOpenMenu, handleClose, createGroup}) => {
-
+const ModalC = ({status, current, submitAddMember,submitRemoveMember, handleClose, users, onChangeAddedMembers, addedMembers, groupMembers, groupName, setGroupName, handleChange, classes, openMenu, setOpenMenu, submitCreateGroup, type}) => {
+    // console.log(groupMembers);
     return <Modal
         open={openMenu}
         onClose={handleClose}
@@ -103,26 +155,100 @@ const ModalC = ({groupName, setGroupName, handleChange, classes, openMenu, setOp
         aria-describedby="modal-modal-description"
         >
         <Box sx={style}>
+            {
+                type==='create' && (
+                    <>
+                        <Typography className={classes.spaceBetween} id="modal-modal-title" variant="h6" component="h2">
+                        Create a group chat
+                        </Typography>
 
-            <Typography className={classes.spaceBetween} id="modal-modal-title" variant="h6" component="h2">
-            Create a group chat
-            </Typography>
+                        <TextField 
+                            id="outlined-basic-email" 
+                            label="Group name" 
+                            variant="outlined"
+                            value={groupName}
+                            onChange={handleChange}
+                            fullWidth />
+                    </>
+                )
+            }
 
-            <TextField 
-                id="outlined-basic-email" 
-                label="Group name" 
-                variant="outlined"
-                value={groupName}
-                onChange={handleChange}
-                fullWidth />
-
+            {
+                type==='add' && (
+                    <FormControl sx={{ m: 1, width: 300 }}>
+                        <InputLabel id="demo-multiple-checkbox-label">Add</InputLabel>
+                        <Select
+                        labelId="demo-multiple-checkbox-label"
+                        id="demo-multiple-checkbox"
+                        multiple
+                        value={addedMembers}
+                        onChange={onChangeAddedMembers}
+                        input={<OutlinedInput label="Add" />}
+                        renderValue={(selected) => selected.map((x) => x.first_name).join(', ')}
+                        MenuProps={MenuProps}
+                        >
+                        {users.map((variant) => (
+                            groupMembers.includes(variant._id)===false && variant._id!==current && (
+                                <MenuItem key={variant._id} value={variant}>
+                                <Checkbox
+                                    checked={
+                                        addedMembers.findIndex(item => item._id === variant._id) >= 0
+                                    }
+                                />
+                                <ListItemText primary={variant.first_name+" "+variant.last_name} />
+                                </MenuItem>
+                            )                            
+                        ))}
+                        </Select>
+                    </FormControl>
+                )
+            }
+            {
+                type==='remove' && (
+                    <>
+                    <FormControl sx={{ m: 1, width: 300 }}>
+                        <InputLabel id="demo-multiple-checkbox-label">Remove</InputLabel>
+                        <Select
+                        labelId="demo-multiple-checkbox-label"
+                        id="demo-multiple-checkbox"
+                        multiple
+                        value={addedMembers}
+                        onChange={onChangeAddedMembers}
+                        input={<OutlinedInput label="Remove" />}
+                        renderValue={(selected) => selected.map((x) => x.first_name).join(', ')}
+                        MenuProps={MenuProps}
+                        >
+                        {groupMembers?.map((variant) => (
+                            variant._id!==current && (
+                                <MenuItem key={variant._id} value={variant}>
+                                    <Checkbox
+                                        checked={
+                                            addedMembers.findIndex(item => item._id === variant._id) >= 0
+                                        }
+                                    />
+                                    <ListItemText primary={variant.first_name+" "+variant.first_name} />
+                                </MenuItem>
+                            )
+                        ))}
+                        </Select>
+                    </FormControl>
+                    </>
+                )
+            }
+            <Container className={classes.center}>
+                {status===1 && <Typography className={classes.center}><Check /> User(s) {type==='add' && 'added!'}{type==='remove' && 'removed'}</Typography>}
+                {status===1 && type==='create' && <Typography className={classes.center}><Check /> 'Room created!'</Typography>}
+            </Container>
             <Container className={classes.spaceBetween}>
-                <Button variant="outlined" color="primary" onClick={createGroup}>Create</Button>
-                <Button variant="outlined" color="error" onClick={()=>{setOpenMenu(false);setGroupName("")}}>Go back</Button>
+                {type==='create' && <Button variant="contained" color="primary" onClick={submitCreateGroup}>Create group</Button>}
+                {type==='add' && <Button variant="contained" color="primary" onClick={submitAddMember}>Add member(s)</Button>}
+                {type==='remove' && <Button variant="contained" color="error" onClick={submitRemoveMember}>remove member(s)</Button>}
+                <Button variant="outlined" color="error" onClick={handleClose}>Go back</Button>
             </Container>
         </Box>
         </Modal>
 }
+const countOccurrences = (arr, val) => arr.reduce((a, v) => (v._id === val ? a + 1 : a), 0);
 
 const Chat = () => {
     const classes = useStyles()
@@ -153,6 +279,8 @@ const Chat = () => {
     const userFirstName = account.user.first_name
     const userLastName = account.user.last_name
     const userService = account.user.service
+
+  
 
     React.useEffect(()=>{
         setFilteredList(users.filter(user => user._id !== account.user._id))
@@ -260,7 +388,6 @@ const Chat = () => {
 
     React.useEffect(()=>{
         const getMessages = async () => {
-            console.log("Get messages");
             try {
                 const res = await axios.get(configData.API_SERVER + "messages/" + currentChat?._id)
                 setMessages(res.data)
@@ -324,27 +451,36 @@ const Chat = () => {
       setName(keyword);
     };
     // const [newGroup, setNewGroup] = useState(null)
-    const createGroup = async () => {
-        const data = {
-            name: groupName,
-            type: "PUBLIC"
-        }
-        try{
-            await axios.post(config.API_SERVER+"rooms/newGroup", data)
-            // setNewGroup(group.data);
 
-        }catch(e){console.log(e)}
-    }
 
     const [userGroups, setUserGroups] = React.useState([])
+    const [groupMembers, setGroupMembers] = React.useState([])
+
+    const getGroupMembers = async () => {
+        try {
+            const members = await axios.get(config.API_SERVER+"rooms/room/"+ currentChat?._id)
+            members.data.members.map(async m => {
+                try {
+                    if(account.user._id !== m) {
+                        
+                        const member = await axios.get(config.API_SERVER+"user/users/"+ m)
+                        setGroupMembers(prev => [...prev, member.data])    
+                    }
+                } catch(e) {console.log(e)}
+            })
+            
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     React.useEffect(()=>{
         const getUserGroups = async() => {
-            console.log("getUserGroups called");
             try {
                 const res = await axios.get(configData.API_SERVER + "rooms/" + account.user._id)
                 res.data.map(room => {
                     if(room.type==='PUBLIC'){
+
                         if(userGroups.length > 0) {
                             userGroups.map(item => {
                                 if (item._id !== room._id) {
@@ -354,7 +490,7 @@ const Chat = () => {
                         } else {
                             setUserGroups([...userGroups, room])
                         }
-
+                        console.log(userGroups);
                     }
                 })
             } catch (error) {
@@ -363,18 +499,125 @@ const Chat = () => {
         }
         getUserGroups()
     },[account])
+
+
     const getGroupRoom = (group) => {
-        console.log(group._id);
         setCurrentChat(group)
     }
+    // React.useEffect(()=>{
+    //     console.log(groupMembers);
+    // }, [groupMembers])
 
-    React.useEffect(() => {
-        console.log(currentChat);
-    }, [currentChat])
+    const [type, setType] = React.useState('')
+
+    const [addedMembers, setAddedMembers] = React.useState([])
+
+    const onChangeAddedMembers = (e) => {
+        setAddedMembers(e.target.value)
+    }
+    const addMember = () => 
+    {
+        setType('add')
+        setOpenMenu(true)
+    }
+
+    const removeMember = () => {
+        getGroupMembers()
+        setType('remove')
+        setOpenMenu(true)
+        // setGroupMembers(groupMembers.filter(m => addedMembers.includes(m._id)))
+        console.log(groupMembers);
+    }
+
+    const handleCreate = () => {
+        setType('create')
+        setOpenMenu(true)
+    }
+
+    const handleClose = () => {
+        setOpenMenu(false)
+        setGroupName("")
+        setAddedMembers([])
+        setGroupMembers([])
+        setStatus(0)
+    }
+    const [status, setStatus] = React.useState(0)
+
+    const submitAddMember = async () => {
+        try {
+            addedMembers.map(async m => {
+                await axios.put(config.API_SERVER + 'rooms/addNewGroupMember/'+currentChat._id, {members: m._id})
+                setStatus(1)
+            })
+            
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    
+    const submitRemoveMember = () => {
+        try {
+            addedMembers.map(async m => {
+                await axios.put(config.API_SERVER + `rooms/removeGroupMember/${currentChat._id}/${m._id}`)
+                setStatus(1)
+                setAddedMembers(addedMembers.filter(member => member._id !== m._id))
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    const [openConfirm, setOpenConfirm] = React.useState(false)
+
+    const submitRemoveGroup = async () => {
+        try {
+            await axios.delete(config.API_SERVER + `rooms/removeGroup/${currentChat?._id}`)
+            setStatus(1)
+            
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    const submitCreateGroup = async () => {
+        const data = {
+            name: groupName,
+            type: "PUBLIC"
+        }
+        try{
+            await axios.post(config.API_SERVER+"rooms/newGroup", data)
+            setStatus(1)
+        }catch(e){console.log(e)}
+    }
     return (
         <>     
             <MainCard title="Chat">
-                {<ModalC handleChange={handleChange} setGroupName={setGroupName} groupName={groupName} classes={classes} setOpenMenu={setOpenMenu} createGroup={createGroup} openMenu={openMenu}/>}
+                <ConfirmDialog
+                    title="Please confirm"
+                    openConfirm={openConfirm}
+                    setOpenConfirm={setOpenConfirm}
+                    onConfirm={submitRemoveGroup}
+                >
+                    {status===0 ? <Typography align="center">Are you sure you want to delete this group?</Typography> : <Typography align="center">Group deleted!</Typography>}
+                </ConfirmDialog>
+                {<ModalC 
+                    groupMembers={groupMembers} 
+                    users={users} 
+                    type={type} 
+                    handleChange={handleChange} 
+                    setGroupName={setGroupName} 
+                    groupName={groupName} 
+                    classes={classes} 
+                    setOpenMenu={setOpenMenu} 
+                    submitCreateGroup={submitCreateGroup} 
+                    openMenu={openMenu}
+                    addedMembers={addedMembers}
+                    onChangeAddedMembers={onChangeAddedMembers}
+                    submitAddMember={submitAddMember}
+                    submitRemoveMember={submitRemoveMember}
+                    handleClose={handleClose}
+                    status={status}
+                    setOpenConfirm={setOpenConfirm}
+                    current={account?.user._id}
+                />}
                 {inviteCode || startCall===false && (
                     <Grid container component={Paper} className={classes.chatSection}>
                         <Grid item xs={3} className={classes.borderRight500}>
@@ -396,7 +639,7 @@ const Chat = () => {
                                 </ListItem>
                             </List>
                             <Grid item xs={12} style={{padding: '10px'}}>
-                                <Button variant="outlined" onClick={()=>setOpenMenu(true)}>Create Group Chat</Button>
+                                <Button variant="outlined" onClick={handleCreate}>Create Group Chat</Button>
                             </Grid>
                             <Divider />
                             <Grid item xs={12} style={{padding: '10px'}}>
@@ -440,11 +683,9 @@ const Chat = () => {
                                 <Container className={classes.center}>
                                     {userGroups.length===0 &&<Typography variant="subtitle2">No groups</Typography> }
                                 </Container>
-                                {userGroups?.map(group => (
+                                {userGroups && userGroups?.map(group => (
                                     <List onClick={()=>getGroupRoom(group)}>
-                                        <Room
-                                            group={group}
-                                            currentUser={account.user} />
+                                        <Room group={group} />
                                     </List>
                                 ))}
 
@@ -465,13 +706,26 @@ const Chat = () => {
                         </Grid>
                         <Grid item xs={9}>
                             {
-                                currentChat && currentChatUser && (
-                                    <Grid container xs={12} direction="column" justifyContent="center" alignItems="center">
+                                currentChat && currentChatUser && currentChat.type==='PRIVATE' && (
+                                    <Grid container xs={12} direction="column" className={classes.center}>
                                         <Typography variant="outline">{currentChatUser?.first_name} {currentChatUser?.last_name}</Typography>
                                         {checkUserOnline(currentChatUser._id) ? <VideoCall className={classes.videoicon} onClick={() => handleCallButton(currentChatUser)}/>: <Typography variant="subtitle2">User offline</Typography>}
                                     </Grid>
                                 )
                             }
+                            {currentChat && currentChat.type==='PUBLIC' && (
+                                <Grid container xs={12} direction="column" className={classes.center}>
+                                    <Grid item className={classes.toolbar}>
+                                        <Typography variant="outline">{currentChat.name}</Typography>
+                                        <Delete color="error" style={{cursor:"pointer"}} className={classes.center} onClick={() => setOpenConfirm(true)} />
+                                    </Grid>
+                                    <Divider />
+                                    <Grid item className={classes.toolbar}>
+                                        <Remove className={classes.tool} onClick={removeMember} />
+                                        <Add className={classes.tool} onClick={addMember}/>
+                                    </Grid>
+                                </Grid>
+                            )}
 
                             <Divider />
                             <Container className={classes.messageArea}>
@@ -508,8 +762,6 @@ const Chat = () => {
                     </Grid>
                 )}
                 </MainCard>
-
-           
         </>
     );
 }
