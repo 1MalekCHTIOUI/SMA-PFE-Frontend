@@ -20,6 +20,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { CALL_ACCEPTED, CALL_DECLINED, RECEIVING_CALL, CLEAR_DATA } from '../../store/actions';
 import { SocketContext } from '../../utils/socket/SocketContext';
 import config from '../../config';
+import GroupRoom from './groupRoom';
 // import { ContextProvider } from '../../../utils/socket/SocketContext';
 
 const useStyles = makeStyles({
@@ -119,7 +120,7 @@ const MenuProps = {
   },
 };
 const ConfirmDialog = (props) => {
-    const { title, children, openConfirm, setOpenConfirm, onClose, onConfirm } = props;
+    const { title, children, openConfirm, setOpenConfirm, onClose, onConfirm, status } = props;
     return (
       <Dialog
         open={openConfirm}
@@ -129,18 +130,18 @@ const ConfirmDialog = (props) => {
         <DialogTitle id="confirm-dialog">{title}</DialogTitle>
         <DialogContent>{children}</DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => setOpenConfirm(false)}
-          >
-            No
-          </Button>
-          <Button
-            onClick={() => {
-              onConfirm();
-            }}
-          >
-            Yes
-          </Button>
+            {status===0 && (
+                <>
+                    <Button onClick={() => setOpenConfirm(false)}>No</Button>
+                    <Button onClick={() => onConfirm()}>Yes</Button>
+                </>
+            )}
+            {status===1 && (
+                <>
+                    <Button onClick={() => setOpenConfirm(false)}>Ok</Button>
+                </>
+            )}
+
         </DialogActions>
       </Dialog>
     );
@@ -169,6 +170,32 @@ const ModalC = ({status, current, submitAddMember,submitRemoveMember, handleClos
                             value={groupName}
                             onChange={handleChange}
                             fullWidth />
+                        <FormControl sx={{ m: 1, width: 300 }}>
+                        <InputLabel id="demo-multiple-checkbox-label">Add</InputLabel>
+                        <Select
+                            labelId="demo-multiple-checkbox-label"
+                            id="demo-multiple-checkbox"
+                            multiple
+                            value={addedMembers}
+                            onChange={onChangeAddedMembers}
+                            input={<OutlinedInput label="Add" />}
+                            renderValue={(selected) => selected.map((x) => x.first_name).join(', ')}
+                            MenuProps={MenuProps}
+                            >
+                            {users.map((variant) => (
+                                groupMembers.includes(variant._id)===false && variant._id!==current && (
+                                    <MenuItem key={variant._id} value={variant}>
+                                    <Checkbox
+                                        checked={
+                                            addedMembers.findIndex(item => item._id === variant._id) >= 0
+                                        }
+                                    />
+                                    <ListItemText primary={variant.first_name+" "+variant.last_name} />
+                                    </MenuItem>
+                                )                            
+                            ))}
+                        </Select>
+                    </FormControl>
                     </>
                 )
             }
@@ -236,8 +263,9 @@ const ModalC = ({status, current, submitAddMember,submitRemoveMember, handleClos
                 )
             }
             <Container className={classes.center}>
-                {status===1 && <Typography className={classes.center}><Check /> User(s) {type==='add' && 'added!'}{type==='remove' && 'removed'}</Typography>}
-                {status===1 && type==='create' && <Typography className={classes.center}><Check /> 'Room created!'</Typography>}
+                {status===1 && type==='add' && <Typography className={classes.center}><Check /> User(s) added!</Typography>}
+                {status===1 && type==='remove' && <Typography className={classes.center}><Check /> User(s) removed</Typography>}
+                {status===1 && type==='create' && <Typography className={classes.center}><Check /> Room created!</Typography>}
             </Container>
             <Container className={classes.spaceBetween}>
                 {type==='create' && <Button variant="contained" color="primary" onClick={submitCreateGroup}>Create group</Button>}
@@ -462,7 +490,6 @@ const Chat = () => {
             members.data.members.map(async m => {
                 try {
                     if(account.user._id !== m) {
-                        
                         const member = await axios.get(config.API_SERVER+"user/users/"+ m)
                         setGroupMembers(prev => [...prev, member.data])    
                     }
@@ -479,18 +506,9 @@ const Chat = () => {
             try {
                 const res = await axios.get(configData.API_SERVER + "rooms/" + account.user._id)
                 res.data.map(room => {
-                    if(room.type==='PUBLIC'){
-
-                        if(userGroups.length > 0) {
-                            userGroups.map(item => {
-                                if (item._id !== room._id) {
-                                    setUserGroups([...userGroups, room])
-                                }
-                            })
-                        } else {
-                            setUserGroups([...userGroups, room])
-                        }
-                        console.log(userGroups);
+                    const duplicate = userGroups.some(group => group._id === room._id)
+                    if(room.type==='PUBLIC' && duplicate===false){
+                        setUserGroups(prev => [...prev, room])
                     }
                 })
             } catch (error) {
@@ -498,7 +516,7 @@ const Chat = () => {
             }
         }
         getUserGroups()
-    },[account])
+    },[account.user])
 
 
     const getGroupRoom = (group) => {
@@ -566,22 +584,39 @@ const Chat = () => {
             console.log(error);
         }
     }
+    const groups = () => {
+        // console.log(userGroups);
+        return userGroups.map((group, index) => {
+            return <List onClick={()=>getGroupRoom(group)}>
+                <GroupRoom group={group} listKey={index} key={index}/>
+            </List>
+        })
+    }
+    // React.useEffect(()=>{
+    //     console.log(userGroups);
+    // }, [userGroups])
+
     const [openConfirm, setOpenConfirm] = React.useState(false)
 
     const submitRemoveGroup = async () => {
         try {
             await axios.delete(config.API_SERVER + `rooms/removeGroup/${currentChat?._id}`)
             setStatus(1)
-            
+            window.location.reload(false)   
         } catch (error) {
             console.log(error);
         }
     }
     const submitCreateGroup = async () => {
-        const data = {
+        let data = {
             name: groupName,
-            type: "PUBLIC"
+            type: "PUBLIC",
+            members: []
         }
+        addedMembers.map(m => {
+            data.members.push(m._id)
+        })
+
         try{
             await axios.post(config.API_SERVER+"rooms/newGroup", data)
             setStatus(1)
@@ -595,6 +630,7 @@ const Chat = () => {
                     openConfirm={openConfirm}
                     setOpenConfirm={setOpenConfirm}
                     onConfirm={submitRemoveGroup}
+                    status={status}
                 >
                     {status===0 ? <Typography align="center">Are you sure you want to delete this group?</Typography> : <Typography align="center">Group deleted!</Typography>}
                 </ConfirmDialog>
@@ -639,7 +675,7 @@ const Chat = () => {
                                 </ListItem>
                             </List>
                             <Grid item xs={12} style={{padding: '10px'}}>
-                                <Button variant="outlined" onClick={handleCreate}>Create Group Chat</Button>
+                                {account?.user.role[0]!== "USER" && <Button variant="outlined" onClick={handleCreate}>Create Group Chat</Button>}
                             </Grid>
                             <Divider />
                             <Grid item xs={12} style={{padding: '10px'}}>
@@ -683,11 +719,8 @@ const Chat = () => {
                                 <Container className={classes.center}>
                                     {userGroups.length===0 &&<Typography variant="subtitle2">No groups</Typography> }
                                 </Container>
-                                {userGroups && userGroups?.map(group => (
-                                    <List onClick={()=>getGroupRoom(group)}>
-                                        <Room group={group} />
-                                    </List>
-                                ))}
+
+                                {groups()}
 
 
                                 <Divider />
@@ -717,13 +750,15 @@ const Chat = () => {
                                 <Grid container xs={12} direction="column" className={classes.center}>
                                     <Grid item className={classes.toolbar}>
                                         <Typography variant="outline">{currentChat.name}</Typography>
-                                        <Delete color="error" style={{cursor:"pointer"}} className={classes.center} onClick={() => setOpenConfirm(true)} />
+                                        {account?.user.role[0]!== "USER" && <Delete color="error" style={{cursor:"pointer"}} className={classes.center} onClick={() => setOpenConfirm(true)} />}
                                     </Grid>
                                     <Divider />
+                                    {account?.user.role[0]!== "USER" &&
                                     <Grid item className={classes.toolbar}>
                                         <Remove className={classes.tool} onClick={removeMember} />
                                         <Add className={classes.tool} onClick={addMember}/>
                                     </Grid>
+                                    }
                                 </Grid>
                             )}
 

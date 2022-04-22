@@ -138,7 +138,8 @@ export default function Room({users, onlineUsers, currentUser, mk, group}) {
         <>
             {group && (
                 <Grid item>
-                    <ListItem button>
+
+                    <ListItem button key={mk}>
                         <ListItemIcon>
                             <Avatar alt={group.name} src=" " />
                         </ListItemIcon>
