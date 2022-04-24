@@ -3,9 +3,22 @@ import {io} from 'socket.io-client'
 import {useHistory} from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import config from '../../config'
+import axios from 'axios'
+import { Button, notification } from 'antd';
+
+import { makeStyles } from '@material-ui/styles'
+import { Message, Notifications } from '@material-ui/icons'
+
 const SocketContext = createContext()
 
 const socket = io.connect('http://localhost:8900')
+
+const useStyles = makeStyles({
+    notif : {
+        marginTop: '6vh',
+        width: 'fit-content'
+    }
+})
 
 const ContextProvider = ({children}) => {
     const history = useHistory()
@@ -20,7 +33,7 @@ const ContextProvider = ({children}) => {
     const [isReceivingCall, setIsReceivingCall] = useState(false)
     const [arrivalMessage, setArrivalMessage] = React.useState(null)
     const [onlineUsers, setOnlineUsers] = React.useState([])
-
+    const classes = useStyles()
     React.useEffect(()=>{
         if(account.token){
             socket.emit("addUser", account.user._id)
@@ -58,17 +71,41 @@ const ContextProvider = ({children}) => {
             setDeclineInfo(data.msg)
         })
     
-        socket.on("getMessage", data => {
-            console.log("GET MESSAGE");
-            setArrivalMessage({
-                sender: data.senderId,
-                text: data.text,
-                createdAt: Date.now()
-            })
+        socket.on("getMessage", async data => {
+            try {
+                const res = await axios.get(config.API_SERVER+'user/users/'+data.senderId)
+                openNotification('New message', {sender: `${res.data.first_name} ${res.data.last_name}`, text: data.text}, 'message')
+                setArrivalMessage({
+                    sender: data.senderId,
+                    text: data.text,
+                    createdAt: Date.now()
+                })
+                console.log("received");
+            } catch (error) {
+                console.log(error);
+            }
         })
 
+        socket.on('getNotification', async data => {
+            console.log("got notif");
+            const res = await axios.get(config.API_SERVER+'user/users/'+data.senderId)
+            openNotification('Group', {sender: `${res.data.first_name} ${res.data.last_name}`, text: data.content}, 'notif')
+        })
     },[socket])
 
+
+
+    const openNotification = (title, description, type) => {
+        notification.open({
+            className: classes.notif,
+            message: description.sender,
+            icon: type==='message' ? <Message />: <Notifications />,
+            description: description.text,
+            onClick: () => {
+            console.log('Notification Clicked!');
+            },
+        });
+    };
 
     const cleanup = () => {
         console.log("clean");
@@ -100,17 +137,80 @@ const ContextProvider = ({children}) => {
             socket.emit("declineCall", {callerId: callerId, declinerName: `${account.user.first_name} ${account.user.last_name}`})
         }
     }
+    const sendMessageNotification = async (sender, to, message) => {
+        try {
+            const data = {
+                title: "New message",
+                userId: to,
+                sender: sender,
+                content: message,
+            }
+            await axios.post(config.API_SERVER+"notifications", data)
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    const sendNotification = async (sender, to, message) => {
+        try {
+            const data = {
+                title: "Group",
+                userId: to,
+                sender: sender,
+                content: message,
+            }
+            await axios.post(config.API_SERVER+"notifications", data)
+        } catch (error) {
+            console.log(error);
+        }
+    }
     const sendMessage = (senderId, receiverId, newMessage) => {
-        console.log(senderId, receiverId, newMessage);
+        sendMessageNotification(senderId, receiverId, newMessage)
         socket.emit("sendMessage", {
             senderId: senderId,
             receiverId,
             text: newMessage
         })
     }
+
+    const submitAddMember = async (currentChat, addedMembers) => {
+        try {
+            addedMembers?.map(async m => {
+                const res = await axios.put(config.API_SERVER + 'rooms/addNewGroupMember/'+currentChat._id, {members: m._id})
+
+                socket.emit('sendNotification', {
+                    senderId: account.user._id,
+                    receiverId: m._id,
+                    content: `You have been added to the group ${res.data.name}!`
+                })
+                sendNotification(account.user._id, m._id, `You have been added to the group ${res.data.name}!`)
+                // setStatus(1)
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    
+    const submitRemoveMember = (currentChat, addedMembers) => {
+        console.log(addedMembers);
+        try {
+            addedMembers?.map(async m => {
+                const res = await axios.put(config.API_SERVER + `rooms/removeGroupMember/${currentChat._id}/${m._id}`)
+                sendNotification(account.user._id, m._id, `You have been removed from the group ${res.data.name}!`)
+                socket.emit('sendNotification', {
+                    senderId: account.user._id,
+                    receiverId: m._id,
+                    content: `You have been removed from the group ${res.data.name}!`
+                })
+                // setStatus(1)
+                // setAddedMembers(addedMembers.filter(member => member._id !== m._id))
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    }
     
     return (
-        <SocketContext.Provider value={{ isReceivingCall, arrivalMessage, onlineUsers, callAccepted, declineInfo, callDeclined, callerMsg, ROOM_ID, join,sendMessage, cleanup, handleAnswer, handleHangup, handleCallButton }}>
+        <SocketContext.Provider value={{ isReceivingCall, arrivalMessage, onlineUsers, callAccepted, declineInfo, callDeclined, callerMsg, ROOM_ID,sendNotification,submitAddMember,submitRemoveMember, join,sendMessage, cleanup, handleAnswer, handleHangup, handleCallButton }}>
             {children}
         </SocketContext.Provider>
     )

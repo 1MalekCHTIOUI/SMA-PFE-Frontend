@@ -22,6 +22,7 @@ import {
     useMediaQuery,
     Select,
     MenuItem,
+    Divider,
 } from '@material-ui/core';
 
 // third party
@@ -92,7 +93,6 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
     const [strength, setStrength] = React.useState(0);
     const [level, setLevel] = React.useState('');
     const [ifSame, setIfSame] = React.useState(null);
-
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword);
     };    
@@ -133,7 +133,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
     useEffect(() => {
         setXOldPassword(user.password)
     }, [user]);
-
+    const re = /^((https?|ftp):\/\/)?(www.)?(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i
     return (
         <React.Fragment>
             <Formik
@@ -143,6 +143,9 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                         email: user? user.email : '',
                         role: user? user.role[0] : '',
                         service: user? user.service : '',
+                        linkedin: user? user.social.linkedin : '',
+                        github: user? user.social.github : '',
+                        facebook: user? user.social.facebook : '',
                         oldPassword: '',
                         newPassword: '',
                         submit: null
@@ -151,6 +154,9 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                 validationSchema={
                     Yup.object().shape({
                         email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+                        linkedin: Yup.string().matches(re, 'URL is not valid'),
+                        facebook: Yup.string().matches(re, 'URL is not valid'),
+                        github: Yup.string().matches(re, 'URL is not valid'),
                         firstName: Yup.string().required('First name is required'),
                         lastName: Yup.string().required('Last name is required'),
                         role: Yup.string().required('Role is required'),
@@ -173,6 +179,11 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                                     email: values.email,
                                     role: [values.role],
                                     service: values.service,
+                                    social: {
+                                        linkedin: values.linkedin,
+                                        github: values.github,
+                                        facebook: values.facebook
+                                    }
                                 }
                                 // console.log(updatedUser);
                                 if(values.newPassword!="" && values.oldPassword!="") {
@@ -312,6 +323,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                                     </FormHelperText>
                                 )}    
                         </FormControl>
+
                         <FormControl fullWidth>
                             <InputLabel id="role">Role</InputLabel>
                             
@@ -337,6 +349,60 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                                         {errors.role}
                                     </FormHelperText>
                                 )}    
+                        </FormControl>
+                        <Divider />
+                        <Typography variant="h6" align="center">Social</Typography>
+                        <Divider />
+                        <FormControl fullWidth error={Boolean(touched.linkedin && errors.linkedin)} className={classes.loginInput}>
+                            <InputLabel id="linkedin">LinkedIn</InputLabel>
+                                <OutlinedInput
+                                    id="linkedin"
+                                    type="text"
+                                    value={values.linkedin}
+                                    name="linkedin"
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
+                            {touched.linkedin && errors.linkedin && (
+                                <FormHelperText error id="standard-weight-helper-text--register">
+                                    {' '}
+                                    {errors.linkedin}{' '}
+                                </FormHelperText>
+                            )}
+                        </FormControl>
+                        <FormControl fullWidth error={Boolean(touched.github && errors.github)} className={classes.loginInput}>
+                            <InputLabel id="linkedin">Github</InputLabel>
+                                <OutlinedInput
+                                    id="github"
+                                    type="text"
+                                    value={values.github}
+                                    name="github"
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
+                                {touched.linkedin && errors.linkedin && (
+                                <FormHelperText error id="standard-weight-helper-text--register">
+                                    {' '}
+                                    {errors.linkedin}{' '}
+                                </FormHelperText>
+                            )}
+                        </FormControl>
+                        <FormControl fullWidth error={Boolean(touched.facebook && errors.facebook)} className={classes.loginInput}>
+                            <InputLabel id="linkedin">Facebook</InputLabel>
+                                <OutlinedInput
+                                    id="facebook"
+                                    type="text"
+                                    value={values.facebook}
+                                    name="facebook"
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
+                                {touched.facebook && errors.facebook && (
+                                <FormHelperText error id="standard-weight-helper-text--register">
+                                    {' '}
+                                    {errors.facebook}{' '}
+                                </FormHelperText>
+                            )}
                         </FormControl>
                         { accessFrom==="USER-C" && (
                             <Grid direction="row" style={{display: 'flex', justifyContent:"space-between"}}>

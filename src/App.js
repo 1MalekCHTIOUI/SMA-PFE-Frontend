@@ -1,9 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { useSelector } from 'react-redux';
-
+import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 import { ThemeProvider } from '@material-ui/core/styles';
 import { CssBaseline, StyledEngineProvider } from '@material-ui/core';
-
 // routing
 import Routes from './routes';
 
@@ -41,6 +40,7 @@ const App = () => {
             setShow(true)
         }
     }, [callDeclined]);
+    
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme(customization)}>

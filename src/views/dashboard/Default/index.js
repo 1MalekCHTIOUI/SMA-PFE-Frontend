@@ -27,18 +27,13 @@ const Dashboard = () => {
 
     useEffect(() => {
         setLoading(false);
-        
     }, []);
 
     const getRoles = async () => {
-        console.log("Online users: "+onliners);
-        console.log("Roles: "+roles.length);
         try {
             if(onliners > roles.length){
-                console.log("add role");
                 for(let i=0; i<onlineUsers.length;i++){
                     const user = await axios.get(config.API_SERVER+"user/users/"+onlineUsers[i].userId)
-                    console.log(user.data);
                     setRoles(roles => [...roles, {count: 1, role: user.data.role[0]}])
                 }
             }
@@ -53,12 +48,7 @@ const Dashboard = () => {
     },[onlineUsers])
 
     React.useEffect(()=>{
-        console.log("Online users: "+onliners);
-        console.log("Roles: "+roles.length);
         getRoles()
-
-        
-
     },[onliners])
 
     // React.useEffect(()=>{

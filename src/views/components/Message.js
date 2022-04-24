@@ -67,10 +67,10 @@ const Message = ({message, own, mk, type}) => {
                         }
  
                         <Grid item className={classes.message}>
-                            <ListItemText align={own ? "right" : "left"} primary={message.text}></ListItemText>
+                            <ListItemText align="left" primary={message.text}></ListItemText>
                         </Grid>
                         <Grid item xs={12}>
-                            <ListItemText align={own ? "right" : "left"} secondary={format(message.createdAt)}></ListItemText>
+                            <ListItemText align="left" secondary={format(message.createdAt)}></ListItemText>
                         </Grid>
                     </Grid>
                 </ListItem>
