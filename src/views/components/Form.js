@@ -23,13 +23,15 @@ import {
     Select,
     MenuItem,
     Divider,
+    Input,
+    Container,
 } from '@material-ui/core';
 
 // third party
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import axios from 'axios';
-
+import { v4 as uuidv4 } from "uuid"
 // project imports
 import useScriptRef from '../../hooks/useScriptRef';
 import AnimateButton from './../../ui-component/extended/AnimateButton';
@@ -40,6 +42,9 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import { useDispatch, useSelector } from 'react-redux';
 import { ACCOUNT_UPDATED } from '../../store/actions';
+import { Avatar } from 'antd';
+import { addStr, randomNumber } from '../../utils/scripts';
+import { Build } from '@material-ui/icons';
 
 // style constant
 const useStyles = makeStyles((theme) => ({
@@ -77,6 +82,34 @@ const useStyles = makeStyles((theme) => ({
     },
     loginInput: {
         ...theme.typography.customInput
+    },
+    image: {
+        width: '200px',
+        height: '200px',
+        borderRadius: '125px',
+        "&:hover": {
+            filter: 'brightness(50%)'
+        }
+    }, 
+    center: {
+        display:'flex', 
+        justifyContent:"center", 
+        alignItems:"center",
+    },
+    parentHover: {
+        position: 'relative',
+
+    },
+    tool: {
+        color: 'black',
+        position: 'absolute',
+        top:"80%",
+        right:"10%"
+    },
+    button:{
+        "&:hover": {
+            background:'none'
+        }
     }
 }));
 
@@ -93,9 +126,20 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
     const [strength, setStrength] = React.useState(0);
     const [level, setLevel] = React.useState('');
     const [ifSame, setIfSame] = React.useState(null);
+    const [file, setFile] = React.useState('')
+    const [filename, setFilename] = React.useState('Choose file')
+    const [uploadedFile, setUploadedFile] = React.useState(null)
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword);
     };    
+
+    const onChangeFileUpload = e => {
+        // setFile({name: newFilename})
+        // setFile({...e.target.files[0], name: newFilename})
+        setFile(e.target.files[0])
+        setFilename(e.target.files[0].name)
+    }
+
     const handleClickShowOldPassword = () => {
         setOldShowPassword(!showOldPassword);
     };
@@ -133,6 +177,12 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
     useEffect(() => {
         setXOldPassword(user.password)
     }, [user]);
+
+    useEffect(() => {
+        console.log(uploadedFile);
+    }, [uploadedFile]);
+
+    const [isHovering, setIsHovering] = React.useState(false)
     const re = /^((https?|ftp):\/\/)?(www.)?(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i
     return (
         <React.Fragment>
@@ -143,6 +193,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                         email: user? user.email : '',
                         role: user? user.role[0] : '',
                         service: user? user.service : '',
+                        profilePicture: user? user.profilePicture : '',
                         linkedin: user? user.social.linkedin : '',
                         github: user? user.social.github : '',
                         facebook: user? user.social.facebook : '',
@@ -163,11 +214,18 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                         service: Yup.string().required('Service is required'),
                     })
                 }
+
                 onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
+
+                    const random = randomNumber()
+                    const dotIndex = file.name.indexOf('.')
+                    const newFilename = addStr(file.name, dotIndex, random)
+                    const formData = new FormData();
+                    formData.append('file', file, newFilename)
                     try {
                         try {
                             let test = await checkIfPasswordLegit(values.email, values.oldPassword)
-                            
+
                             if(test===false && values.oldPassword != "" && accessFrom === "USER-C"){
                                 console.log("Old password wrong")
                             }
@@ -183,16 +241,22 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                                         linkedin: values.linkedin,
                                         github: values.github,
                                         facebook: values.facebook
-                                    }
+                                    },
+                                    profilePicture: newFilename
                                 }
-                                // console.log(updatedUser);
                                 if(values.newPassword!="" && values.oldPassword!="") {
                                     updatedUser.password = values.newPassword
                                 }
                                 try {
-                                    console.log(updatedUser)
-                                    await axios.put( configData.API_SERVER + 'user/users/'+user._id, updatedUser)
-
+                                    // console.log(updatedUser)
+                                    await axios.put(configData.API_SERVER + 'user/users/'+user._id, updatedUser)
+                                    try {
+                                        await axios.post(configData.API_SERVER+"upload", formData, { 
+                                            headers: { 'Content-Type': 'multipart/form-data'}
+                                        })
+                                    } catch (error) {
+                                        console.log(error.response.data.message);
+                                    }        
                                     if(accessFrom==="USER-C") {
                                         dispatch({type: ACCOUNT_UPDATED, payload: updatedUser});
                                         history.push(configData.defaultPath)
@@ -227,6 +291,31 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
             >
                 {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
                     <form noValidate onSubmit={handleSubmit} {...others}>
+                        <Grid container spacing={matchDownSM ? 0 : 2}>
+                            <Grid item xs={12} className={classes.center}>
+                                <Button className={classes.button} component='label'>
+                                    <Container className={classes.parentHover} onMouseEnter={()=>setIsHovering(true)} onMouseLeave={()=>setIsHovering(false)}>
+                                        {!file && account.user.profilePicture ? <img className={classes.image} src={`/uploads/profilePictures/${account.user.profilePicture}`} alt="" /> : null }
+                                        {file ? <img className={classes.image} src={URL.createObjectURL(file)} alt="" /> : null }
+                                        {isHovering && <Build className={classes.tool}/>}
+                                    </Container>
+                                <Input
+                                    hidden
+                                    style={{width:"35.50vw"}}
+                                    fullWidth
+                                    label="Profile picture"
+                                    margin="normal"
+                                    name="profilePicture"
+                                    id="profilePicture"
+                                    type="file"
+                                    onBlur={handleBlur}
+                                    onChange={onChangeFileUpload}
+                                    className={classes.loginInput}
+                                />
+                                </Button>
+
+                            </Grid>
+                        </Grid>
                         <Grid container spacing={matchDownSM ? 0 : 2}>
                             <Grid item xs={12}>
                                 <TextField
