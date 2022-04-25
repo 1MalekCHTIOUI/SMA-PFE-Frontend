@@ -134,8 +134,6 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
     };    
 
     const onChangeFileUpload = e => {
-        // setFile({name: newFilename})
-        // setFile({...e.target.files[0], name: newFilename})
         setFile(e.target.files[0])
         setFilename(e.target.files[0].name)
     }
@@ -302,6 +300,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                                 <Input
                                     hidden
                                     style={{width:"35.50vw"}}
+                                    accept="image/*"
                                     fullWidth
                                     label="Profile picture"
                                     margin="normal"
@@ -440,59 +439,7 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                                 )}    
                         </FormControl>
                         <Divider />
-                        <Typography variant="h6" align="center">Social</Typography>
-                        <Divider />
-                        <FormControl fullWidth error={Boolean(touched.linkedin && errors.linkedin)} className={classes.loginInput}>
-                            <InputLabel id="linkedin">LinkedIn</InputLabel>
-                                <OutlinedInput
-                                    id="linkedin"
-                                    type="text"
-                                    value={values.linkedin}
-                                    name="linkedin"
-                                    onBlur={handleBlur}
-                                    onChange={handleChange}
-                                />
-                            {touched.linkedin && errors.linkedin && (
-                                <FormHelperText error id="standard-weight-helper-text--register">
-                                    {' '}
-                                    {errors.linkedin}{' '}
-                                </FormHelperText>
-                            )}
-                        </FormControl>
-                        <FormControl fullWidth error={Boolean(touched.github && errors.github)} className={classes.loginInput}>
-                            <InputLabel id="linkedin">Github</InputLabel>
-                                <OutlinedInput
-                                    id="github"
-                                    type="text"
-                                    value={values.github}
-                                    name="github"
-                                    onBlur={handleBlur}
-                                    onChange={handleChange}
-                                />
-                                {touched.linkedin && errors.linkedin && (
-                                <FormHelperText error id="standard-weight-helper-text--register">
-                                    {' '}
-                                    {errors.linkedin}{' '}
-                                </FormHelperText>
-                            )}
-                        </FormControl>
-                        <FormControl fullWidth error={Boolean(touched.facebook && errors.facebook)} className={classes.loginInput}>
-                            <InputLabel id="linkedin">Facebook</InputLabel>
-                                <OutlinedInput
-                                    id="facebook"
-                                    type="text"
-                                    value={values.facebook}
-                                    name="facebook"
-                                    onBlur={handleBlur}
-                                    onChange={handleChange}
-                                />
-                                {touched.facebook && errors.facebook && (
-                                <FormHelperText error id="standard-weight-helper-text--register">
-                                    {' '}
-                                    {errors.facebook}{' '}
-                                </FormHelperText>
-                            )}
-                        </FormControl>
+
                         { accessFrom==="USER-C" && (
                             <Grid direction="row" style={{display: 'flex', justifyContent:"space-between"}}>
                             <FormControl error={Boolean(touched.password && errors.password)} className={classes.loginInput}>
@@ -605,6 +552,60 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                                 </Box>
                             </FormControl>
                         )}
+                        <Divider />
+                        <Typography variant="h6" align="center">Social</Typography>
+                        <Divider />
+                        <FormControl fullWidth error={Boolean(touched.linkedin && errors.linkedin)} className={classes.loginInput}>
+                            <InputLabel id="linkedin">LinkedIn</InputLabel>
+                                <OutlinedInput
+                                    id="linkedin"
+                                    type="text"
+                                    value={values.linkedin}
+                                    name="linkedin"
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
+                            {touched.linkedin && errors.linkedin && (
+                                <FormHelperText error id="standard-weight-helper-text--register">
+                                    {' '}
+                                    {errors.linkedin}{' '}
+                                </FormHelperText>
+                            )}
+                        </FormControl>
+                        <FormControl fullWidth error={Boolean(touched.github && errors.github)} className={classes.loginInput}>
+                            <InputLabel id="linkedin">Github</InputLabel>
+                                <OutlinedInput
+                                    id="github"
+                                    type="text"
+                                    value={values.github}
+                                    name="github"
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
+                                {touched.linkedin && errors.linkedin && (
+                                <FormHelperText error id="standard-weight-helper-text--register">
+                                    {' '}
+                                    {errors.linkedin}{' '}
+                                </FormHelperText>
+                            )}
+                        </FormControl>
+                        <FormControl fullWidth error={Boolean(touched.facebook && errors.facebook)} className={classes.loginInput}>
+                            <InputLabel id="linkedin">Facebook</InputLabel>
+                                <OutlinedInput
+                                    id="facebook"
+                                    type="text"
+                                    value={values.facebook}
+                                    name="facebook"
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
+                                {touched.facebook && errors.facebook && (
+                                <FormHelperText error id="standard-weight-helper-text--register">
+                                    {' '}
+                                    {errors.facebook}{' '}
+                                </FormHelperText>
+                            )}
+                        </FormControl>
 
                         {errors.submit && (
                             <Box

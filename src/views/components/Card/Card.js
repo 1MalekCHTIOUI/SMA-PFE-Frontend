@@ -23,9 +23,7 @@ const useStyles = makeStyles(theme => ({
 const Card = ({fullname, users, showCard, setShowCard, online}) => {
     const classes = useStyles()
 
-    const redirect = (val) => {
-        window.location.href = `https://${val}`
-    }
+    console.log(users);
     return (
         <Modal style={{outline: "none"}}
             open={showCard}
@@ -40,7 +38,9 @@ const Card = ({fullname, users, showCard, setShowCard, online}) => {
                 <div className="inner-div">
                     <div className="front">
                     <div className="front__bkg-photo"></div>
-                    <div className="front__face-photo"></div>
+                    <div className="front__face-photo">
+                        <img src={`/uploads/profilePictures/${users.profilePicture}`} />
+                    </div>
                     <div className="front__text">
                         <h3 className="front__text-header">{fullname}</h3>
                         <p className="front__text-para"><Work className="front-icons" />{capitalizeFirstLetter(users.service)}</p>

@@ -4,11 +4,11 @@ import { io } from "socket.io-client"
 import { useDispatch, useSelector } from 'react-redux'
 import { v4 as uuidV4 } from 'uuid'
 import { makeStyles } from '@material-ui/styles';
-import {Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Container, MenuItem, Select, FormControl, InputLabel, Button, Modal, Checkbox, OutlinedInput } from '@material-ui/core';
+import {ImageList, ImageListItem, Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Container, MenuItem, Select, FormControl, InputLabel, Button, Modal, Checkbox, OutlinedInput, Input } from '@material-ui/core';
 import {Alert, AlertTitle, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core'
 
 import SendIcon from '@material-ui/icons/Send';
-import {Add, Check, PersonRemove, Remove, VideoCall, Delete} from '@material-ui/icons';
+import {Add, Check, PersonRemove, Remove, VideoCall, Delete, AttachFile} from '@material-ui/icons';
 import Room from './Room'
 import Message from './Message'
 import configData from '../../config'
@@ -274,20 +274,36 @@ const Chat = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        const formData = new FormData();
+        formData.append('file', file)
         const message= {
             roomId: currentChat._id,
             sender: account.user._id,
             text: newMessage
         }
-        const receiverId = currentChat.members.find(m => m !== account.user._id)
-        sendMessage(message.sender, receiverId, newMessage)
-        try {
-            const res = await axios.post(configData.API_SERVER+"messages", message)
-            setMessages([...messages, res.data])
-            setNewMessage("")
-        } catch (error) {
-            console.log(error);
+        if(file!==null){
+            message.attachment = file.name
         }
+  
+        const receiverId = currentChat.members.find(m => m !== account.user._id)
+        if(message.text || message.attachment){
+            sendMessage(message.sender, receiverId, newMessage)
+            try {
+                const res = await axios.post(configData.API_SERVER+"messages", message)
+                setMessages([...messages, res.data])
+                setNewMessage("")
+                try {
+                    await axios.post(configData.API_SERVER+"upload/file", formData, { 
+                        headers: { 'Content-Type': 'multipart/form-data'}
+                    })
+                } catch (error) {
+                    console.log(error.response.data.message);
+                } 
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
     }
     
     const checkUserOnline = (id) => {
@@ -455,9 +471,18 @@ const Chat = () => {
             setStatus(1)
         }catch(e){console.log(e)}
     }
+
+    const [file, setFile] = React.useState('')
+    const [selectedFiles, setSelectedFiles] = React.useState([])
+    const onChangeFileUpload = e => {
+        setSelectedFiles(prev => [...prev, e.target.files[0]])
+        setFile(e.target.files[0])
+    }
+
+
     return (
         <>     
-            <MainCard title="Chat">
+            <MainCard style={{height:"100%"}} title="Chat">
                 <ConfirmDialog
                     title="Please confirm"
                     openConfirm={openConfirm}
@@ -560,17 +585,20 @@ const Chat = () => {
 
                                 <Divider />
                                 <Typography variant="overline">Users</Typography>
-                                {foundUsers?.map((user, index) => (
-                                    <List onClick={()=>userHasRoom(user)}>
-                                        <Room
-                                            users={user}
-                                            room={rooms}
-                                            onlineUsers={onlineUsers}
-                                            currentUser={account.user}
-                                            mk={index}
-                                            key={index}/>
-                                    </List>
-                                ))}
+                                <div style={{height: "40vh", overflowY:"auto"}}>
+                                    {foundUsers?.map((user, index) => (
+                                        <List onClick={()=>userHasRoom(user)}>
+                                            <Room
+                                                users={user}
+                                                room={rooms}
+                                                onlineUsers={onlineUsers}
+                                                currentUser={account.user}
+                                                mk={index}
+                                                key={index}/>
+                                        </List>
+                                    ))}
+                                </div>
+
                         </Grid>
                         <Grid item xs={9}>
                             {
@@ -604,7 +632,7 @@ const Chat = () => {
                                         messages && messages.map((m, i) => (
                                             <Message message={m} own={m.sender === account.user._id} type={currentChat.type} key={i} mk={i}/>
                                         ))
-                                    : <Container className={classes.center}><img src={loader} /></Container>
+                                    : <Container className={classes.center}><img width="700vw" height="700vh" src={loader} /></Container>
                                 }
                                 {
                                     messages?.length === 0 && currentChat && <Typography variant="subtitle2" align="center">You no conversation with this user, start now!</Typography>
@@ -613,20 +641,51 @@ const Chat = () => {
                                 {/* <div ref={scrollRef} /> */}
                             </Container>
                             <Divider />
-                            {currentChat && 
+                            {currentChat && <>
+
                             <Grid container style={{padding: '20px'}}>
-                                <Grid item xs={11}>
+                                <Grid item xs={10}>
                                     <TextField 
                                     id="outlined-basic-email" 
                                     label="Type Something" 
                                     fullWidth 
                                     onChange={(e)=>{setNewMessage(e.target.value)}}
                                     value={newMessage}/>
+
                                 </Grid>
-                                <Grid item xs={1} align="right">
+                                <Grid item xs={2} align="right">
+                                    <Button component="label" color="error" aria-label="attach">
+                                        <AttachFile />
+                                        <Input
+                                            hidden
+                                            style={{width:"35.50vw"}}
+                                            fullWidth
+                                            label="File upload"
+                                            margin="normal"
+                                            name="fileUpload"
+                                            id="fileUpload"
+                                            type="file"
+                                            // onBlur={handleBlur}
+                                            onChange={onChangeFileUpload}
+                                            // className={classes.loginInput}
+                                        />
+                                    </Button>
                                     <Fab color="primary" aria-label="add" onClick={handleSubmit}><SendIcon /></Fab>
                                 </Grid>
                             </Grid>
+                            <Grid container ys={12} style={{padding: '20px', overflowY: 'auto', height:"100%"}}>
+                                <Grid item ys={12} xs={10}>
+                                    <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
+                                    {selectedFiles?.map((item) => {
+                                        console.log(item);
+                                            return <ImageListItem key={item}>
+                                                <img src={`${URL.createObjectURL(item)}`}/>
+                                            </ImageListItem>
+                                    })}
+                                    </ImageList>
+                                </Grid>
+                            </Grid>
+                            </>
                             }
                         </Grid>
                     </Grid>

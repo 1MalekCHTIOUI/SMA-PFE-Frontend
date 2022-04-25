@@ -5,6 +5,8 @@ import { makeStyles } from '@material-ui/styles'
 import config from '../../config'
 import axios from 'axios'
 import { replaceDash } from '../../utils/scripts'
+import { PictureAsPdf } from '@material-ui/icons'
+import { Link } from 'react-router-dom'
 
 const useStyles = makeStyles({
 
@@ -54,6 +56,7 @@ const Message = ({message, own, mk, type}) => {
         type && getUsername()
     }, [message])
 
+
     return (
         <Box>
             <Fade in={true}>
@@ -68,6 +71,7 @@ const Message = ({message, own, mk, type}) => {
  
                         <Grid item className={classes.message}>
                             <ListItemText align="left" primary={message.text}></ListItemText>
+                            {message.attachment && message.attachment.includes('.pdf') && <a component={Link} href={`/uploads/files/${message.attachment}`} target="_blank"><PictureAsPdf /> {message.attachment}</a>}
                         </Grid>
                         <Grid item xs={12}>
                             <ListItemText align="left" secondary={format(message.createdAt)}></ListItemText>

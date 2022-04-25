@@ -163,9 +163,10 @@ const ProfileSection = () => {
 
         prevOpen.current = open;
     }, [open]);
-
+    const [url, setUrl] = React.useState('')
     React.useEffect(() => {
         if(account.user) {
+            setUrl({profilePicture: account?.user.profilePicture})
             setData({
                 first_name: account?.user.first_name, 
                 service: account?.user.service.replaceAll("_", " "),
@@ -181,7 +182,7 @@ const ProfileSection = () => {
                 className={classes.profileChip}
                 icon={
                     <Avatar
-                        src={account.user.profilePicture ? `/uploads/profilePictures/${account?.user.profilePicture}` : User1}
+                        src={url ? `/uploads/profilePictures/${url}` : User1}
                         className={classes.headerAvatar}
                         ref={anchorRef}
                         aria-controls={open ? 'menu-list-grow' : undefined}
