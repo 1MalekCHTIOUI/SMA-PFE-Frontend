@@ -81,7 +81,7 @@ const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
   }));
 
 
-export default function Room({users, onlineUsers, currentUser, mk, group}) {
+export default function Room({users, roomsLoading, onlineUsers, currentUser, mk, group}) {
     const [online, setOnline] = React.useState(null)
     const [isHovering, setIsHovering] = React.useState(false)
     const classes = useStyles()
@@ -147,7 +147,7 @@ export default function Room({users, onlineUsers, currentUser, mk, group}) {
                     </ListItem>
                 </Grid>
             )}
-            {/* {loading && <CircularProgress />} */}
+            {roomsLoading && <CircularProgress />}
             {
                 users && users._id!==currentUser._id && (
                     <Grid direction="row" style={{display: 'flex', position:"relative"}} onMouseEnter={handleMouseOver} onMouseLeave={handleMouseOut} >
@@ -163,7 +163,7 @@ export default function Room({users, onlineUsers, currentUser, mk, group}) {
                                             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                                             variant="dot"
                                             >
-                                                <Avatar alt={users.first_name} src=" " />
+                                                <Avatar alt={users.first_name} src={`/uploads/profilePictures/${users.profilePicture}`} />
                                             </StyledBadgeOnline>
                                             :
                                             <StyledBadgeOffline
@@ -171,7 +171,7 @@ export default function Room({users, onlineUsers, currentUser, mk, group}) {
                                             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                                             variant="dot"
                                             >
-                                                <Avatar alt={users.first_name} src=" " />
+                                                <Avatar alt={users.first_name} src={`/uploads/profilePictures/${users.profilePicture}`} />
                                             </StyledBadgeOffline>
                                         }
                                     </ListItemIcon>

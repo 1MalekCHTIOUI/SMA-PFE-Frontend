@@ -36,6 +36,7 @@ const useStyles = makeStyles({
 
 const ModalC = ({setStatus, status, current, submitAddMember,submitRemoveMember, handleClose, users, onChangeAddedMembers, addedMembers,currentChat, groupMembers, groupName, setGroupName, handleChange, classes, openMenu, setOpenMenu, submitCreateGroup, type}) => {
     // console.log(groupMembers);
+    // console.log(users);
     const {onlineUsers} = React.useContext(SocketContext)
     const styles = useStyles()
     const [showCard, setShowCard] = React.useState(false)
@@ -137,8 +138,17 @@ const ModalC = ({setStatus, status, current, submitAddMember,submitRemoveMember,
                                 MenuProps={MenuProps}
                                 >
                                 {
-                                    users.map(variant => {
+                                    users?.map(variant => {
                                         if(groupMembers.some(m => m._id !== variant._id) && variant._id!==current) {
+                                            return <MenuItem key={variant._id} value={variant}>
+                                                <Checkbox
+                                                    checked={
+                                                        addedMembers.findIndex(item => item._id === variant._id) >= 0
+                                                    }
+                                                />
+                                                <ListItemText primary={variant.first_name+" "+variant.last_name} />
+                                            </MenuItem>
+                                        } else if(groupMembers.length === 0){
                                             return <MenuItem key={variant._id} value={variant}>
                                                 <Checkbox
                                                     checked={

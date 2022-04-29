@@ -32,6 +32,10 @@ import NotificationList from './NotificationList';
 
 // assets
 import { IconBell } from '@tabler/icons';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import config from '../../../../config';
+import { SocketContext } from '../../../../utils/socket/SocketContext';
 
 // style constant
 const useStyles = makeStyles((theme) => ({
@@ -70,6 +74,7 @@ const useStyles = makeStyles((theme) => ({
         paddingBottom: '16px'
     },
     box: {
+        position:"relative", 
         marginLeft: '16px',
         marginRight: '24px',
         [theme.breakpoints.down('sm')]: {
@@ -81,6 +86,16 @@ const useStyles = makeStyles((theme) => ({
     },
     textBoxSpacing: {
         padding: '0px 16px'
+    },
+    parentNotif: {
+        position:"relative", 
+    }, 
+    childNotif: {
+        zIndex:"1",
+        position:"absolute", 
+        left:"1.5rem",
+        bottom:"1rem",
+        fontSize:"0.8rem"
     }
 }));
 
@@ -115,6 +130,9 @@ const NotificationSection = () => {
     const [value, setValue] = React.useState('');
     const anchorRef = React.useRef(null);
 
+    const account = useSelector(s => s.account)
+    const {arrivalNotification} = React.useContext(SocketContext)
+
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
     };
@@ -138,6 +156,44 @@ const NotificationSection = () => {
         setValue(event.target.value);
     };
 
+    const [notifLength, setNotifLength] = React.useState(0)
+    const [notifs, setNotifs] = React.useState(null)
+
+    const resetNotifs = () => {
+        setNotifLength(0)
+    }
+    const getUserNotifications = async () => {
+        try {
+            const notifications = await axios.get(config.API_SERVER+"notifications/"+account.user._id)
+            setNotifs(notifications.data)
+
+        } catch(e) {console.log(e);}
+    }
+
+
+    React.useEffect(()=>{
+        console.log(notifs);
+        if(notifs) {
+            notifs.map((notif, i) => {
+                if(notif.read === false) {
+                    setNotifLength(i+1);
+                } else {
+                    console.log(notif);
+                }
+            })
+        }
+
+    },[notifs])
+
+    React.useEffect(()=>{
+        arrivalNotification && setNotifs(prev => [...prev, arrivalNotification]) && setNotifLength(prev => prev+1);
+    }, [arrivalNotification])
+
+
+    React.useEffect(()=>{
+        getUserNotifications()
+    },[])
+
     return (
         <React.Fragment>
             <Box component="span" className={classes.box}>
@@ -151,7 +207,9 @@ const NotificationSection = () => {
                         onClick={handleToggle}
                         color="inherit"
                     >
-                        <IconBell stroke={1.5} size="1.3rem" />
+                    <IconBell stroke={1.5} size="1.3rem" />
+                    <Typography variant="outlined" className={classes.childNotif}>{notifLength}</Typography>
+                        
                     </Avatar>
                 </ButtonBase>
             </Box>
@@ -176,7 +234,7 @@ const NotificationSection = () => {
                 {({ TransitionProps }) => (
                     <Transitions in={open} {...TransitionProps}>
                         <Paper>
-                            <ClickAwayListener onClickAway={handleClose}>
+                            <ClickAwayListener onClick={resetNotifs} onClickAway={handleClose}>
                                 <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
                                     <CardContent className={classes.cardContent}>
                                         <Grid container direction="column" spacing={2}>
@@ -186,7 +244,7 @@ const NotificationSection = () => {
                                                         <Grid item>
                                                             <Stack direction="row" spacing={2}>
                                                                 <Typography variant="subtitle1">All Notification</Typography>
-                                                                <Chip size="small" label="01" className={classes.notificationChip} />
+                                                                <Chip size="small" label={notifLength < 10 ? "0"+notifLength : notifLength} className={classes.notificationChip} />
                                                             </Stack>
                                                         </Grid>
                                                         <Grid item>
@@ -224,7 +282,7 @@ const NotificationSection = () => {
                                                             <Divider className={classes.divider} />
                                                         </Grid>
                                                         <Grid item xs={12}>
-                                                            <NotificationList />
+                                                            <NotificationList setNotifLength={setNotifLength} notifs={notifs} />
                                                         </Grid>
                                                     </Grid>
                                                 </PerfectScrollbar>

@@ -33,24 +33,20 @@ const useStyles = makeStyles((theme) => ({
         borderRadius: '10px',
         [theme.breakpoints.down('sm')]: {
             maxWidth: '300px'
-        }
+        },
     },
     listAction: {
-        top: '22px'
+        top: '22px',
     },
     actionColor: {
         color: theme.palette.grey[500]
     },
     listItem: {
-        padding: 0
+        padding: 0,
     },
     sendIcon: {
         marginLeft: '8px',
         marginTop: '-3px'
-    },
-    listDivider: {
-        marginTop: 0,
-        marginBottom: 0
     },
     listChipError: {
         color: theme.palette.orange.dark,
@@ -94,22 +90,27 @@ const useStyles = makeStyles((theme) => ({
     },
     itemAction: {
         cursor: 'pointer',
-        padding: '16px',
+        padding: '10px',
         '&:hover': {
             background: theme.palette.primary.light
         }
     },
     unread: {
-        background: theme.palette.secondary.light,
-    }
+        background: theme.palette.grey[200],
+    },
+    listDivider: {
+        background:'grey',
+        height:"0.05rem",
+        
+    },
 }));
 
-const Notification = ({unreadNotification, id, username, title, createdAt, content, read}) => {
+const Notification = ({unreadNotification, notif}) => {
     const classes = useStyles()
-    const [isRead, setIsRead] = React.useState(read)
+    const [isRead, setIsRead] = React.useState(notif.read)
 
     return (
-            <div className={`classes.itemAction ${isRead===false ? classes.unread: ""}`}>
+            <div className={`${classes.itemAction} ${isRead===false ? classes.unread: ""}`}>
                 <ListItem alignItems="center" className={classes.listItem}>
                     <ListItemAvatar>
                         <Avatar className={classes.listAvatarSuccess}>
@@ -117,14 +118,14 @@ const Notification = ({unreadNotification, id, username, title, createdAt, conte
                         </Avatar>
                     </ListItemAvatar>
                     <Grid direction="row">
-                        <ListItemText primary={<Typography variant="subtitle1">{title}</Typography>} />
-                        <ListItemText primary={<Typography variant="caption">{username}</Typography>} />
+                        <ListItemText primary={<Typography variant="subtitle1">{notif.title}</Typography>} />
+                        <ListItemText primary={<Typography variant="caption">{notif.username}</Typography>} />
                     </Grid>
                     <ListItemSecondaryAction className={classes.listAction}>
                         <Grid container justifyContent="flex-end">
                             <Grid item xs={12}>
                                 <Typography variant="caption" display="block" gutterBottom className={classes.actionColor}>
-                                    {format(createdAt)}
+                                    {format(notif.createdAt)}
                                 </Typography>
                             </Grid>
                         </Grid>
@@ -132,16 +133,17 @@ const Notification = ({unreadNotification, id, username, title, createdAt, conte
                 </ListItem>
                 <Grid container direction="column" className={classes.listContainer}>
                     <Grid item xs={12} className={classes.paddingBottom}>
-                        <Typography variant="subtitle2">{content}</Typography>
+                        <Typography variant="subtitle2">{notif.content}</Typography>
                     </Grid>
                     <Grid item xs={12}>
                         <Grid container>
                             <Grid item>
-                                {read===false && <Chip label="Unread" className={classes.listChipError} onClick={() => {unreadNotification(id); setIsRead(true)}}/>}
+                                {notif.read===false && <Chip label="Unread" className={classes.listChipError} onClick={() => {unreadNotification(notif._id); setIsRead(true)}}/>}
                             </Grid>
                         </Grid>
                     </Grid>
                 </Grid>
+
             </div>
             
     );

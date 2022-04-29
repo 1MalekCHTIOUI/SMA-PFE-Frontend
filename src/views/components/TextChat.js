@@ -18,6 +18,7 @@ import { useParams } from 'react-router-dom';
 import { SocketContext } from '../../utils/socket/SocketContext';
 import config from '../../config';
 import ModalC from './ModalC';
+import { addStr, randomNumber } from '../../utils/scripts';
 
 const useStyles = makeStyles({
     table: {
@@ -35,7 +36,8 @@ const useStyles = makeStyles({
     },
     messageArea: {
         height: '70vh',
-        overflowY: 'scroll'
+        overflowY: 'auto',
+        overflowX: 'hidden'
     },
     items: {
         marginLeft:"0.1rem",
@@ -72,7 +74,7 @@ const useStyles = makeStyles({
         "&:hover": {
             background:"rgba(0,0,0,0.1)"
         }
-    }
+    },
 });
 
 const transitionStyles = {
@@ -142,10 +144,11 @@ const Chat = () => {
     const [foundUsers, setFoundUsers] = React.useState(null);
     const [inviteCode, setInviteCode] = React.useState(null)
     const [groupName, setGroupName] = React.useState('')
+    const [roomsLoading, setRoomsLoading] = React.useState(true)
     
     const [openMenu, setOpenMenu] = React.useState(false)
 
-    const {submitAddMember,submitRemoveMember, arrivalMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
+    const {submitAddMember,submitRemoveMember, arrivalMessage, adminMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
 
@@ -158,6 +161,7 @@ const Chat = () => {
 
     React.useEffect(()=>{
         setFilteredList(users.filter(user => user._id !== account.user._id))
+        setRoomsLoading(false)
     },[account.user, users])
 
     const handleFilter = (e) => {
@@ -182,7 +186,20 @@ const Chat = () => {
         arrivalMessage && 
         currentChat?.members.includes(arrivalMessage.sender) && 
         setMessages(prev => [...prev, arrivalMessage])
+
     },[arrivalMessage])
+
+    React.useEffect(()=>{
+        console.log(adminMessage);
+        adminMessage && 
+        setMessages(prev => [...prev, adminMessage])
+    },[adminMessage])
+
+    React.useEffect(()=>{
+        console.log(messages);
+
+    },[messages])
+
 
     React.useEffect(()=>{
         async function fetchUsers() {
@@ -259,12 +276,13 @@ const Chat = () => {
         }
     }
 
-
+    const [messagesLoading, setMessagesLoading] = React.useState(true)
     React.useEffect(()=>{
         const getMessages = async () => {
             try {
                 const res = await axios.get(configData.API_SERVER + "messages/" + currentChat?._id)
                 setMessages(res.data)
+                setMessagesLoading(false)
             } catch (error) {
                 console.log(error.message)
             }
@@ -275,27 +293,47 @@ const Chat = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         const formData = new FormData();
-        formData.append('file', file)
+        const random = randomNumber()
+
+
+        let newName;
+        for (let x = 0; x < file.length; x++) {
+            const dotIndex = file[0].name.indexOf('.')
+            const newFilename = addStr(file[0].name, dotIndex, random)
+            newName = newFilename
+            formData.append(`files[${x}]`, file[x], newFilename);
+        }
+
         const message= {
             roomId: currentChat._id,
             sender: account.user._id,
-            text: newMessage
+            text: newMessage,
+            attachment: []
         }
-        if(file!==null){
-            message.attachment = file.name
+        if(file){
+            console.log(file);
+            file?.map(file => {
+                message.attachment = [...message.attachment, {
+                    displayName: file.name,
+                    actualName: newName
+                }]
+            })
         }
-  
+
+        
         const receiverId = currentChat.members.find(m => m !== account.user._id)
-        if(message.text || message.attachment){
+        if(message.text || message.attachment.length>0){
             sendMessage(message.sender, receiverId, newMessage)
             try {
                 const res = await axios.post(configData.API_SERVER+"messages", message)
                 setMessages([...messages, res.data])
                 setNewMessage("")
                 try {
-                    await axios.post(configData.API_SERVER+"upload/file", formData, { 
-                        headers: { 'Content-Type': 'multipart/form-data'}
-                    })
+                    if(message.attachment.length>0){
+                        await axios.post(configData.API_SERVER+"upload/file", formData, { 
+                            headers: { 'Content-Type': 'multipart/form-data'}
+                        })
+                    }
                 } catch (error) {
                     console.log(error.response.data.message);
                 } 
@@ -303,7 +341,8 @@ const Chat = () => {
                 console.log(error);
             }
         }
-
+        setSelectedFiles([])
+        setFile('')
     }
     
     const checkUserOnline = (id) => {
@@ -476,7 +515,8 @@ const Chat = () => {
     const [selectedFiles, setSelectedFiles] = React.useState([])
     const onChangeFileUpload = e => {
         setSelectedFiles(prev => [...prev, e.target.files[0]])
-        setFile(e.target.files[0])
+        setFile(prev => [...prev, e.target.files[0]])
+
     }
 
 
@@ -589,6 +629,7 @@ const Chat = () => {
                                     {foundUsers?.map((user, index) => (
                                         <List onClick={()=>userHasRoom(user)}>
                                             <Room
+                                                roomsLoading={roomsLoading}
                                                 users={user}
                                                 room={rooms}
                                                 onlineUsers={onlineUsers}
@@ -624,21 +665,25 @@ const Chat = () => {
                                     }
                                 </Grid>
                             )}
-
                             <Divider />
-                            <Container className={classes.messageArea}>
+                            <Container>
+                            { currentChat && currentChat.type==='PRIVATE' && messages?.length === 0 && currentChat && <Typography variant="subtitle2" className={classes.center} align="center">You no conversation with this user, start now!</Typography> }
                                 {
                                     currentChat? 
-                                        messages && messages.map((m, i) => (
-                                            <Message message={m} own={m.sender === account.user._id} type={currentChat.type} key={i} mk={i}/>
-                                        ))
+                                        <Container className={classes.messageArea}>
+                                            {messagesLoading && <CircularProgress />}
+                                            {
+                                                messages && messages.map((m, i) => (
+                                                        <Message messagesLoading={messagesLoading} message={m} own={m.sender === account.user._id} type={currentChat.type} key={i} mk={i}/>
+                                                ))
+                                                
+                                            }
+                                            {/* <div ref={scrollRef} /> */}
+                                        </Container>
+
                                     : <Container className={classes.center}><img width="700vw" height="700vh" src={loader} /></Container>
                                 }
-                                {
-                                    messages?.length === 0 && currentChat && <Typography variant="subtitle2" align="center">You no conversation with this user, start now!</Typography>
 
-                                }
-                                {/* <div ref={scrollRef} /> */}
                             </Container>
                             <Divider />
                             {currentChat && <>
@@ -676,11 +721,10 @@ const Chat = () => {
                             <Grid container ys={12} style={{padding: '20px', overflowY: 'auto', height:"100%"}}>
                                 <Grid item ys={12} xs={10}>
                                     <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
-                                    {selectedFiles?.map((item) => {
-                                        console.log(item);
-                                            return <ImageListItem key={item}>
-                                                <img src={`${URL.createObjectURL(item)}`}/>
-                                            </ImageListItem>
+                                    {selectedFiles?.map((item, i) => {
+                                        return <ImageListItem key={i}>
+                                            <img src={`${URL.createObjectURL(item)}`}/>
+                                        </ImageListItem>
                                     })}
                                     </ImageList>
                                 </Grid>

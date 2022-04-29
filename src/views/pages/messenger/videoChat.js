@@ -6,6 +6,7 @@ import {CircularProgress, Grid, Modal, Box, Button} from '@material-ui/core'
 import { useHistory, useLocation, useParams } from "react-router-dom";
 import Typography from '../../utilities/Typography';
 import MainCard from '../../../ui-component/cards/MainCard'
+import { useSelector } from "react-redux";
 const Container = styled.div`
     padding: 20px;
     display: flex;
@@ -73,6 +74,7 @@ const Modals = (props) => {
 const Room = (props) => {
     const {roomCode} = useParams()
     const [peers, setPeers] = useState([]);
+    const account = useSelector(s => s.account)
     const socketRef = useRef(io("http://localhost:8900"));
     const userVideo = useRef();
     const peersRef = useRef([]);
@@ -157,7 +159,6 @@ const Room = (props) => {
     const [show, setShow] = React.useState(false)
 
     React.useEffect(() => {
-        console.log(peers.length);
         if(joinedUsers===1) {
             setShow(true)
             const timeId = setTimeout(() => {
@@ -172,7 +173,9 @@ const Room = (props) => {
     }, [joinedUsers]);
 
     React.useState(()=>{
-        if(location.state){} 
+        if(location.state){
+            console.log(location.state.callData);
+        } 
         else {
             <Modals show={show} allowed={location.state} message="Your're not allowed!" />
             history.push("/chat")
@@ -181,15 +184,18 @@ const Room = (props) => {
     },[])
     return (
         <>
-            <Container>
-                <MainCard title="CURRENT">
+            <MainCard title="TEST" style={{height:"100%"}}>
+                <MainCard title={`${account.user.first_name} ${account.user.last_name}`}>
                 <StyledVideo muted ref={userVideo} autoPlay playsInline />
                 </MainCard>
+
                 {peers.map((peer, index) => {
-                    return peer.readable ? <MainCard title="CURRENT"><div>{joinedUsers===0 && <CircularProgress/>}</div><Video muted key={index} peer={peer} /></MainCard> : console.log("LOADING");
+                    // if(index === joinedUsers) {
+                        return peer.readable ? <MainCard title={location.state.callData.caller || location.state.callData.receiver}><div>{joinedUsers===0 && <CircularProgress/>}</div><Video muted key={index} peer={peer} /></MainCard> : console.log("LOADING");
+                    // }
                 })}
-                <Modals show={show} allowed={location.state} history={history} message={"User joined!"} />
-            </Container>
+                <Modals show={show} allowed={location.state.allowed} history={history} message={"User joined!"} />
+            </MainCard>
 
         </>
     );

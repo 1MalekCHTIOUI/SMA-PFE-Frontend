@@ -18,10 +18,10 @@ import Modal from './views/components/Modal';
 
 const App = () => {
     const customization = useSelector((state) => state.customization);
-    const { isReceivingCall, callAccepted, callerMsg ,ROOM_ID, cleanup, callDeclined, declineInfo, handleAnswer, handleHangup, join } = useContext(SocketContext)
+    const { isReceivingCall, callAccepted, loaded,callData, callerMsg ,ROOM_ID, cleanup, callDeclined, declineInfo, handleAnswer, handleHangup, join } = useContext(SocketContext)
     const [show, setShow] = React.useState(false)
     React.useEffect(()=>{
-        if(callAccepted && ROOM_ID) {
+        if(callAccepted && ROOM_ID && loaded) {
             join(ROOM_ID)
         }
     },[callAccepted])

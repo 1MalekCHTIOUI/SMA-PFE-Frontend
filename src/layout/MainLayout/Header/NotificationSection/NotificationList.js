@@ -52,33 +52,24 @@ const useStyles = makeStyles((theme) => ({
 
 //-----------------------|| NOTIFICATION LIST ITEM ||-----------------------//
 
-const NotificationList = () => {
+const NotificationList = ({setNotifLength, notifs}) => {
     const classes = useStyles();
     const account = useSelector(s=> s.account)
-    const [notifs, setNotifs] = React.useState(null)
-
-    const getUserNotifications = async () => {
-        try {
-            const notifications = await axios.get(config.API_SERVER+"notifications/"+account.user._id)
-            setNotifs(notifications.data)
-        } catch(e) {console.log(e);}
-    }
 
     const unreadNotification = async (notifId) => {
         try {
             await axios.put(config.API_SERVER+'notifications/'+notifId)
+            setNotifLength(prev => prev-1)
         }catch(e) {console.log(e);}
     }
 
-    React.useEffect(()=>{
-        getUserNotifications()
-    },[account])
+    
 
     return (
         <List className={classes.navContainer}>
             {
                 notifs?.map((notif)=>(
-                    <Notification id={notif._id} read={notif.read} unreadNotification={unreadNotification} title={notif.title} username={account?.user.first_name+" "+account?.user.last_name} content={notif.content} createdAt={notif.createdAt}/>
+                    <Notification unreadNotification={unreadNotification} notif={notif} username={account?.user.first_name+" "+account?.user.last_name}/>
                 ))
             }
             {

@@ -22,8 +22,6 @@ const useStyles = makeStyles(theme => ({
 
 const Card = ({fullname, users, showCard, setShowCard, online}) => {
     const classes = useStyles()
-
-    console.log(users);
     return (
         <Modal style={{outline: "none"}}
             open={showCard}
