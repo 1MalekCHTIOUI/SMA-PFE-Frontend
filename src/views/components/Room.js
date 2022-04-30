@@ -131,14 +131,13 @@ export default function Room({users, roomsLoading, onlineUsers, currentUser, mk,
 
     React.useEffect(()=>{
         setLoading(false)
-        // console.log(group);
+        console.log(group);
     }, [group])
 
     return (
         <>
             {group && (
                 <Grid item>
-
                     <ListItem button key={mk}>
                         <ListItemIcon>
                             <Avatar alt={group.name} src=" " />

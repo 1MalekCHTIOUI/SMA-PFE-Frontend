@@ -7,6 +7,7 @@ import axios from 'axios'
 import { replaceDash } from '../../utils/scripts'
 import { Image, PictureAsPdf } from '@material-ui/icons'
 import { Link } from 'react-router-dom'
+import { SocketContext } from '../../utils/socket/SocketContext'
 
 const useStyles = makeStyles(theme => ({
 
@@ -66,6 +67,7 @@ const Message = ({message, own, mk, type}) => {
     const classes = useStyles()
     const [user, setUser] = React.useState('')
     const [userRole, setUserRole] = React.useState('')
+    const {join} = React.useContext(SocketContext)
     React.useEffect(()=>{
         const getUsername = async () => {
             try {
@@ -87,9 +89,40 @@ const Message = ({message, own, mk, type}) => {
 
         if(own) return classes.ownMessageContainer
         else return classes.freindMessageContainer
-        
     } 
 
+
+    const RE_URL = /\w+:\/\/\S+/g;
+    function linkify(str) {
+        let match;
+        const results = [];
+        let lastIndex = 0;
+        let codeIndex = str.indexOf('http://localhost:3000/videoChat/')
+        let roomCode = ''
+        if(codeIndex!==-1 ) {
+            roomCode = str.substring(codeIndex+32, codeIndex+52)
+        }
+        while (match = RE_URL.exec(str)) {
+            const link = match[0];
+            if (lastIndex !== match.index) {
+            const text = str.substring(lastIndex, match.index);
+            results.push(
+                <span key={results.length}>{text}</span>,
+            );
+            }
+            results.push(
+            <a key={results.length} onClick={()=>join(roomCode)} target="_blank">{link}</a>
+            );
+            lastIndex = match.index + link.length;
+        }
+        if (results.length === 0) {
+            return str;
+        }
+        if (lastIndex !== str.length) {
+            results.push(<span key={results.length}>{str.substring(lastIndex)}</span>,);
+        }
+        return results;
+    }
     return (
         <Box>
             <Fade in={true} className={`${message.sender==='CHAT' ? classes.center : ''}`}>
@@ -103,12 +136,12 @@ const Message = ({message, own, mk, type}) => {
                         }
  
                         <Grid item className={classes.message}>
-                            {message.sender!=='CHAT' && <ListItemText align="left"><Typography style={{fontFamily: 'Poppins, sans-serif'}}>{message.text}</Typography></ListItemText>}
+                            {message.sender!=='CHAT' && <ListItemText align="left"><Typography style={{fontFamily: 'Poppins, sans-serif'}}>{linkify(message.text)}</Typography></ListItemText>}
                             {message.sender==='CHAT' && <ListItemText align="center"><Typography variant="overline">{message.text}</Typography></ListItemText>}
 
                             {message.attachment && message.attachment.map(file => (
                                 <Container>
-                                    {/* {file.includes('.pdf') && <a component={Link} href={`/uploads/files/${file}`} target="_blank"><PictureAsPdf /> {file}</a>} */}
+                                    {file.displayName.includes('.pdf') && <a component={Link} href={`/uploads/files/${file.actualName}`} target="_blank"><PictureAsPdf /> {file.displayName}</a>}
                                     {(file.displayName.includes('.jpg') || file.displayName.includes('.png')) && <a component={Link} href={`/uploads/files/${file.actualName}`} target="_blank"><Image /> {file.displayName}</a>}
                                 </Container>
                             ))}

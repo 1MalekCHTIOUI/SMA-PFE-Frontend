@@ -4,11 +4,12 @@ import { io } from "socket.io-client"
 import { useDispatch, useSelector } from 'react-redux'
 import { v4 as uuidV4 } from 'uuid'
 import { makeStyles } from '@material-ui/styles';
-import {ImageList, ImageListItem, Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Container, MenuItem, Select, FormControl, InputLabel, Button, Modal, Checkbox, OutlinedInput, Input } from '@material-ui/core';
+import {ImageList, ImageListItem, Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Container, MenuItem, Select, FormControl, InputLabel, Button, Modal, Checkbox, OutlinedInput, Input, Fade } from '@material-ui/core';
 import {Alert, AlertTitle, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core'
-
+import {Alert as CopiedAlert} from 'antd'
+import CopyToClipboard from 'react-copy-to-clipboard'
 import SendIcon from '@material-ui/icons/Send';
-import {Add, Check, PersonRemove, Remove, VideoCall, Delete, AttachFile} from '@material-ui/icons';
+import {Add, Check, PersonRemove, Remove, VideoCall, Delete, AttachFile, PictureAsPdf, Close} from '@material-ui/icons';
 import Room from './Room'
 import Message from './Message'
 import configData from '../../config'
@@ -18,7 +19,7 @@ import { useParams } from 'react-router-dom';
 import { SocketContext } from '../../utils/socket/SocketContext';
 import config from '../../config';
 import ModalC from './ModalC';
-import { addStr, randomNumber } from '../../utils/scripts';
+import { addStr, generateRandomString, randomNumber } from '../../utils/scripts';
 
 const useStyles = makeStyles({
     table: {
@@ -35,9 +36,13 @@ const useStyles = makeStyles({
         borderRight: '1px solid #e0e0e0'
     },
     messageArea: {
+        position: 'relative',
         height: '70vh',
         overflowY: 'auto',
         overflowX: 'hidden'
+    },
+    message: {
+        position: 'absolute',
     },
     items: {
         marginLeft:"0.1rem",
@@ -75,6 +80,25 @@ const useStyles = makeStyles({
             background:"rgba(0,0,0,0.1)"
         }
     },
+
+    X: {
+        position: "absolute",
+        bottom: '1.75rem',
+        color:'black',
+        left: '6rem',
+        cursor: "pointer",
+    },
+    selectedItem: {
+        display:'flex',
+        justifyContent: 'center',
+        alignItems:"center",
+        minHeight: '3rem',
+        width: 'fit-content',
+        position: "relative",
+    },
+    disableTextSelection: {
+        userSelect:'none'
+    }
 });
 
 const transitionStyles = {
@@ -97,7 +121,8 @@ const chatStyle = {
 }
 
 const ConfirmDialog = (props) => {
-    const { title, children, openConfirm, setOpenConfirm, onClose, onConfirm, status } = props;
+    const { title, children, openConfirm, setOpenConfirm, onClose, onConfirm, status, code } = props;
+    const [copied, setCopied] = React.useState(false)
     return (
       <Dialog
         open={openConfirm}
@@ -105,6 +130,7 @@ const ConfirmDialog = (props) => {
         aria-labelledby="confirm-dialog"
       >
         <DialogTitle id="confirm-dialog">{title}</DialogTitle>
+
         <DialogContent>{children}</DialogContent>
         <DialogActions>
             {status===0 && (
@@ -116,6 +142,15 @@ const ConfirmDialog = (props) => {
             {status===1 && (
                 <>
                     <Button onClick={() => setOpenConfirm(false)}>Ok</Button>
+                </>
+            )}
+            {!status && (
+                <>
+                    <Button onClick={onConfirm}>Generate room link</Button>
+                    {<CopyToClipboard text={`http://localhost:3000/videoChat/${code}`} onCopy={()=>setCopied(true)}>
+                        <Button disabled={code==='' || copied}>{copied ? 'Link copied' : 'Copy link'}</Button>
+                    </CopyToClipboard>}
+                    <Button onClick={() => {setOpenConfirm(false); setCopied(false)}}>Close</Button>
                 </>
             )}
 
@@ -504,6 +539,9 @@ const Chat = () => {
         addedMembers.map(m => {
             data.members.push(m._id)
         })
+        if(account.user.role[0]!=='USER'){
+            data.members.push(account.user._id)
+        }
 
         try{
             await axios.post(config.API_SERVER+"rooms/newGroup", data)
@@ -519,6 +557,21 @@ const Chat = () => {
 
     }
 
+    const removeItem = (val) => {
+        setSelectedFiles(prev => prev.filter(item => item.name!==val))
+        setFile(prev => prev.filter(item => item.name!==val))
+    }
+
+    const handleGroupCallButton = () => {
+        setOpenGenerateCode(true)
+    }
+    const [openGenerateCode, setOpenGenerateCode] = React.useState(false)
+    const [generatedCode, setGeneratedCode] = React.useState('')
+
+    const generateCode = () => {
+        const randomString = generateRandomString()
+        setGeneratedCode(randomString)
+    }
 
     return (
         <>     
@@ -532,7 +585,28 @@ const Chat = () => {
                 >
                     {status===0 ? <Typography align="center">Are you sure you want to delete this group?</Typography> : <Typography align="center">Group deleted!</Typography>}
                 </ConfirmDialog>
-                {<ModalC
+
+                <ConfirmDialog
+                    title="Generate Link"
+                    openConfirm={openGenerateCode}
+                    setOpenConfirm={setOpenGenerateCode}
+                    onConfirm={generateCode}
+                    code={generatedCode}
+                >
+                    <div className={classes.center} style={{marginTop:'1rem'}}>
+                        <OutlinedInput
+                            style={{width:'12vw'}}
+                            className={classes.disableTextSelection}
+                            id="generate-code"
+                            type='text'
+                            value={generatedCode}
+                            name="generate"
+                            disabled
+                        />
+                    </div>
+                </ConfirmDialog>
+
+                <ModalC
                     groupMembers={groupMembers} 
                     users={users} 
                     type={type} 
@@ -553,7 +627,8 @@ const Chat = () => {
                     setStatus={setStatus}
                     setOpenConfirm={setOpenConfirm}
                     current={account?.user._id}
-                />}
+                />
+
                 {inviteCode || startCall===false && (
                     <Grid container component={Paper} className={classes.chatSection}>
                         <Grid item xs={3} className={classes.borderRight500}>
@@ -663,10 +738,13 @@ const Chat = () => {
                                         <Add className={classes.tool} onClick={addMember}/>
                                     </Grid>
                                     }
+                                    <Grid item className={classes.toolbar}>
+                                        <VideoCall className={classes.tool} onClick={handleGroupCallButton} />
+                                    </Grid>
                                 </Grid>
                             )}
                             <Divider />
-                            <Container>
+
                             { currentChat && currentChat.type==='PRIVATE' && messages?.length === 0 && currentChat && <Typography variant="subtitle2" className={classes.center} align="center">You no conversation with this user, start now!</Typography> }
                                 {
                                     currentChat? 
@@ -674,17 +752,15 @@ const Chat = () => {
                                             {messagesLoading && <CircularProgress />}
                                             {
                                                 messages && messages.map((m, i) => (
-                                                        <Message messagesLoading={messagesLoading} message={m} own={m.sender === account.user._id} type={currentChat.type} key={i} mk={i}/>
+                                                        <Message className={classes.message} messagesLoading={messagesLoading} message={m} own={m.sender === account.user._id} type={currentChat.type} key={i} mk={i}/>
                                                 ))
                                                 
                                             }
-                                            {/* <div ref={scrollRef} /> */}
+                                            {/* <div ref={scrollRef}></div> */}
                                         </Container>
 
                                     : <Container className={classes.center}><img width="700vw" height="700vh" src={loader} /></Container>
                                 }
-
-                            </Container>
                             <Divider />
                             {currentChat && <>
 
@@ -710,9 +786,7 @@ const Chat = () => {
                                             name="fileUpload"
                                             id="fileUpload"
                                             type="file"
-                                            // onBlur={handleBlur}
                                             onChange={onChangeFileUpload}
-                                            // className={classes.loginInput}
                                         />
                                     </Button>
                                     <Fab color="primary" aria-label="add" onClick={handleSubmit}><SendIcon /></Fab>
@@ -722,8 +796,10 @@ const Chat = () => {
                                 <Grid item ys={12} xs={10}>
                                     <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
                                     {selectedFiles?.map((item, i) => {
+                                        
                                         return <ImageListItem key={i}>
-                                            <img src={`${URL.createObjectURL(item)}`}/>
+                                            {(item.name.includes('.png') || item.name.includes('.jpg')) && <Container><img className={classes.selectedItem} src={`${URL.createObjectURL(item)}`}/><Close className={classes.X} onClick={() => removeItem(item.name)} /></Container>}
+                                            {(item.name.includes('.pdf') || item.name.includes('.docx')) && <Typography className={classes.selectedItem}><PictureAsPdf />{item.name}<Close className={classes.X}z onClick={() => removeItem(item.name)}/></Typography>}
                                         </ImageListItem>
                                     })}
                                     </ImageList>
