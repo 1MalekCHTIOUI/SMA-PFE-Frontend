@@ -59,6 +59,7 @@ const ContextProvider = ({children}) => {
         socket.on("notif", data => {
             console.log("receiving call");
             setCallerMsg(data.msg)
+            setCallData(prev => ({...prev, receiver: data.caller}))
             setIsReceivingCall(true)
         })
     
@@ -143,7 +144,7 @@ const ContextProvider = ({children}) => {
 
     const handleCallButton = (val) => {
         socket.emit("callNotif", {
-            caller: {firstName: account?.user.first_name, id: account?.user._id}, 
+            caller: {fullName: `${account?.user.first_name} ${account?.user.last_name}`, id: account?.user._id}, 
             id: val._id
         })
     }

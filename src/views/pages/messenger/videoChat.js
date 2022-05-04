@@ -120,6 +120,7 @@ const Room = (props) => {
                 setJoinedUsers(joinedUsers+1)
             });
         })
+
     }, []);
 
 
@@ -170,7 +171,13 @@ const Room = (props) => {
         } else {
             setShow(false)
         }
+
     }, [joinedUsers]);
+
+    // React.useState(()=>{
+    //     console.log(location.state);
+    // }, [location.state])
+
 
     React.useState(()=>{
         if(location.state){
@@ -184,16 +191,23 @@ const Room = (props) => {
     },[])
     return (
         <>
-            <MainCard title="TEST" style={{height:"100%"}}>
-                <MainCard title={`${account.user.first_name} ${account.user.last_name}`}>
-                <StyledVideo muted ref={userVideo} autoPlay playsInline />
-                </MainCard>
+            <MainCard title="Video chat" style={{height:"100%"}}>
+                <Grid style={{display:"flex",justifyContent:'space-between'}} xs={12} direction="column">
+                    <Grid item>
+                        <MainCard style={{width: 'fit-content'}} title={`${account.user.first_name} ${account.user.last_name}`}>
+                            <StyledVideo muted ref={userVideo} autoPlay playsInline />
+                        </MainCard>
+                    </Grid>
+                    
+                    {peers.map((peer, index) => {
+                        if(index <= joinedUsers+1) {
+                            return peer.readable ? <Grid item><MainCard style={{width: 'fit-content'}} title={location.state.callData.caller || location.state.callData.receiver}><div>{joinedUsers===0 && <CircularProgress/>}</div><Video muted key={index} peer={peer} /></MainCard></Grid> : console.log("LOADING");
+                        }
+                    })}
+                    
 
-                {peers.map((peer, index) => {
-                    // if(index === joinedUsers) {
-                        return peer.readable ? <MainCard title={location.state.callData.caller || location.state.callData.receiver}><div>{joinedUsers===0 && <CircularProgress/>}</div><Video muted key={index} peer={peer} /></MainCard> : console.log("LOADING");
-                    // }
-                })}
+
+                </Grid>
                 <Modals show={show} allowed={location.state.allowed} history={history} message={"User joined!"} />
             </MainCard>
 
