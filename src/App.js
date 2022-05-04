@@ -13,16 +13,18 @@ import theme from './themes';
 import NavigationScroll from './layout/NavigationScroll';
 import { SocketContext } from './utils/socket/SocketContext';
 import Modal from './views/components/Modal';
-
+import config from './config';
+import axios from 'axios'
 //-----------------------|| APP ||-----------------------//
 
 const App = () => {
     const customization = useSelector((state) => state.customization);
     const { isReceivingCall, callAccepted, loaded,callData, callerMsg ,ROOM_ID, cleanup, callDeclined, declineInfo, handleAnswer, handleHangup, join } = useContext(SocketContext)
     const [show, setShow] = React.useState(false)
+    const roomType = "PRIVATE"
     React.useEffect(()=>{
         if(callAccepted && ROOM_ID && loaded) {
-            join(ROOM_ID)
+            join(ROOM_ID, roomType)
         }
     },[callAccepted])
 

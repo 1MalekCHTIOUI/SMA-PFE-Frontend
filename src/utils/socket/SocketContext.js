@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import config from '../../config'
 import axios from 'axios'
 import { Button, notification } from 'antd';
-
+import { v4 } from 'uuid'
 import { makeStyles } from '@material-ui/styles'
 import { Message, Notifications } from '@material-ui/icons'
 
@@ -68,7 +68,6 @@ const ContextProvider = ({children}) => {
             socket.on("getRoomID", data => setROOM_ID(data))
             setIsReceivingCall(false)
             setCallAccepted(true)
-
         })
     
         socket.on("callDeclined", (data) => {
@@ -116,6 +115,7 @@ const ContextProvider = ({children}) => {
             } catch(e) {console.log(e)}
 
         })
+        socket.on("getRoomID", data => setROOM_ID(data))
     },[socket])
     const [loaded, setLoaded] = React.useState(false)
 
@@ -143,10 +143,14 @@ const ContextProvider = ({children}) => {
     }
 
     const handleCallButton = (val) => {
+        const uid = v4()
         socket.emit("callNotif", {
             caller: {fullName: `${account?.user.first_name} ${account?.user.last_name}`, id: account?.user._id}, 
-            id: val._id
+            id: val._id,
+            room: uid
         })
+        setROOM_ID(uid)
+
     }
 
     const handleAnswer = async () =>{
@@ -162,10 +166,10 @@ const ContextProvider = ({children}) => {
         } catch(e) {console.log(e)}
 
     }
-    socket.on("getRoomID", data => setROOM_ID(data))
 
-    const join = (ROOM_ID) => {
-        history.push({pathname: `/videochat/${ROOM_ID}`, state: {allowed: true, callData}})
+
+    const join = (ROOM_ID, type) => {
+        history.push({pathname: `/videochat/${ROOM_ID}`, state: {allowed: true, callData, type}})
     }
 
     const handleHangup = () => {

@@ -93,6 +93,7 @@ const Message = ({message, own, mk, type}) => {
 
 
     const RE_URL = /\w+:\/\/\S+/g;
+    const roomType = "PUBLIC"
     function linkify(str) {
         let match;
         const results = [];
@@ -111,7 +112,7 @@ const Message = ({message, own, mk, type}) => {
             );
             }
             results.push(
-            <a key={results.length} onClick={()=>join(roomCode)} target="_blank">{link}</a>
+            <a key={results.length} onClick={()=>join(roomCode, roomType)} target="_blank">{link}</a>
             );
             lastIndex = match.index + link.length;
         }

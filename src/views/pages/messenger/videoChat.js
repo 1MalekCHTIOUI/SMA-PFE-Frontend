@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import Peer from "simple-peer";
 import styled from "styled-components";
-import {CircularProgress, Grid, Modal, Box, Button} from '@material-ui/core'
+import {CircularProgress, Grid, Modal, Box, Button, Typography} from '@material-ui/core'
+import { makeStyles } from '@material-ui/styles'
 import { useHistory, useLocation, useParams } from "react-router-dom";
-import Typography from '../../utilities/Typography';
 import MainCard from '../../../ui-component/cards/MainCard'
 import { useSelector } from "react-redux";
 const Container = styled.div`
@@ -18,8 +18,8 @@ const Container = styled.div`
 `;
 
 const StyledVideo = styled.video`
-    height: 30rem;
-    width: 30rem;
+    height: 100%;
+    width: 50rem;
 `;
 const style = {
     position: 'absolute',
@@ -33,6 +33,47 @@ const style = {
     borderRadius: "0.25rem",
     p: 4,
 };
+
+const useStyles = makeStyles({
+    container: {
+        height:"100%",
+    },
+    chatContainer: {
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        position: 'relative',
+        background:'yellowgreen',
+        zIndex: 1,
+        height: '80vh'
+    },
+    myContainer: {
+        zIndex: 3,
+        position: 'absolute',
+        display: 'flex',
+        bottom: 0,
+        width: '25%',
+        height: '30%',
+        border: '2px solid red'
+    },
+    userContainer: {
+        position: 'absolute',
+        zIndex: 2,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        background:'lightblue',
+        width: '100%',
+        height: '100%',
+    },
+    typography: {
+        position: 'absolute',
+        color: 'white',
+        top: 0
+    }
+})
 
 const Video = (props) => {
     const ref = useRef();
@@ -50,8 +91,8 @@ const Video = (props) => {
 
 
 const videoConstraints = {
-    height: window.innerHeight,
-    width: window.innerWidth
+    height: window.innerHeight/2,
+    width: window.innerWidth/2
 };
 
 const Modals = (props) => {
@@ -79,7 +120,9 @@ const Room = (props) => {
     const userVideo = useRef();
     const peersRef = useRef([]);
     const location = useLocation()
+
     const roomID = roomCode
+    const classes = useStyles()
     React.useEffect(() => {
         return () => {
             setJoinedUsers(0)
@@ -174,40 +217,45 @@ const Room = (props) => {
 
     }, [joinedUsers]);
 
-    // React.useState(()=>{
-    //     console.log(location.state);
-    // }, [location.state])
-
-
     React.useState(()=>{
         if(location.state){
-            console.log(location.state.callData);
+            console.log(location.state);
         } 
         else {
-            <Modals show={show} allowed={location.state} message="Your're not allowed!" />
+            <Modals show={show} allowed={location.state.allowed} message="Your're not allowed!" />
             history.push("/chat")
         }
 
     },[])
+    // title={`${account.user.first_name} ${account.user.last_name}`}
+    // title={location.state.callData.caller || location.state.callData.receiver}
     return (
         <>
-            <MainCard title="Video chat" style={{height:"100%"}}>
-                <Grid style={{display:"flex",justifyContent:'space-between'}} xs={12} direction="column">
-                    <Grid item>
-                        <MainCard style={{width: 'fit-content'}} title={`${account.user.first_name} ${account.user.last_name}`}>
-                            <StyledVideo muted ref={userVideo} autoPlay playsInline />
-                        </MainCard>
-                    </Grid>
-                    
-                    {peers.map((peer, index) => {
-                        if(index <= joinedUsers+1) {
-                            return peer.readable ? <Grid item><MainCard style={{width: 'fit-content'}} title={location.state.callData.caller || location.state.callData.receiver}><div>{joinedUsers===0 && <CircularProgress/>}</div><Video muted key={index} peer={peer} /></MainCard></Grid> : console.log("LOADING");
-                        }
-                    })}
-                    
-
-
-                </Grid>
+            <MainCard title="Video chat" className={classes.container}>
+                <div className={classes.chatContainer}>
+                    <div className={classes.myContainer}>
+                        <Typography className={classes.typography} variant='overline'>{`${account.user.first_name} ${account.user.last_name}`}</Typography>
+                        <StyledVideo ref={userVideo} autoPlay playsInline />
+                    </div>
+                    <div className={classes.userContainer}>
+                        {location.state.type==='PRIVATE' && (
+                            <>
+                                <div>
+                                    {joinedUsers===0 && <CircularProgress/>}
+                                </div>
+                                <Typography className={classes.typography} variant='overline'>{location.state.callData.caller || location.state.callData.receiver}</Typography>
+                                {peers[0]?.readable && <Video key={1} peer={peers[0]} />}
+                            </>
+                        )}
+                    </div>
+                    {location.state.type==='PUBLIC' && (
+                        peers.map((peer, index) => {
+                            if(index <= joinedUsers+1) {
+                                return peer.readable ? <Grid item><MainCard style={{width: 'fit-content'}} title={location.state.callData.caller || location.state.callData.receiver}><div>{joinedUsers===0 && <CircularProgress/>}</div><Video key={index} peer={peer} /></MainCard></Grid> : console.log("LOADING");
+                            }
+                        }))
+                    }                  
+                </div>
                 <Modals show={show} allowed={location.state.allowed} history={history} message={"User joined!"} />
             </MainCard>
 
