@@ -79,22 +79,24 @@ const ContextProvider = ({children}) => {
     
         socket.on("getMessage", async data => {
             try {
-                console.log(data.text);
+                console.log(data);
                 if(data.senderId==='CHAT') {
                     setAdminMessage({
                         sender: data.senderId,
                         text: data.text,
                         createdAt: Date.now()
                     })
-                } else {
-                    const res = await axios.get(config.API_SERVER+'user/users/'+data.senderId)
-                    openNotification('New message', {sender: `${res.data.first_name} ${res.data.last_name}`, text: data.text}, 'message')
-                    setArrivalMessage({
-                        sender: data.senderId,
-                        text: data.text,
-                        createdAt: Date.now()
-                    })
-                }
+                } 
+
+                const res = await axios.get(config.API_SERVER+'user/users/'+data.senderId)
+                openNotification('New message', {sender: `${res.data.first_name} ${res.data.last_name}`, text: data.text}, 'message')
+                setArrivalMessage({
+                    sender: data.senderId,
+                    text: data.text,
+                    createdAt: Date.now(),
+                    roomType: data.roomType
+                })
+                
             } catch (error) {
                 console.log(error);
             }
@@ -207,15 +209,15 @@ const ContextProvider = ({children}) => {
             console.log(error);
         }
     }
-    const sendMessage = async (senderId, receiverId, newMessage) => {
+    const sendMessage = async (senderId, receiverId, newMessage, roomType) => {
         await sendMessageNotification(senderId, receiverId, newMessage)
         socket.emit("sendMessage", {
             senderId: senderId,
             receiverId,
-            text: newMessage
+            text: newMessage,
+            roomType
         })
     }
-
 
 
     const submitAddMember = async (currentChat, addedMembers) => {
@@ -300,7 +302,7 @@ const ContextProvider = ({children}) => {
     }
     
     return (
-        <SocketContext.Provider value={{ isReceivingCall, arrivalNotification, loaded, arrivalMessage, adminMessage, onlineUsers, callAccepted, declineInfo, callDeclined, callerMsg, ROOM_ID,sendNotification,submitAddMember,submitRemoveMember, join,sendMessage, cleanup, handleAnswer, handleHangup, handleCallButton }}>
+        <SocketContext.Provider value={{ isReceivingCall, arrivalNotification, loaded, arrivalMessage, adminMessage, onlineUsers, callAccepted, declineInfo, callDeclined, callerMsg, ROOM_ID,sendNotification, submitAddMember,submitRemoveMember, join,sendMessage, cleanup, handleAnswer, handleHangup, handleCallButton }}>
             {children}
         </SocketContext.Provider>
     )

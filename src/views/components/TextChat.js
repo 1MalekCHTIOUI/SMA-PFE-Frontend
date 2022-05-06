@@ -183,7 +183,7 @@ const Chat = () => {
     
     const [openMenu, setOpenMenu] = React.useState(false)
 
-    const {submitAddMember,submitRemoveMember, arrivalMessage, adminMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
+    const {submitAddMember,submitRemoveMember, joinGroupChat, arrivalMessage,sendGroupMessage, adminMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
 
@@ -219,7 +219,8 @@ const Chat = () => {
     
     React.useEffect(()=>{
         arrivalMessage && 
-        currentChat?.members.includes(arrivalMessage.sender) && 
+        currentChat?.members.includes(arrivalMessage.sender) &&
+        currentChat.type === arrivalMessage.roomType &&
         setMessages(prev => [...prev, arrivalMessage])
 
     },[arrivalMessage])
@@ -323,6 +324,7 @@ const Chat = () => {
             }
         }
         getMessages()
+        // joinGroupChat(currentChat._id)
     }, [currentChat])
 
     const handleSubmit = async (e) => {
@@ -358,7 +360,7 @@ const Chat = () => {
         
         const receiverId = currentChat.members.find(m => m !== account.user._id)
         if(message.text || message.attachment.length>0){
-            sendMessage(message.sender, receiverId, newMessage)
+            sendMessage(message.sender, receiverId, newMessage, currentChat.type)
             try {
                 const res = await axios.post(configData.API_SERVER+"messages", message)
                 setMessages([...messages, res.data])

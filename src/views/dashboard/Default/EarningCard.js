@@ -128,7 +128,7 @@ const EarningCard = ({ isLoading, onlineUsers, roles }) => {
                                             {
                                                 roles.map(role => {
                                                     return <div style={{display: "flex", justifyContent: "center"}}>
-                                                        <Typography className={classes.subHeading}>+ {role.count + " "+ role.role}</Typography>
+                                                        <Typography className={classes.subHeading}> {role.count + " "+ role.role}</Typography>
                                                     </div> 
                                                 })
                                             }
