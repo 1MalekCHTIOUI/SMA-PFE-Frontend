@@ -8,6 +8,8 @@ import {ImageList, ImageListItem, Paper, Grid,CircularProgress , Box, Divider, T
 import {Alert, AlertTitle, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core'
 import {Alert as CopiedAlert} from 'antd'
 import CopyToClipboard from 'react-copy-to-clipboard'
+import ScrollToBottom from 'react-scroll-to-bottom';
+import ScrollableFeed from 'react-scrollable-feed';
 import SendIcon from '@material-ui/icons/Send';
 import {Add, Check, PersonRemove, Remove, VideoCall, Delete, AttachFile, PictureAsPdf, Close} from '@material-ui/icons';
 import Room from './Room'
@@ -36,7 +38,7 @@ const useStyles = makeStyles({
         borderRight: '1px solid #e0e0e0'
     },
     messageArea: {
-        position: 'relative',
+        position:'relative',
         height: '70vh',
         overflowY: 'auto',
         overflowX: 'hidden'
@@ -183,7 +185,7 @@ const Chat = () => {
     
     const [openMenu, setOpenMenu] = React.useState(false)
 
-    const {submitAddMember,submitRemoveMember, joinGroupChat, arrivalMessage,sendGroupMessage, adminMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
+    const {submitAddMember,submitRemoveMember, arrivalMessage, adminMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
 
@@ -191,8 +193,6 @@ const Chat = () => {
     const userFirstName = account.user.first_name
     const userLastName = account.user.last_name
     const userService = account.user.service
-
-  
 
     React.useEffect(()=>{
         setFilteredList(users.filter(user => user._id !== account.user._id))
@@ -324,7 +324,6 @@ const Chat = () => {
             }
         }
         getMessages()
-        // joinGroupChat(currentChat._id)
     }, [currentChat])
 
     const handleSubmit = async (e) => {
@@ -348,7 +347,6 @@ const Chat = () => {
             attachment: []
         }
         if(file){
-            console.log(file);
             file?.map(file => {
                 message.attachment = [...message.attachment, {
                     displayName: file.name,
@@ -751,16 +749,19 @@ const Chat = () => {
                                 {
                                     currentChat? 
                                         <Container className={classes.messageArea}>
+                                            
                                             {messagesLoading && <CircularProgress />}
-                                            {
-                                                messages && messages.map((m, i) => (
-                                                        <Message className={classes.message} messagesLoading={messagesLoading} message={m} own={m.sender === account.user._id} type={currentChat.type} key={i} mk={i}/>
-                                                ))
-                                                
-                                            }
-                                            {/* <div ref={scrollRef}></div> */}
+                                            
+                                                <ScrollableFeed>
+                                                {messages && messages.map((m, i) => (
+                                                    <Message messagesLoading={messagesLoading} message={m} own={m.sender === account.user._id} type={currentChat.type} key={i} mk={i}/>
+                                                ))}
+                                                </ScrollableFeed>
+                                            
+                                            
+                                            {/* <div ref={scrollRef} /> */}
                                         </Container>
-
+                                    
                                     : <Container className={classes.center}><img width="700vw" height="700vh" src={loader} /></Container>
                                 }
                             <Divider />

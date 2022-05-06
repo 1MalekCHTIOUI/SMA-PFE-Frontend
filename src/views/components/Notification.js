@@ -96,7 +96,7 @@ const useStyles = makeStyles((theme) => ({
         }
     },
     unread: {
-        background: theme.palette.grey[200],
+        background: theme.palette.primray.grey[200],
     },
     listDivider: {
         background:'grey',
@@ -138,7 +138,7 @@ const Notification = ({unreadNotification, notif}) => {
                     <Grid item xs={12}>
                         <Grid container>
                             <Grid item>
-                                {notif.read===false && <Chip label="Unread" className={classes.listChipError} onClick={() => {unreadNotification(notif._id); setIsRead(true)}}/>}
+                                {notif.read===false && <Chip label="Read" className={classes.listChipError} onClick={() => {unreadNotification(notif._id); setIsRead(true)}}/>}
                             </Grid>
                         </Grid>
                     </Grid>

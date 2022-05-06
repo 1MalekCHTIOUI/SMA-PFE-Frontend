@@ -19,7 +19,7 @@ const Container = styled.div`
 
 const StyledVideo = styled.video`
     height: 100%;
-    width: 50rem;
+    width: 100%;
 `;
 const style = {
     position: 'absolute',
@@ -36,41 +36,38 @@ const style = {
 
 const useStyles = makeStyles({
     container: {
-        height:"100%",
+        height:"100vw",
+        position: "relative",
     },
     chatContainer: {
-        flexGrow: 1,
         display: "flex",
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        position: 'relative',
-        background:'yellowgreen',
+        position: 'absolute',
         zIndex: 1,
-        height: '80vh'
+        height: '80vh',
+        width: '100%',
     },
     myContainer: {
         zIndex: 3,
         position: 'absolute',
         display: 'flex',
         bottom: 0,
-        width: '25%',
-        height: '30%',
+        width: '23%',
+        height: '29%',
         border: '2px solid red'
     },
     userContainer: {
         position: 'absolute',
         zIndex: 2,
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background:'lightblue',
         width: '100%',
-        height: '100%',
+        height: '70%',
+        top: 0,
     },
     typography: {
         position: 'absolute',
         color: 'white',
+        display: 'flex',
+        justifyContent: 'center',
         top: 0
     }
 })
@@ -238,11 +235,11 @@ const Room = (props) => {
                         <StyledVideo ref={userVideo} autoPlay playsInline />
                     </div>
                     <div className={classes.userContainer}>
+                        <div>
+                            {joinedUsers===0 && <CircularProgress/>}
+                        </div>
                         {location.state.type==='PRIVATE' && (
                             <>
-                                <div>
-                                    {joinedUsers===0 && <CircularProgress/>}
-                                </div>
                                 <Typography className={classes.typography} variant='overline'>{location.state.callData.caller || location.state.callData.receiver}</Typography>
                                 {peers[0]?.readable && <Video key={1} peer={peers[0]} />}
                             </>
@@ -250,7 +247,7 @@ const Room = (props) => {
                     </div>
                     {location.state.type==='PUBLIC' && (
                         peers.map((peer, index) => {
-                            if(index <= joinedUsers+1) {
+                            if(index === joinedUsers) {
                                 return peer.readable ? <Grid item><MainCard style={{width: 'fit-content'}} title={location.state.callData.caller || location.state.callData.receiver}><div>{joinedUsers===0 && <CircularProgress/>}</div><Video key={index} peer={peer} /></MainCard></Grid> : console.log("LOADING");
                             }
                         }))
