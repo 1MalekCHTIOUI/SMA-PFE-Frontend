@@ -102,7 +102,7 @@ const Message = ({message, own, mk, type}) => {
         let codeIndex = str.indexOf(config.HOST + 'videoChat/')
         let roomCode = ''
         if(codeIndex!==-1 ) {
-            roomCode = str.substring(codeIndex+32, codeIndex+52)
+            roomCode = str.substring(codeIndex+48, codeIndex+68)
         }
         while (match = RE_URL.exec(str)) {
             const link = match[0];
