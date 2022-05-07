@@ -146,7 +146,7 @@ const ConfirmDialog = (props) => {
                     <Button onClick={() => setOpenConfirm(false)}>Ok</Button>
                 </>
             )}
-            {!status && (
+            {code && (
                 <>
                     <Button onClick={onConfirm}>Generate room link</Button>
                     {<CopyToClipboard text={`http://localhost:3000/videoChat/${code}`} onCopy={()=>setCopied(true)}>
@@ -167,7 +167,7 @@ const Chat = () => {
     const classes = useStyles()
     const [users, setUsers] = React.useState([])
     const [rooms, setRooms] = React.useState([])
-    const [currentChat, setCurrentChat] = React.useState(null)
+    // const [currentChat, setCurrentChat] = React.useState(null)
     const [messages, setMessages] = React.useState(null)
     const [newMessage, setNewMessage] = React.useState("")
     const [existInRoom, setExistInRoom] = React.useState(null)
@@ -185,7 +185,7 @@ const Chat = () => {
     
     const [openMenu, setOpenMenu] = React.useState(false)
 
-    const {submitAddMember,submitRemoveMember, arrivalMessage, adminMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
+    const {submitAddMember,submitRemoveMember, arrivalMessage,userGroups, setUserGroups, createGroup, currentChat, setCurrentChat, removeGroup, adminMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
 
@@ -226,7 +226,6 @@ const Chat = () => {
     },[arrivalMessage])
 
     React.useEffect(()=>{
-        console.log(adminMessage);
         adminMessage && 
         setMessages(prev => [...prev, adminMessage])
     },[adminMessage])
@@ -417,13 +416,13 @@ const Chat = () => {
     // const [newGroup, setNewGroup] = useState(null)
 
 
-    const [userGroups, setUserGroups] = React.useState([])
+    // const [userGroups, setUserGroups] = React.useState([])
     const [groupMembers, setGroupMembers] = React.useState([])
 
     const getGroupMembers = async () => {
         try {
             const members = await axios.get(config.API_SERVER+"rooms/room/"+ currentChat?._id)
-            members.data.members.map(async m => {
+            members.data.members?.map(async m => {
                 try {
                     if(account.user._id !== m) {
                         const member = await axios.get(config.API_SERVER+"user/users/"+ m)
@@ -523,9 +522,11 @@ const Chat = () => {
 
     const submitRemoveGroup = async () => {
         try {
+            const temp = currentChat
             await axios.delete(config.API_SERVER + `rooms/removeGroup/${currentChat?._id}`)
+            removeGroup(temp)
             setStatus(1)
-            window.location.reload(false)   
+            // window.location.reload(false)
         } catch (error) {
             console.log(error);
         }
@@ -539,12 +540,15 @@ const Chat = () => {
         addedMembers.map(m => {
             data.members.push(m._id)
         })
+
         if(account.user.role[0]!=='USER'){
             data.members.push(account.user._id)
         }
 
         try{
-            await axios.post(config.API_SERVER+"rooms/newGroup", data)
+            const res = await axios.post(config.API_SERVER+"rooms/newGroup", data)
+            createGroup(res.data)
+
             setStatus(1)
         }catch(e){console.log(e)}
     }

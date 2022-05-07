@@ -34,6 +34,9 @@ const ContextProvider = ({children}) => {
     const [arrivalMessage, setArrivalMessage] = React.useState(null)
     const [adminMessage, setAdminMessage] = React.useState(null)
     const [groupMembers, setGroupMembers] = React.useState([])
+    const [currentChat, setCurrentChat] = React.useState(null)
+
+    const [userGroups, setUserGroups] = React.useState([])
 
     const [arrivalNotification, setArrivalNotification] = React.useState(null)
     const [onlineUsers, setOnlineUsers] = React.useState([])
@@ -48,14 +51,18 @@ const ContextProvider = ({children}) => {
 
     },[account.user])
 
+    // React.useEffect(()=>{
+    //     console.log(userGroups);
+
+    // },[userGroups])
+
     const [callData, setCallData] = React.useState({caller: '', receiver: ''})
 
     React.useEffect(()=>{
-
         socket.on("getCallerID", (data)=>{
             setCallerId(data)
         })
-
+        console.log(userGroups);
         socket.on("notif", data => {
             console.log("receiving call");
             setCallerMsg(data.msg)
@@ -79,7 +86,6 @@ const ContextProvider = ({children}) => {
     
         socket.on("getMessage", async data => {
             try {
-                console.log(data);
                 if(data.senderId==='CHAT') {
                     setAdminMessage({
                         sender: data.senderId,
@@ -117,7 +123,29 @@ const ContextProvider = ({children}) => {
             } catch(e) {console.log(e)}
 
         })
+
         socket.on("getRoomID", data => setROOM_ID(data))
+
+        socket.on('removedFromGroup', data => {
+            setUserGroups(prev => prev.filter(group => group._id !== data.currentChat._id))
+            setCurrentChat(null)
+        })
+        
+        socket.on('addedToGroup', data => {
+            console.log('You have been added!');
+            setUserGroups(prev => [...prev, data.currentChat])
+        })
+
+        socket.on('groupCreated', data => {
+            console.log('New group created!');
+            setUserGroups(prev => [...prev, data])
+        })
+        socket.on('groupRemoved', data => {
+            console.log(data);
+            setUserGroups(prev => prev.filter(group => group._id !== data._id))
+            setCurrentChat(null)
+        })
+
     },[socket])
     const [loaded, setLoaded] = React.useState(false)
 
@@ -142,6 +170,37 @@ const ContextProvider = ({children}) => {
     const cleanup = () => {
         console.log("clean");
         setCallDeclined(false)
+    }
+
+    const createGroup = (data) => {
+        console.log(data);
+        socket.emit('createGroup', data)
+        data.members.map(async item => {
+            if(account.user._id !== item) {
+                socket.emit('sendNotification', {
+                    senderId: account.user._id,
+                    receiverId: item,
+                    content: `You have been added to the new group ${data.name}!`,
+                })
+                await sendNotification(account.user._id, item, `You have been added to the new group ${data.name}!`)    
+    
+            }
+        })
+    }
+    const removeGroup = (data) => {
+        console.log(data);
+        
+        data.members.map(async item => {
+            if(account.user._id !== item) {
+                socket.emit('sendNotification', {
+                    senderId: account.user._id,
+                    receiverId: item,
+                    content: `${data.name} has been removed!`,
+                })
+                await sendNotification(account.user._id, item, `${data.name} has been removed!`)
+            }
+        })
+        socket.emit('removeGroup', data)
     }
 
     const handleCallButton = (val) => {
@@ -204,7 +263,7 @@ const ContextProvider = ({children}) => {
                 sender: sender,
                 content: message,
             }
-            const res = await axios.post(config.API_SERVER+"notifications", data)
+            await axios.post(config.API_SERVER+"notifications", data)
         } catch (error) {
             console.log(error);
         }
@@ -231,6 +290,7 @@ const ContextProvider = ({children}) => {
                         content: `You have been added to the group ${res.data.name}!`,
                     })
                     await sendNotification(account.user._id, m._id, `You have been added to the group ${res.data.name}!`)
+                    socket.emit('addToGroup', {currentChat, addedUser: m._id})
                     try {
                         const user = await axios.get(config.API_SERVER+'user/users/'+m._id)
                         try{
@@ -244,7 +304,7 @@ const ContextProvider = ({children}) => {
                                 const room = await axios.get(config.API_SERVER + 'rooms/room/'+currentChat._id)
                                 if(room.data.type==='PUBLIC') {
                                     room.data.members.map(member => {
-                                        sendMessage('CHAT', member, res.data.text)
+                                        if(member !== account.user._id) sendMessage('CHAT', member, res.data.text, currentChat.type)
                                     })
                                 }
                                 setAdminMessage(data)
@@ -272,6 +332,7 @@ const ContextProvider = ({children}) => {
                         receiverId: m._id,
                         content: `You have been removed from the group ${res.data.name}!`
                     })
+                    socket.emit('removeFromGroup', {currentChat, removedUser: m._id})
                     try {
                         const user = await axios.get(config.API_SERVER+'user/users/'+m._id)
                         const data = {
@@ -286,7 +347,7 @@ const ContextProvider = ({children}) => {
                                 try {
                                     if(room.data.type==='PUBLIC') {
                                         room.data.members?.map(member => {
-                                            sendMessage('CHAT', member, res.data.text)
+                                            if(member !== account.user._id) sendMessage('CHAT', member, res.data.text, currentChat.type)
                                         })
                                     }
                                     setAdminMessage(data)
@@ -302,7 +363,9 @@ const ContextProvider = ({children}) => {
     }
     
     return (
-        <SocketContext.Provider value={{ isReceivingCall, arrivalNotification, loaded, arrivalMessage, adminMessage, onlineUsers, callAccepted, declineInfo, callDeclined, callerMsg, ROOM_ID,sendNotification, submitAddMember,submitRemoveMember, join,sendMessage, cleanup, handleAnswer, handleHangup, handleCallButton }}>
+        <SocketContext.Provider value={{ 
+            isReceivingCall,userGroups, currentChat, arrivalNotification, loaded, arrivalMessage, adminMessage, onlineUsers, callAccepted, declineInfo, callDeclined, callerMsg, ROOM_ID,
+            sendNotification, createGroup, removeGroup, setUserGroups, setCurrentChat, sendNotification, submitAddMember,submitRemoveMember, join,sendMessage, cleanup, handleAnswer, handleHangup, handleCallButton }}>
             {children}
         </SocketContext.Provider>
     )
