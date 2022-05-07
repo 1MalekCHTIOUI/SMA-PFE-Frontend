@@ -115,7 +115,7 @@ const RestLogin = (props, { ...others }) => {
                             
                             if (response.data.status==="success") {
 
-                                io("wss://sma-backend-01.herokuapp.com").emit("addUser", response.data._id)
+                                io("https://sma-socket-01.herokuapp.com/").emit("addUser", response.data._id)
                                 dispatcher({
                                     type: ACCOUNT_INITIALIZE,
                                     payload: { isLoggedIn: true, user: response.data, token: response.data.token }

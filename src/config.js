@@ -6,7 +6,7 @@ const config = {
     fontFamily: `'Roboto', sans-serif`,
     borderRadius: 12,
     // API_SERVER: 'http://localhost:5000/api/',
-    // HOST: 'http://localhost:5000/'    
+    // HOST: 'http://localhost:5000/'
     API_SERVER: 'https://sma-backend-01.herokuapp.com/api/',
     HOST: 'https://sma-backend-01.herokuapp.com/'
 };

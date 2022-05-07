@@ -9,7 +9,7 @@ export const initialState = {
 //-----------------------|| ACCOUNT REDUCER ||-----------------------//
 
 const socketReducer = (state = initialState, action) => {
-    const socket = io.connect("wss://sma-backend-01.herokuapp.com")
+    const socket = io.connect("https://sma-socket-01.herokuapp.com/")
     switch (action.type) {
         case RECEIVING_CALL: {
             const { isReceivingCall, message } = action.payload;

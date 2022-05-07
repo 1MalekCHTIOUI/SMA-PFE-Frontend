@@ -11,7 +11,7 @@ export const initialState = {
 //-----------------------|| ACCOUNT REDUCER ||-----------------------//
 
 const accountReducer = (state = initialState, action) => {
-    const socket = io("wss://sma-backend-01.herokuapp.com")
+    const socket = io("https://sma-socket-01.herokuapp.com/")
     switch (action.type) {
         case ACCOUNT_INITIALIZE: {
             const { isLoggedIn, user, token } = action.payload;

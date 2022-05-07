@@ -11,7 +11,7 @@ import { Message, Notifications } from '@material-ui/icons'
 
 const SocketContext = createContext()
 
-const socket = io('https://sma-backend-01.herokuapp.com')
+const socket = io('https://sma-socket-01.herokuapp.com/')
 
 const useStyles = makeStyles({
     notif : {
