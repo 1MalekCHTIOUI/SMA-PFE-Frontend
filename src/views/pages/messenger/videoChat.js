@@ -82,7 +82,7 @@ const Video = (props) => {
     }, []);
 
     return (
-        <StyledVideo playsInline autoPlay ref={ref} />
+        <StyledVideo muted playsInline autoPlay ref={ref} />
     );
 }
 
@@ -232,7 +232,7 @@ const Room = (props) => {
                 <div className={classes.chatContainer}>
                     <div className={classes.myContainer}>
                         <Typography className={classes.typography} variant='overline'>{`${account.user.first_name} ${account.user.last_name}`}</Typography>
-                        <StyledVideo ref={userVideo} autoPlay playsInline />
+                        <StyledVideo muted ref={userVideo} autoPlay playsInline />
                     </div>
                     <div className={classes.userContainer}>
                         <div>
