@@ -117,6 +117,7 @@ const RestRegister = ({ ...others }) => {
                     lastName: '',
                     email: '',
                     role:'',
+                    service: '',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({
@@ -124,6 +125,7 @@ const RestRegister = ({ ...others }) => {
                     firstName: Yup.string().required('First name is required'),
                     lastName: Yup.string().required('Last name is required'),
                     role: Yup.string().required('Role is required'),
+                    service: Yup.string().required('Service is required'),
                 })}
                 onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
                     try {
@@ -133,6 +135,7 @@ const RestRegister = ({ ...others }) => {
                                 last_name: values.lastName,
                                 email: values.email,
                                 role: values.role,
+                                service: values.service,
                             })
                             history.push('/management');
                         }catch(e) {
