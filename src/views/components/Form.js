@@ -192,9 +192,9 @@ const Form = ({user, setIsEditing, setIs, setEditedUser, accessFrom, ...others }
                         role: user? user.role[0] : '',
                         service: user? user.service : '',
                         profilePicture: user? user.profilePicture : '',
-                        linkedin: user? user.social.linkedin : '',
-                        github: user? user.social.github : '',
-                        facebook: user? user.social.facebook : '',
+                        linkedin: user && user.social.linkedin ? user.social.linkedin : '',
+                        github: user && user.social.github ? user.social.github : '',
+                        facebook: user && user.social.facebook ? user.social.facebook : '',
                         oldPassword: '',
                         newPassword: '',
                         submit: null
