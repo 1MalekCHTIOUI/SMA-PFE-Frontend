@@ -98,7 +98,8 @@ const Message = ({message, own, mk, type}) => {
         let match;
         const results = [];
         let lastIndex = 0;
-        let codeIndex = str.indexOf('http://localhost:3000/videoChat/')
+        // let codeIndex = str.indexOf('http://localhost:3000/videoChat/')
+        let codeIndex = str.indexOf(config.HOST + 'videoChat/')
         let roomCode = ''
         if(codeIndex!==-1 ) {
             roomCode = str.substring(codeIndex+32, codeIndex+52)
