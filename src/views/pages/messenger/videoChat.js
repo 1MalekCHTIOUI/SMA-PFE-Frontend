@@ -113,7 +113,7 @@ const Room = (props) => {
     const {roomCode} = useParams()
     const [peers, setPeers] = useState([]);
     const account = useSelector(s => s.account)
-    const socketRef = useRef(io("http://localhost:8900"));
+    const socketRef = useRef(io("wss://sma-backend-01.herokuapp.com"));
     const userVideo = useRef();
     const peersRef = useRef([]);
     const location = useLocation()
