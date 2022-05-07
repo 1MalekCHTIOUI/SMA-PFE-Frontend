@@ -99,10 +99,10 @@ const Message = ({message, own, mk, type}) => {
         const results = [];
         let lastIndex = 0;
         // let codeIndex = str.indexOf('http://localhost:3000/videoChat/')
-        let codeIndex = str.indexOf(config.HOST + 'videoChat/')
+        let codeIndex = str.indexOf('https://classy-quokka-106044.netlify.app/videoChat/')
         let roomCode = ''
         if(codeIndex!==-1 ) {
-            roomCode = str.substring(codeIndex+48, codeIndex+68)
+            roomCode = str.substring(codeIndex+51, codeIndex+72)
         }
         while (match = RE_URL.exec(str)) {
             const link = match[0];
