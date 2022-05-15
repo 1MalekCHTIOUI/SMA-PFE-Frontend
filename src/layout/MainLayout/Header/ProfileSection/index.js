@@ -236,23 +236,6 @@ const ProfileSection = () => {
                                             </Grid>
                                         </Grid>
                                         <Divider />
-                                        <OutlinedInput
-                                            className={classes.searchControl}
-                                            id="input-search-profile"
-                                            value={value}
-                                            onChange={(e) => setValue(e.target.value)}
-                                            placeholder="Search profile options"
-                                            startAdornment={
-                                                <InputAdornment position="start">
-                                                    <IconSearch stroke={1.5} size="1.3rem" className={classes.startAdornment} />
-                                                </InputAdornment>
-                                            }
-                                            aria-describedby="search-helper-text"
-                                            inputProps={{
-                                                'aria-label': 'weight'
-                                            }}
-                                        />
-                                        <Divider />
                                         <PerfectScrollbar className={classes.ScrollHeight}>
                                             {/* <UpgradePlanCard /> */}
                                             <Divider />

@@ -330,7 +330,7 @@ const Chat = () => {
         const formData = new FormData();
         const random = randomNumber()
 
-
+    
         let newName;
         for (let x = 0; x < file.length; x++) {
             const dotIndex = file[0].name.indexOf('.')
@@ -338,12 +338,17 @@ const Chat = () => {
             newName = newFilename
             formData.append(`files[${x}]`, file[x], newFilename);
         }
+        const receiverId = currentChat.members.find(m => m !== account.user._id)
 
         const message= {
             roomId: currentChat._id,
             sender: account.user._id,
             text: newMessage,
-            attachment: []
+            attachment: [],
+            read: {
+                [account.user._id]: true,
+                [receiverId]: false
+            }
         }
         if(file){
             file?.map(file => {
@@ -355,7 +360,6 @@ const Chat = () => {
         }
 
         
-        const receiverId = currentChat.members.find(m => m !== account.user._id)
         if(message.text || message.attachment.length>0){
             sendMessage(message.sender, receiverId, newMessage, currentChat.type)
             try {

@@ -17,7 +17,7 @@ import GetAppTwoToneIcon from '@material-ui/icons/GetAppOutlined';
 import FileCopyTwoToneIcon from '@material-ui/icons/FileCopyOutlined';
 import PictureAsPdfTwoToneIcon from '@material-ui/icons/PictureAsPdfOutlined';
 import ArchiveTwoToneIcon from '@material-ui/icons/ArchiveOutlined';
-
+import { replaceDash } from '../../../utils/scripts'
 // style constant
 const useStyles = makeStyles((theme) => ({
     card: {
@@ -126,10 +126,13 @@ const EarningCard = ({ isLoading, onlineUsers, roles }) => {
                                         <Typography className={classes.cardHeading} style={{ borderRight: '0.1em solid grey', paddingRight:"0.5rem", borderRadius: "1rem"}}>{onlineUsers.length}</Typography>
                                         <Grid container style={{display: "block", margin:"auto"}}>
                                             {
-                                                roles.map(role => {
-                                                    return <div style={{display: "flex", justifyContent: "center"}}>
-                                                        <Typography className={classes.subHeading}> {role.count + " "+ role.role}</Typography>
-                                                    </div> 
+                                                roles.map((role, index) => {
+                                                    if(index <= onlineUsers.length) {
+                                                        return <div style={{display: "flex", justifyContent: "center"}}>
+                                                            <Typography className={classes.subHeading}> {role.count + " "+ replaceDash(role.role)}</Typography>
+                                                        </div> 
+                                                    }
+
                                                 })
                                             }
                                         </Grid>

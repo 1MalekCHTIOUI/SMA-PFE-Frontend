@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 //-----------------------|| MENU ITEMS ||-----------------------//
 
 const menuItems = {
-    items: [dashboard, utilities, chat, management, other]
+    items: [dashboard, chat, management]
 };
 
 export default menuItems;

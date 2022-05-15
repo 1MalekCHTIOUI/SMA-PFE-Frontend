@@ -96,7 +96,7 @@ const useStyles = makeStyles((theme) => ({
         }
     },
     unread: {
-        background: theme.palette.primray.grey[200],
+        background: 'rgba(0,0,0,0.05)',
     },
     listDivider: {
         background:'grey',

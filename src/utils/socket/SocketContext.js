@@ -62,7 +62,6 @@ const ContextProvider = ({children}) => {
         socket.on("getCallerID", (data)=>{
             setCallerId(data)
         })
-        console.log(userGroups);
         socket.on("notif", data => {
             console.log("receiving call");
             setCallerMsg(data.msg)
@@ -242,14 +241,20 @@ const ContextProvider = ({children}) => {
     }
     const sendMessageNotification = async (sender, to, message) => {
         try {
-            const data = {
-                title: "New message",
-                userId: to,
-                sender: sender,
-                content: message,
+            const u = await axios.get(config.API_SERVER+'user/users/'+sender)
+            try {
+                const data = {
+                    title: u.data.first_name +' '+ u.data.last_name,
+                    userId: to,
+                    sender: sender,
+                    content: message,
+                }
+                const res = await axios.post(config.API_SERVER+"notifications", data)
+                console.log(res.data);
+            } catch (error) {
+                console.log(error);
             }
-            const res = await axios.post(config.API_SERVER+"notifications", data)
-            console.log(res.data);
+
         } catch (error) {
             console.log(error);
         }
