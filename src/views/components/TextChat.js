@@ -185,7 +185,7 @@ const Chat = () => {
     
     const [openMenu, setOpenMenu] = React.useState(false)
 
-    const {submitAddMember,submitRemoveMember, arrivalMessage,userGroups, setUserGroups, createGroup, currentChat, setCurrentChat, removeGroup, adminMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
+    const {submitAddMember,submitRemoveMember, arrivalMessage,userGroups, setUserGroups, createGroup, currentChat, setCurrentChat,removeMessagesFromRoom, removeGroup, adminMessage, onlineUsers, sendMessage, handleCallButton} = useContext(SocketContext)
     const account = useSelector(state => state.account)
     const scrollRef = React.useRef(null)
 
@@ -218,15 +218,17 @@ const Chat = () => {
 
     
     React.useEffect(()=>{
+        console.log(arrivalMessage);
         arrivalMessage && 
         currentChat?.members.includes(arrivalMessage.sender) &&
-        currentChat.type === arrivalMessage.roomType &&
+        currentChat._id === arrivalMessage.currentChat &&
         setMessages(prev => [...prev, arrivalMessage])
 
     },[arrivalMessage])
 
     React.useEffect(()=>{
         adminMessage && 
+        currentChat._id === adminMessage.currentChat &&
         setMessages(prev => [...prev, adminMessage])
     },[adminMessage])
 
@@ -361,7 +363,7 @@ const Chat = () => {
 
         
         if(message.text || message.attachment.length>0){
-            sendMessage(message.sender, receiverId, newMessage, currentChat.type)
+            sendMessage(message.sender, receiverId, newMessage, currentChat._id)
             try {
                 const res = await axios.post(configData.API_SERVER+"messages", message)
                 setMessages([...messages, res.data])
@@ -527,9 +529,14 @@ const Chat = () => {
     const submitRemoveGroup = async () => {
         try {
             const temp = currentChat
-            await axios.delete(config.API_SERVER + `rooms/removeGroup/${currentChat?._id}`)
+            try {
+                await axios.delete(config.API_SERVER + `rooms/removeGroup/${currentChat?._id}`)
+            } catch (error) {
+                console.log(error);
+            }
             removeGroup(temp)
             setStatus(1)
+            removeMessagesFromRoom(temp._id)
             // window.location.reload(false)
         } catch (error) {
             console.log(error);

@@ -89,17 +89,18 @@ const ContextProvider = ({children}) => {
                     setAdminMessage({
                         sender: data.senderId,
                         text: data.text,
-                        createdAt: Date.now()
+                        createdAt: Date.now(),
+                        currentChat: data.currentChat
                     })
                 } 
 
                 const res = await axios.get(config.API_SERVER+'user/users/'+data.senderId)
-                openNotification('New message', {sender: `${res.data.first_name} ${res.data.last_name}`, text: data.text}, 'message')
+                openNotification(`${res.data.first_name} ${res.data.last_name}`,  data.text, 'message')
                 setArrivalMessage({
                     sender: data.senderId,
                     text: data.text,
                     createdAt: Date.now(),
-                    roomType: data.roomType
+                    currentChat: data.currentChat
                 })
                 
             } catch (error) {
@@ -111,7 +112,7 @@ const ContextProvider = ({children}) => {
             console.log("got notif");
             try {
                 const res = await axios.get(config.API_SERVER+'user/users/'+data.senderId)
-                openNotification('Group', {sender: `${res.data.first_name} ${res.data.last_name}`, text: data.content}, 'notif')
+                openNotification(`${res.data.first_name} ${res.data.last_name}`, data.content, 'notif')
                 setArrivalNotification({
                     title: 'Group',
                     sender: data.senderId,
@@ -159,7 +160,7 @@ const ContextProvider = ({children}) => {
             className: classes.notif,
             message: description.sender,
             icon: type==='message' ? <Message />: <Notifications />,
-            description: description.text,
+            description: description,
             onClick: () => {
             console.log('Notification Clicked!');
             },
@@ -200,6 +201,7 @@ const ContextProvider = ({children}) => {
             }
         })
         socket.emit('removeGroup', data)
+        
     }
 
     const handleCallButton = (val) => {
@@ -273,16 +275,24 @@ const ContextProvider = ({children}) => {
             console.log(error);
         }
     }
-    const sendMessage = async (senderId, receiverId, newMessage, roomType) => {
+    const sendMessage = async (senderId, receiverId, newMessage, currentChat) => {
         await sendMessageNotification(senderId, receiverId, newMessage)
         socket.emit("sendMessage", {
             senderId: senderId,
             receiverId,
             text: newMessage,
-            roomType
+            currentChat
         })
     }
 
+    const removeMessagesFromRoom = async (roomId) => {
+        console.log('removing messages from: '+roomId);
+        try {
+            await axios.delete(config.API_SERVER+'rooms/removeMessages/'+roomId)
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     const submitAddMember = async (currentChat, addedMembers) => {
         try {
@@ -309,7 +319,7 @@ const ContextProvider = ({children}) => {
                                 const room = await axios.get(config.API_SERVER + 'rooms/room/'+currentChat._id)
                                 if(room.data.type==='PUBLIC') {
                                     room.data.members.map(member => {
-                                        if(member !== account.user._id) sendMessage('CHAT', member, res.data.text, currentChat.type)
+                                        if(member !== account.user._id) sendMessage('CHAT', member, res.data.text, currentChat._id)
                                     })
                                 }
                                 setAdminMessage(data)
@@ -352,7 +362,7 @@ const ContextProvider = ({children}) => {
                                 try {
                                     if(room.data.type==='PUBLIC') {
                                         room.data.members?.map(member => {
-                                            if(member !== account.user._id) sendMessage('CHAT', member, res.data.text, currentChat.type)
+                                            if(member !== account.user._id) sendMessage('CHAT', member, res.data.text, currentChat._id)
                                         })
                                     }
                                     setAdminMessage(data)
@@ -370,7 +380,7 @@ const ContextProvider = ({children}) => {
     return (
         <SocketContext.Provider value={{ 
             isReceivingCall,userGroups, currentChat, arrivalNotification, loaded, arrivalMessage, adminMessage, onlineUsers, callAccepted, declineInfo, callDeclined, callerMsg, ROOM_ID,
-            sendNotification, createGroup, removeGroup, setUserGroups, setCurrentChat, sendNotification, submitAddMember,submitRemoveMember, join,sendMessage, cleanup, handleAnswer, handleHangup, handleCallButton }}>
+            sendNotification, removeMessagesFromRoom, createGroup, removeGroup, setUserGroups, setCurrentChat, sendNotification, submitAddMember,submitRemoveMember, join,sendMessage, cleanup, handleAnswer, handleHangup, handleCallButton }}>
             {children}
         </SocketContext.Provider>
     )
