@@ -13,13 +13,17 @@ const Management = () => {
     const [users, setUsers] = React.useState([])
     const [isEdited, setIsEdited] = React.useState(null)
     const [isDeleted, setIsDeleted] = React.useState(null)
+    const [usersLoading, setUsersLoading] = React.useState(false)
 
     React.useEffect(() => {
         const fetchUsers = async () => {
             try {
+                setUsersLoading(true)
                 const res = await axios.get(configData.API_SERVER + "user/users")
                 setUsers(res.data)
+                setUsersLoading(false)
             } catch(e) {
+                setUsersLoading(false)
                 console.log(e);
             }
         }
@@ -65,7 +69,7 @@ const Management = () => {
             }
 
             <Grid container>
-                <Usertable data={users} setIsEdited={setIsEdited} setIsDeleted={setIsDeleted}/>
+                <Usertable usersLoading={usersLoading} data={users} setIsEdited={setIsEdited} setIsDeleted={setIsDeleted}/>
             </Grid>
         </MainCard>
     )

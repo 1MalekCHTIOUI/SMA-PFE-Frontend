@@ -27,7 +27,7 @@ const EditPage = () => {
     ,[])
 
 
-    React.useEffect(()=> console.log(location.state),[location.state])
+    // React.useEffect(()=> console.log(location.state),[location.state])
     return (
         <MainCard title="Account information">
             <Typography variant="h4" align="center" style={{marginBottom:"1rem"}}>With us since: {moment(date).format("D MMM YYYY")}</Typography>

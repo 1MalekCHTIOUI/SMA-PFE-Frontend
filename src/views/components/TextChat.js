@@ -4,14 +4,16 @@ import { io } from "socket.io-client"
 import { useDispatch, useSelector } from 'react-redux'
 import { v4 as uuidV4 } from 'uuid'
 import { makeStyles } from '@material-ui/styles';
-import {ImageList, ImageListItem, Paper, Grid,CircularProgress , Box, Divider, TextField, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Container, MenuItem, Select, FormControl, InputLabel, Button, Modal, Checkbox, OutlinedInput, Input, Fade } from '@material-ui/core';
+import {ImageList, ImageListItem, Paper, Grid,Collapse, CircularProgress , Box, Divider, TextField, ButtonGroup, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Fab, Container, MenuItem, Select, FormControl, InputLabel, Button, Modal, Checkbox, OutlinedInput, Input, Fade } from '@material-ui/core';
 import {Alert, AlertTitle, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core'
 import {Alert as CopiedAlert} from 'antd'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import ScrollToBottom from 'react-scroll-to-bottom';
 import ScrollableFeed from 'react-scrollable-feed';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+// import {CSSTransition} from 'react-transition-group';
 import SendIcon from '@material-ui/icons/Send';
-import {Add, Check, PersonRemove, Remove, VideoCall, Delete, AttachFile, PictureAsPdf, Close} from '@material-ui/icons';
+import {Add, ExpandLess, ExpandMore, Check, PersonRemove, Remove, VideoCall, Delete, AttachFile, PictureAsPdf, Close} from '@material-ui/icons';
 import Room from './Room'
 import Message from './Message'
 import configData from '../../config'
@@ -29,7 +31,7 @@ const useStyles = makeStyles({
     },
     chatSection: {
         width: '100%',
-        height: '100vh'
+        height: '85vh',
     },
     headBG: {
         backgroundColor: '#e0e0e0'
@@ -100,6 +102,10 @@ const useStyles = makeStyles({
     },
     disableTextSelection: {
         userSelect:'none'
+    },
+    scrollBar: {
+        height: 'auto',
+        maxHeight: '30vh !important', 
     }
 });
 
@@ -470,6 +476,8 @@ const Chat = () => {
     // }, [groupMembers])
 
     const [type, setType] = React.useState('')
+    const [showGroups, setShowGroups] = React.useState(true)
+    const [showUsers, setShowUsers] = React.useState(true)
 
     const [addedMembers, setAddedMembers] = React.useState([])
 
@@ -591,7 +599,7 @@ const Chat = () => {
 
     return (
         <>     
-            <MainCard style={{height:"100%"}} title="Chat">
+            <MainCard style={{height: '100%'}} title="Chat">
                 <ConfirmDialog
                     title="Please confirm"
                     openConfirm={openConfirm}
@@ -647,7 +655,7 @@ const Chat = () => {
 
                 {inviteCode || startCall===false && (
                     <Grid container component={Paper} className={classes.chatSection}>
-                        <Grid item xs={3} className={classes.borderRight500}>
+                        <Grid item xs={4} md={4} style={{overflowY:'auto'}} className={classes.borderRight500}>
                             <List>
                                 <ListItem button key={userFirstName}>
                                     <ListItemIcon>
@@ -705,18 +713,21 @@ const Chat = () => {
                                 </FormControl>
                                                             
                             </Grid>
-                                <Divider />
-                                <Typography variant="overline">Groups</Typography>
-                                <Container className={classes.center}>
-                                    {userGroups.length===0 &&<Typography variant="subtitle2">No groups</Typography> }
-                                </Container>
+                            <Divider />
+                            <Typography variant="overline" style={{display:'flex', alignItems:'center'}} onClick={() => setShowGroups(!showGroups)}>Groups {showGroups ? <ExpandLess />: <ExpandMore />}</Typography>
+                            <Container className={classes.center}>
+                                {userGroups.length===0 &&<Typography variant="subtitle2">No groups</Typography> }
+                            </Container>
+                            <Collapse orientation="vertical" in={showGroups}>
+                                <PerfectScrollbar component='div' className={classes.scrollBar}>
+                                    {groups()}
+                                </PerfectScrollbar>
+                            </Collapse>
 
-                                {groups()}
-
-
-                                <Divider />
-                                <Typography variant="overline">Users</Typography>
-                                <div style={{height: "40vh", overflowY:"auto"}}>
+                            <Divider />
+                            <Typography variant="overline" style={{display:'flex', alignItems:'center'}} onClick={() => setShowUsers(!showUsers)}>Users {showUsers ? <ExpandLess />: <ExpandMore />}</Typography>
+                            <Collapse orientation="vertical" in={showUsers}>
+                                <PerfectScrollbar component='div' className={classes.scrollBar}>
                                     {foundUsers?.map((user, index) => (
                                         <List onClick={()=>userHasRoom(user)}>
                                             <Room
@@ -729,10 +740,10 @@ const Chat = () => {
                                                 key={index}/>
                                         </List>
                                     ))}
-                                </div>
-
+                                </PerfectScrollbar>
+                            </Collapse>
                         </Grid>
-                        <Grid item xs={9}>
+                        <Grid item xs={8} sm={8}>
                             {
                                 currentChat && currentChatUser && currentChat.type==='PRIVATE' && (
                                     <Grid container xs={12} direction="column" className={classes.center}>
@@ -794,7 +805,8 @@ const Chat = () => {
 
                                 </Grid>
                                 <Grid item xs={2} align="right">
-                                    <Button component="label" color="error" aria-label="attach">
+                                <ButtonGroup variant="outlined" className={classes.center} style={{height: '100%'}} aria-label="outlined primary button group">
+                                    <Button color="error" aria-label="attach" style={{height: '100%'}}>
                                         <AttachFile />
                                         <Input
                                             hidden
@@ -808,7 +820,12 @@ const Chat = () => {
                                             onChange={onChangeFileUpload}
                                         />
                                     </Button>
-                                    <Fab color="primary" aria-label="add" onClick={handleSubmit}><SendIcon /></Fab>
+                                    <Button onClick={handleSubmit} color="primary" aria-label="send" style={{height: '100%'}}>
+                                        <SendIcon />
+                                    </Button>
+                                    {/* <Fab color="primary" aria-label="add" style={{width: '2rem', height: '2rem'}} onClick={handleSubmit}><SendIcon /></Fab> */}
+                                </ButtonGroup>
+                                    
                                 </Grid>
                             </Grid>
                             <Grid container ys={12} style={{padding: '20px', overflowY: 'auto', height:"100%"}}>

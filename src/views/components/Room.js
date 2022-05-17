@@ -140,9 +140,10 @@ export default function Room({users, roomsLoading, onlineUsers, currentUser, mk,
                 <Grid item>
                     <ListItem button key={mk}>
                         <ListItemIcon>
-                            <Avatar alt={group.name} src=" " />
+                            <Avatar alt={group.name} src=' ' />
+                            {/* <Avatar alt={group.name} src={`/uploads/profilePictures/${group.profilePicture}`} /> */}
                         </ListItemIcon>
-                        <ListItemText className={classes.items} primary={group.name} />
+                        <ListItemText className={classes.items}><Typography style={{fontWeight: 500}}>{group.name}</Typography></ListItemText>
                     </ListItem>
                 </Grid>
             )}
@@ -176,7 +177,9 @@ export default function Room({users, roomsLoading, onlineUsers, currentUser, mk,
                                     </ListItemIcon>
                                     <Grid container direction="row" style={{display: 'flex', justifyContent: 'space-between'}}>
                                         <Grid item>
-                                            <ListItemText className={classes.items} primary={`${users.first_name} ${users.last_name}`} />
+                                            <ListItemText className={classes.items}>
+                                                <Typography style={{fontWeight: 500}}>{users.first_name + ' ' + users.last_name}</Typography>
+                                            </ListItemText>
                                             <ListItemText className={classes.items}>
                                                 <Typography variant="subtitle2">
                                                     {users.service.replaceAll('_', ' ')}

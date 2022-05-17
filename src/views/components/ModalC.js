@@ -202,8 +202,8 @@ const ModalC = ({setStatus, status, current, submitAddMember,submitRemoveMember,
                             groupMembers?.map((m, i) => (
                                 <List>
                                     <ListItem onClick={() => showProfile(m)} button key={i} className={styles.center}>
-                                        <Grid container xs={5} direction="row">
-                                            <ListItemText primary={m.first_name+" "+m.last_name} />
+                                        <Grid container xs={6} direction="row">
+                                            <ListItemText><Typography style={{fontWeight: 'bold'}}>{m.first_name+" "+m.last_name}</Typography> </ListItemText>
                                             {
                                                 onlineUsers.some(u => u._id === m._id) ? <CloudQueue style={{color:"#00C853"}} className="front-icons"/> : <CloudOff style={{color:"#F44336"}} className="front-icons"/>
                                             }

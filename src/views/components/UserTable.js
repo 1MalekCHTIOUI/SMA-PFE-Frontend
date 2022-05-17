@@ -4,7 +4,7 @@ import moment from 'moment'
 import axios from 'axios'
 import PropTypes from 'prop-types'
 import configData from "../../config"
-import { Box,IconButton,Button,Container,Grid, Alert, AlertTitle, Dialog, DialogTitle, DialogContent, Typography, DialogActions, TextField  } from '@material-ui/core'
+import { Box,IconButton,Button,Container,Grid, Alert, AlertTitle, Dialog,  DialogTitle, DialogContent, Typography, DialogActions, TextField  } from '@material-ui/core'
 import { IconCheck, IconX, IconBackspace } from '@tabler/icons'
 import { makeStyles } from '@material-ui/styles';
 import MuiTypography from '@material-ui/core/Typography'
@@ -164,7 +164,7 @@ const transitionStyles = {
     exiting: { opacity: 1 },
     exited: { opacity: 0 }
 }
-const Usertable = ({data, setIsEdited, setIsDeleted}) => {
+const Usertable = ({data, setIsEdited, setIsDeleted, usersLoading}) => {
     let history = useHistory()
     const [deleted, setDeleted] = React.useState(null)
     const [users, setUsers] = React.useState([])
@@ -481,7 +481,9 @@ const Usertable = ({data, setIsEdited, setIsDeleted}) => {
                             onRowClick={handleRowClick}
                             onCellClick={handleCellClick}
                             onCellEditStart={() => setIsEditing(true)}
-                            onCellEditStop={() => setIsEditing(false)} />
+                            onCellEditStop={() => setIsEditing(false)}
+                            loading={usersLoading}
+                            />
                     </Container>
 
                 )

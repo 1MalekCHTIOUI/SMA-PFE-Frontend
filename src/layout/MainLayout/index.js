@@ -127,7 +127,7 @@ const MainLayout = ({ children }) => {
                 <div>{children}</div>
                 {/* </Main> */}
             </main>
-            <Customization />
+            {/* <Customization /> */}
         </div>
     );
 };
