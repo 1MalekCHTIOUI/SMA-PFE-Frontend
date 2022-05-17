@@ -12,36 +12,9 @@ import { Transition } from 'react-transition-group'
 import Form from "./Form"
 import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import ConfirmDialog from './ConfirmDialog'
 
 
-const ConfirmDialog = (props) => {
-    const { title, children, open, setOpen, onConfirm } = props;
-    return (
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        aria-labelledby="confirm-dialog"
-      >
-        <DialogTitle id="confirm-dialog">{title}</DialogTitle>
-        <DialogContent>{children}</DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setOpen(false)}
-          >
-            No
-          </Button>
-          <Button
-            onClick={() => {
-              setOpen(false);
-              onConfirm();
-            }}
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
   
   
   function escapeRegExp(value) {
@@ -164,7 +137,7 @@ const transitionStyles = {
     exiting: { opacity: 1 },
     exited: { opacity: 0 }
 }
-const Usertable = ({data, setIsEdited, setIsDeleted, usersLoading}) => {
+const Usertable = ({data, setIsEdited, setIsDeleted, usersLoading,setUsersToDelete}) => {
     let history = useHistory()
     const [deleted, setDeleted] = React.useState(null)
     const [users, setUsers] = React.useState([])
@@ -478,6 +451,13 @@ const Usertable = ({data, setIsEdited, setIsDeleted, usersLoading}) => {
                             isCellEditable={(params) => canEdit(params)}
                             isRowSelectable={(params) => canEdit(params)}
                             checkboxSelection
+                            onSelectionModelChange={(ids) => {
+                                const selectedIDs = new Set(ids);
+                                const selectedRowData = rows.filter((row) =>
+                                  selectedIDs.has(row._id)
+                                );
+                                setUsersToDelete(selectedRowData)
+                            }}
                             onRowClick={handleRowClick}
                             onCellClick={handleCellClick}
                             onCellEditStart={() => setIsEditing(true)}
