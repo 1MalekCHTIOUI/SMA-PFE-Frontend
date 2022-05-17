@@ -30,7 +30,7 @@ import config from '../../../../config';
 // style constant
 const useStyles = makeStyles((theme) => ({
     navContainer: {
-        width: '30vw',
+        width: '100vw',
         maxWidth: '330px',
         paddingTop: 0,
         paddingBottom: 0,

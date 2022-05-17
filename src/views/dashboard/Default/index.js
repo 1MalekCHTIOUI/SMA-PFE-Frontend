@@ -31,7 +31,7 @@ const Dashboard = () => {
 
     const getRoles = async () => {
         try {
-            if(onliners > roles.length){
+            if(onlineUsers.length <= roles.length){
                 for(let i=0; i<onlineUsers.length;i++){
                     const user = await axios.get(config.API_SERVER+"user/users/"+onlineUsers[i].userId)
                     setRoles(roles => [...roles, {count: 1, role: user.data.role[0]}])

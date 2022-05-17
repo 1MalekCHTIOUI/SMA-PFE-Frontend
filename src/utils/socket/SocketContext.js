@@ -84,7 +84,7 @@ const ContextProvider = ({children}) => {
         })
     
         socket.on("getMessage", async data => {
-            try {
+                
                 if(data.senderId==='CHAT') {
                     setAdminMessage({
                         sender: data.senderId,
@@ -92,20 +92,33 @@ const ContextProvider = ({children}) => {
                         createdAt: Date.now(),
                         currentChat: data.currentChat
                     })
-                } 
+                }
+                else {
+                    try {
+                        const res = await axios.get(config.API_SERVER+'user/users/'+data.senderId)
+                        const name = `${res.data.first_name} ${res.data.last_name}`
+                        try {
+                            const x = await axios.get(config.API_SERVER+'rooms/room/'+data.currentChat)
+                            openNotification(x.data.type === 'PRIVATE' ? name : `${name} to ${x.data.name}`, data.text, 'message')
+                            setArrivalMessage({
+                                sender: data.senderId,
+                                text: data.text,
+                                createdAt: Date.now(),
+                                currentChat: data.currentChat
+                            })
+                            setArrivalNotification({
+                                title: x.data.type === 'PRIVATE' ? name : `${name} to ${x.data.name}`,
+                                sender: data.senderId,
+                                content: data.text,
+                                createdAt: Date.now(),
+                                read: false
+                            })
+                        }catch(e) {console.log(e);}
 
-                const res = await axios.get(config.API_SERVER+'user/users/'+data.senderId)
-                openNotification(`${res.data.first_name} ${res.data.last_name}`,  data.text, 'message')
-                setArrivalMessage({
-                    sender: data.senderId,
-                    text: data.text,
-                    createdAt: Date.now(),
-                    currentChat: data.currentChat
-                })
-                
-            } catch (error) {
-                console.log(error);
-            }
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
         })
 
         socket.on('getNotification', async data => {
@@ -158,7 +171,7 @@ const ContextProvider = ({children}) => {
     const openNotification = (title, description, type) => {
         notification.open({
             className: classes.notif,
-            message: description.sender,
+            message: title,
             icon: type==='message' ? <Message />: <Notifications />,
             description: description,
             onClick: () => {
@@ -252,7 +265,6 @@ const ContextProvider = ({children}) => {
                     content: message,
                 }
                 const res = await axios.post(config.API_SERVER+"notifications", data)
-                console.log(res.data);
             } catch (error) {
                 console.log(error);
             }
@@ -275,8 +287,8 @@ const ContextProvider = ({children}) => {
             console.log(error);
         }
     }
-    const sendMessage = async (senderId, receiverId, newMessage, currentChat) => {
-        await sendMessageNotification(senderId, receiverId, newMessage)
+    const sendMessage = (senderId, receiverId, newMessage, currentChat) => {
+        sendMessageNotification(senderId, receiverId, newMessage)
         socket.emit("sendMessage", {
             senderId: senderId,
             receiverId,
@@ -319,7 +331,7 @@ const ContextProvider = ({children}) => {
                                 const room = await axios.get(config.API_SERVER + 'rooms/room/'+currentChat._id)
                                 if(room.data.type==='PUBLIC') {
                                     room.data.members.map(member => {
-                                        if(member !== account.user._id) sendMessage('CHAT', member, res.data.text, currentChat._id)
+                                        sendMessage('CHAT', member, res.data.text, currentChat._id)
                                     })
                                 }
                                 setAdminMessage(data)

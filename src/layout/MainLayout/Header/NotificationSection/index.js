@@ -93,9 +93,9 @@ const useStyles = makeStyles((theme) => ({
     childNotif: {
         zIndex:"1",
         position:"absolute", 
-        left:"1.5rem",
-        bottom:"1rem",
-        fontSize:"0.8rem"
+        fontSize: "0.65rem", 
+        bottom: '1.35rem', 
+        left: '1.45rem'
     }
 }));
 
@@ -186,6 +186,7 @@ const NotificationSection = () => {
     },[notifs])
 
     React.useEffect(()=>{
+        console.log("Notification CAME");
         arrivalNotification && setNotifs(prev => [...prev, arrivalNotification]) && setNotifLength(prev => prev+1);
     }, [arrivalNotification])
 
@@ -208,7 +209,7 @@ const NotificationSection = () => {
                         color="inherit"
                     >
                     <IconBell stroke={1.5} size="1.3rem" />
-                    <Typography variant="outlined" className={classes.childNotif}>{notifLength}</Typography>
+                    <Typography variant="outlined" className={classes.childNotif} style={notifLength>9 ? {fontSize: "0.65rem", bottom: '1.35rem', left: '1.3rem'}: {}}>{notifLength<10 ? notifLength : '9+'}</Typography>
                         
                     </Avatar>
                 </ButtonBase>

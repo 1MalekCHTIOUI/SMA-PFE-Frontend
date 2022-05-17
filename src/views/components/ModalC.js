@@ -49,8 +49,8 @@ const ModalC = ({setStatus, status, current, submitAddMember,submitRemoveMember,
     }
 
     React.useEffect(()=>{
-        console.log(user);
-    }, [user])
+        console.log(current);
+    }, [current])
 
     React.useEffect(() => {
         if(onlineUsers.includes(user._id)){
@@ -138,8 +138,8 @@ const ModalC = ({setStatus, status, current, submitAddMember,submitRemoveMember,
                                 MenuProps={MenuProps}
                                 >
                                 {
-                                    users?.map(variant => {
-                                        if(groupMembers.some(m => m._id !== variant._id) && variant._id!==current) {
+                                    users?.filter(user => user._id!==current).map(variant => {
+                                        if(groupMembers.some(m => m._id !== variant._id)) {
                                             return <MenuItem key={variant._id} value={variant}>
                                                 <Checkbox
                                                     checked={
@@ -198,7 +198,7 @@ const ModalC = ({setStatus, status, current, submitAddMember,submitRemoveMember,
                         )
                     }
                     {
-                        type==='list' && (
+                        type==='list' && groupMembers?.length > 0 && (
                             groupMembers?.map((m, i) => (
                                 <List>
                                     <ListItem onClick={() => showProfile(m)} button key={i} className={styles.center}>
@@ -207,12 +207,19 @@ const ModalC = ({setStatus, status, current, submitAddMember,submitRemoveMember,
                                             {
                                                 onlineUsers.some(u => u._id === m._id) ? <CloudQueue style={{color:"#00C853"}} className="front-icons"/> : <CloudOff style={{color:"#F44336"}} className="front-icons"/>
                                             }
-                                            
                                         </Grid>
-
                                     </ListItem>
                                 </List>
                             ))
+                        )
+                    }
+                    {
+                        type==='list' && groupMembers?.length === 0 && (
+                                <List>
+                                    <ListItem className={styles.center}>
+                                            <ListItemText style={{textAlign: 'center'}} primary="No users in group!" />
+                                    </ListItem>
+                                </List>
                         )
                     }
                     <Container className={classes.center}>

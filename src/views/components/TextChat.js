@@ -221,14 +221,15 @@ const Chat = () => {
         console.log(arrivalMessage);
         arrivalMessage && 
         currentChat?.members.includes(arrivalMessage.sender) &&
-        currentChat._id === arrivalMessage.currentChat &&
+        currentChat?._id === arrivalMessage.currentChat &&
         setMessages(prev => [...prev, arrivalMessage])
 
     },[arrivalMessage])
 
     React.useEffect(()=>{
+        console.log(adminMessage);
         adminMessage && 
-        currentChat._id === adminMessage.currentChat &&
+        currentChat?._id === adminMessage.currentChat &&
         setMessages(prev => [...prev, adminMessage])
     },[adminMessage])
 
