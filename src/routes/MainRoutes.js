@@ -24,6 +24,7 @@ const management = Loadable(lazy(() => import('../views/pages/management/index')
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('../views/sample-page')));
 const EditPage = Loadable(lazy(() => import('../views/pages/management/editPage')));
+const ProfilePage = Loadable(lazy(() => import('../views/pages/profile/profile')));
 
 //-----------------------|| MAIN ROUTING ||-----------------------//
 
@@ -49,6 +50,7 @@ const MainRoutes = () => {
 
                 '/sample-page',
                 '/edit',
+                '/profile/:userId',
             ]}
         >
             <MainLayout>
@@ -65,6 +67,7 @@ const MainRoutes = () => {
                         <Route path="/videochat/:roomCode" component={CompVideoChat} />
                         <Route path="/sample-page" component={SamplePage} />
                         <Route path="/edit" component={EditPage} />
+                        <Route path="/profile/:userId" component={ProfilePage} />
                     </AuthGuard>
                 </Switch>
             </MainLayout>
