@@ -16,6 +16,8 @@ const useStyles = makeStyles((theme) => ({
         alignItems:'center'
     },
     item: {
+        display:'flex',
+        alignItems:'center',
         color: 'black', fontSize: '12px', fontWeight:'bold'
     }
 }))
@@ -26,7 +28,7 @@ const ProfileSidebar = ({user}) => {
         <MainCard title='Information' className={classes.sidebar}>
             <List>
                 <ListItemText>
-                <Typography variant="h6" className={[classes.center, classes.item]}>
+                <Typography variant="h6" className={classes.item}>
 
                         <CalendarToday />
                         <div style={{marginLeft: '0.75vw'}}>
@@ -35,7 +37,7 @@ const ProfileSidebar = ({user}) => {
                     </Typography>
                 </ListItemText> 
                 <ListItemText>
-                    <Typography variant="subtitle2" className={[classes.center, classes.item]}>
+                    <Typography variant="subtitle2" className={classes.item}>
                         <Work />
                         <div style={{marginLeft: '0.75vw'}}>
                         {capitalizeFirstLetter(user.service)}

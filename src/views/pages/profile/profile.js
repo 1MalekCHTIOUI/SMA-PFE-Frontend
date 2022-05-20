@@ -1,47 +1,60 @@
 import React from 'react';
-import {useParams} from 'react-router'
-import axios from 'axios'
+import { useParams } from 'react-router';
+import axios from 'axios';
 import { Grid, Typography, Button, Box, Container } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import config from '../../../config'
-import ProfileHeader from '../../components/Profile/ProfileHeader'
-import ProfileContent from '../../components/Profile/ProfileContent'
-import ProfileSidebar from '../../components/Profile/ProfileSidebar'
-import MainCard from './../../../ui-component/cards/MainCard'
+import config from '../../../config';
+import ProfileHeader from '../../components/Profile/ProfileHeader';
+import ProfileContent from '../../components/Profile/ProfileContent';
+import ProfileSidebar from '../../components/Profile/ProfileSidebar';
+import MainCard from './../../../ui-component/cards/MainCard';
 const Profile = () => {
-    const {userId} = useParams()
-    const [user, setUser] = React.useState({})    
+    const { userId } = useParams();
+    const [user, setUser] = React.useState({});
+    const [posts, setPosts] = React.useState(null);
+    const [postsLoading, setPostsLoading] = React.useState(false);
 
-    React.useEffect(()=>{
-        const getUser = async () =>{
+    React.useEffect(() => {
+        const getUser = async () => {
             try {
-                const users = await axios.get(config.API_SERVER+'user/users/'+userId)
-                setUser(users.data)
+                const users = await axios.get(config.API_SERVER + 'user/users/' + userId);
+                setUser(users.data);
             } catch (error) {
                 console.log(error);
             }
-        }
-        getUser()
-    }, [])
+        };
+        getUser();
+        const loadPosts = async () => {
+            try {
+                setPostsLoading(true);
+                const fetchPosts = await axios.get(config.API_SERVER + 'posts/' + userId);
+                setPosts(fetchPosts.data);
+                setPostsLoading(false);
+            } catch (error) {
+                setPostsLoading(false);
+                console.log(error);
+            }
+        };
+        loadPosts();
+    }, []);
 
     return (
-        <MainCard border={false} style={{height:'100%', width:"100%"}}>
-            <Container style={{ width: '85%'}}>
-                <Box sx={{ display: 'grid', gridTemplateRows: 'repeat(2, 1fr)', gap:'2vh' }}>
+        <Container style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <MainCard border={false} style={{ minHeight: '100vh', width: 'fit-content' }}>
+                <Container style={{ width: 'fit-content' }}>
                     <ProfileHeader user={user} />
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '3fr 9fr', gap:'5vw' }}>
-                            <div>
-                            <ProfileSidebar user={user}/>
-                            </div>
-                            <div>
-                            <ProfileContent user={user} />
-                            </div>
-                   
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '3fr 9fr' }}>
+                        <div>
+                            <ProfileSidebar user={user} />
+                        </div>
+                        <div style={{ width: '100%' }}>
+                            <ProfileContent setPosts={setPosts} user={user} posts={posts} postsLoading={postsLoading} />
+                        </div>
                     </Box>
-                </Box>
-            </Container>
-        </MainCard>
+                </Container>
+            </MainCard>
+        </Container>
     );
-}
+};
 
 export default Profile;

@@ -1,27 +1,21 @@
 import React from 'react';
-import { Grid, Typography, Button, Container,Box, TextField } from '@material-ui/core';
+import { Container, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
-import MainCard from './../../../ui-component/cards/MainCard';
-import ProfilePost from './ProfilePost'
-const useStyles = makeStyles((theme) => ({
-    container: {
-        display:'flex',
-        justifyContent:'center',
-        alignItems:'center',
-        flexDirection:'column',
-    }
-}))
+import Share from '../Share/Share';
+import Post from '../Post/Post';
+const useStyles = makeStyles((theme) => ({}));
 
-const ProfileContent = ({user}) => {
-    const classes = useStyles()
+const ProfileContent = ({ user, posts, setPosts, postsLoading }) => {
     return (
-        <Box sx={{ display: 'grid', gridTemplateColumns: '3fr auto', gap:'1vw', padding: '0.25rem'}} >
-            <div style={{height:'100%'}}>
-                <ProfilePost user={user}/>
+        <Container>
+            <div style={{ height: '100%' }}>
+                <Share user={user} setPosts={setPosts} />
+                {postsLoading && <CircularProgress />}
+                {posts && postsLoading === false && posts.map((post) => <Post post={post} />)}
             </div>
-        </Box>
+        </Container>
     );
-}
+};
 
 export default ProfileContent;
