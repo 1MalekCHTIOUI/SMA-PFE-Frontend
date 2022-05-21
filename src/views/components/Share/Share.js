@@ -1,14 +1,17 @@
 import React from 'react';
 import './share.css';
 import { PermMedia, Label, Room, EmojiEmotions, Close } from '@material-ui/icons';
-import { TextField, ImageList, ImageListItem, Container } from '@material-ui/core';
+import { TextField, ImageList, ImageListItem, Container, Select, MenuItem, FormControl } from '@material-ui/core';
 import config from '../../../config';
+import User1 from './../../../assets/images/users/user.svg';
+
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 const Share = ({ user, setPosts }) => {
     const hiddenFileInput = React.useRef(null);
     const account = useSelector((s) => s.account);
     const [content, setContent] = React.useState('');
+    const [postPrivacy, setPostPrivacy] = React.useState(true);
     const handleClick = (event) => {
         hiddenFileInput.current.click();
     };
@@ -27,7 +30,8 @@ const Share = ({ user, setPosts }) => {
         if (content === '' && selectedFiles.length === 0) return;
 
         const post = {
-            userId: account.user._id
+            userId: account.user._id,
+            visibility: postPrivacy
         };
         if (content !== '') {
             post.content = content;
@@ -43,11 +47,31 @@ const Share = ({ user, setPosts }) => {
             console.log(error);
         }
     };
+
     return (
         <div className="share">
             <div className="shareWrapper">
+                <div className="sharePrivacy">
+                    <Select
+                        size="small"
+                        label="Privacy"
+                        name="privacy"
+                        id="privacy"
+                        type="text"
+                        value={postPrivacy}
+                        onChange={(e) => setPostPrivacy(e.target.value)}
+                        className="shareSelect"
+                    >
+                        <MenuItem value={true}>Public</MenuItem>
+                        <MenuItem value={false}>Private</MenuItem>
+                    </Select>
+                </div>
                 <div className="shareTop">
-                    <img className="shareProfileImg" src={`/uploads/profilePictures/${user.profilePicture}`} alt="" />
+                    <img
+                        className="shareProfileImg"
+                        src={user.profilePicture ? `/uploads/profilePictures/${user.profilePicture}` : User1}
+                        alt=""
+                    />
                     <input
                         placeholder={`What's in your mind ${user.first_name}?`}
                         value={content}
@@ -55,6 +79,7 @@ const Share = ({ user, setPosts }) => {
                         className="shareInput"
                     />
                 </div>
+
                 <div className="shareMiddle">
                     <ImageList sx={{ width: '100%' }} rowHeight={164} cols={3}>
                         {selectedFiles?.map((item, i) => {

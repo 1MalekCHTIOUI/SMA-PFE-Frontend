@@ -91,7 +91,6 @@ const RestLogin = (props, { ...others }) => {
         event.preventDefault();
     };
 
-
     return (
         <React.Fragment>
             <Formik
@@ -110,18 +109,15 @@ const RestLogin = (props, { ...others }) => {
                             const response = await axios.post(configData.API_SERVER + 'auth/signin', {
                                 password: values.password,
                                 email: values.email
-                            })
+                            });
 
-                            
-                            if (response.data.status==="success") {
-
-                                io("https://sma-socket-01.herokuapp.com/").emit("addUser", response.data._id)
+                            if (response.data.status === 'success') {
+                                io('https://sma-socket-01.herokuapp.com/').emit('addUser', response.data._id);
                                 dispatcher({
                                     type: ACCOUNT_INITIALIZE,
                                     payload: { isLoggedIn: true, user: response.data, token: response.data.token }
                                 });
                                 if (scriptedRef.current) {
-
                                     setStatus({ success: true });
                                     setSubmitting(false);
                                 }
@@ -130,13 +126,11 @@ const RestLogin = (props, { ...others }) => {
                                 setErrors({ submit: response.data.message });
                                 setSubmitting(false);
                             }
-                        }                            
-                        catch(e) {
+                        } catch (e) {
                             setStatus({ success: false });
                             setErrors({ submit: e.response.data.message });
                             setSubmitting(false);
-                        };
-       
+                        }
                     } catch (err) {
                         console.error(err);
                         if (scriptedRef.current) {
@@ -236,7 +230,11 @@ const RestLogin = (props, { ...others }) => {
                                     mt: 3
                                 }}
                             >
-                                <FormHelperText error>{errors.submit}</FormHelperText>
+                                <FormHelperText error>
+                                    {errors.submit === "Cannot read properties of undefined (reading 'data')"
+                                        ? 'Connection error'
+                                        : errors.submit}
+                                </FormHelperText>
                             </Box>
                         )}
 

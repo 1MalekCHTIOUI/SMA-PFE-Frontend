@@ -11,7 +11,8 @@ import {
     List,
     ListItem,
     ListItemIcon,
-    ListItemText
+    ListItemText,
+    Divider
 } from '@material-ui/core';
 
 // project imports
@@ -30,6 +31,7 @@ import { useSelector } from 'react-redux';
 import { makeStyles } from '@material-ui/styles';
 import Post from '../../components/Post/Post';
 import DashboardRoom from '../../components/DashboardRoom';
+import moment from 'moment';
 //-----------------------|| DEFAULT DASHBOARD ||-----------------------//
 const useStyles = makeStyles((theme) => ({
     content: {
@@ -40,15 +42,14 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
-        minHeight: '6.8rem',
-        position: 'relative'
+        minHeight: '6.8rem'
     },
     posts: {
         padding: '2rem',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        width: '50rem',
+        width: 'fit-content',
         flexDirection: 'column',
         minHeight: '6.8rem'
     },
@@ -69,13 +70,17 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
-        overflowX: 'hidden',
-        overflowY: 'auto'
+        width: '100%'
     },
     mainCard: {
         display: 'flex',
         justifyContent: 'center',
-        width: '50vw'
+        width: '50%'
+    },
+    title: {
+        fontWeight: '500',
+        marginBottom: '1rem',
+        borderBottom: '1px solid rgba(0,0,0,0.2)'
     }
 }));
 const Dashboard = () => {
@@ -84,6 +89,8 @@ const Dashboard = () => {
     const account = useSelector((s) => s.account);
     const [roles, setRoles] = useState([]);
     const [posts, setPosts] = useState([]);
+    const [postsLoading, setPostsLoading] = useState(false);
+    const [todaysPosts, setTodaysPosts] = useState(null);
     const [onliners, setOnliners] = useState([]);
 
     const classes = useStyles();
@@ -112,25 +119,32 @@ const Dashboard = () => {
     React.useEffect(() => {
         const fetchPublicPosts = async () => {
             try {
+                setPostsLoading(true);
                 const fetchPosts = await axios.get(config.API_SERVER + 'posts');
                 setPosts(fetchPosts.data.filter((p) => p.visibility === true));
+                setPostsLoading(false);
             } catch (error) {
+                setPostsLoading(false);
                 console.log(error);
             }
         };
         fetchPublicPosts();
     }, []);
+    React.useEffect(() => {
+        setTodaysPosts(posts.filter((p) => moment().diff(p.createdAt, 'hours') < 24).length);
+    }, [posts]);
 
+    React.useEffect(() => {
+        console.log(todaysPosts);
+    }, [todaysPosts]);
     return (
         <Grid container spacing={gridSpacing}>
             <Grid item xs={12}>
                 <Grid container spacing={gridSpacing}>
-                    <Grid item lg={12} md={6} sm={6} xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
                         <MainCard border={false} className={classes.mainCard} contentClass={classes.content}>
                             <Container className={classes.carousel}>
-                                <Typography style={{ fontWeight: 500, marginBottom: '1rem', borderBottom: '1px solid rgba(0,0,0,0.2)' }}>
-                                    Online users: {onliners.length}
-                                </Typography>
+                                <Typography className={classes.title}>Online users: {onliners.length}</Typography>
                                 {usersLoading && <CircularProgress />}
                                 <Container className={classes.carouselItems}>
                                     {usersLoading === false && onliners?.map((item, index) => <DashboardRoom item={item} index={index} />)}
@@ -138,24 +152,35 @@ const Dashboard = () => {
                             </Container>
                         </MainCard>
                     </Grid>
-                    <Grid item lg={12} md={6} sm={6} xs={12}>
-                        <Grid item lg={12} md={6} sm={6} xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Grid item xs={12}>
+                        <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
                             <MainCard border={false} className={classes.mainCard}>
-                                <Container className={classes.posts}>
-                                    <Typography
-                                        style={{ fontWeight: 500, marginBottom: '1rem', borderBottom: '1px solid rgba(0,0,0,0.2)' }}
-                                    >
-                                        Posts: {posts.length}
-                                    </Typography>
-                                    {usersLoading && <CircularProgress />}
-                                    <Container className={classes.postItems}>
-                                        {usersLoading === false && posts?.map((post) => <Post post={post} />)}
-                                    </Container>
+                                <Container
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        textAlign: 'center',
+                                        width: '100%',
+                                        flexDirection: 'column'
+                                    }}
+                                >
+                                    <Typography>Posts: {posts.length}</Typography>
+                                    <Divider style={{ margin: '0.5rem' }} />
+                                    {posts.length > 0 && <Typography>Today's Posts: {todaysPosts}</Typography>}
                                 </Container>
                             </MainCard>
                         </Grid>
                     </Grid>
-
+                    <Grid item xs={12}>
+                        <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
+                            <div className={classes.posts}>
+                                {postsLoading && <CircularProgress />}
+                                <div className={classes.postItems}>
+                                    {usersLoading === false && posts?.map((post) => <Post post={post} />)}
+                                </div>
+                            </div>
+                        </Grid>
+                    </Grid>
                     {/* <Grid item lg={4} md={6} sm={6} xs={12}>
                         <TotalOrderLineChartCard isLoading={isLoading} />
                     </Grid> */}

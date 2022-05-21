@@ -93,3 +93,12 @@
     cursor: pointer;
     color: white;
 }
+.sharePrivacy {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+.shareSelect {
+    width: fit-content;
+    height: 300;
+}

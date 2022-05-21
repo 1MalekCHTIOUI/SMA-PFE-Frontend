@@ -6,8 +6,10 @@ import config from '../../../config';
 import { format } from 'timeago.js';
 import likeImage from '../../../assets/images/icons/like.png';
 import { useSelector } from 'react-redux';
-import { Collapse, TextField, Typography } from '@material-ui/core';
+import { Collapse, Grid, TextField, Typography } from '@material-ui/core';
 import Comment from '../Comment/Comment';
+import User1 from './../../../assets/images/users/user.svg';
+
 export default function Post({ post }) {
     const account = useSelector((s) => s.account);
     const [like, setLike] = useState(post.likes.length);
@@ -38,6 +40,7 @@ export default function Post({ post }) {
     };
     const likeHandler = () => {
         setLike(isLiked ? like - 1 : like + 1);
+        isLiked ? unlikePost() : likePost();
         setIsLiked(!isLiked);
     };
 
@@ -61,13 +64,13 @@ export default function Post({ post }) {
         }
     };
 
-    useEffect(() => {
-        if (isLiked) {
-            likePost();
-        } else {
-            unlikePost();
-        }
-    }, [isLiked]);
+    // useEffect(() => {
+    //     if (isLiked) {
+    //         likePost();
+    //     } else {
+    //         unlikePost();
+    //     }
+    // }, [isLiked]);
 
     const showMore = () => {
         if (numberOfitemsShown + 3 <= comments.length) {
@@ -135,18 +138,33 @@ export default function Post({ post }) {
                     <div className="postTopLeft">
                         <img
                             className="postProfileImg"
-                            src={user._id === post.userId && `/uploads/profilePictures/${user.profilePicture}`}
-                            alt=""
+                            src={
+                                user._id === post.userId &&
+                                (user.profilePicture ? `/uploads/profilePictures/${user.profilePicture}` : User1)
+                            }
                         />
-                        <span className="postUsername">{user._id === post.userId && user.first_name + ' ' + user.last_name}</span>
-                        <span className="postDate">{format(post.createdAt)}</span>
+                        <div className="postTopLeftRight">
+                            <span className="postUsername">{user._id === post.userId && user.first_name + ' ' + user.last_name}</span>
+                            <span className="postDate">{format(post.createdAt)}</span>
+                        </div>
                     </div>
                     <div className="postTopRight">
+                        <Typography variant="subtitle2">{post.visibility ? 'Public' : 'Private'}</Typography>
                         <MoreVert />
                     </div>
                 </div>
                 <div className="postCenter">
                     <span className="postText">{post?.content}</span>
+                    {post?.attachment.length > 0 && (
+                        <Grid container xs={12}>
+                            {post?.attachment.map((f) => (
+                                <Grid item xs={12} justifyContent="center" alignItems="center">
+                                    <img className="postImg" src={`/uploads/files/${f.actualName}`} alt="loading..." />
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
+
                     {/* <img className="postImg" src={post?.photo} alt="" /> */}
                 </div>
                 <div className="postBottom">
@@ -155,8 +173,9 @@ export default function Post({ post }) {
                         {/* <img className="likeIcon" src={likeImage} onClick={likeHandler} alt="" /> */}
                         {/* <img className="likeIcon" src="assets/heart.png" onClick={likeHandler} alt="" />  */}
                         <span className="postLikeCounter">
-                            {isLiked ? 'You and ' : ''}
-                            {`${like} people like it`}
+                            {console.log(like)}
+                            {isLiked ? 'You and ' + `${like - 1} people like it` : ''}
+                            {!isLiked && `${like} people like it`}
                         </span>
                     </div>
                     <div className="postBottomRight" onClick={() => setShow(!show)}>
@@ -186,7 +205,7 @@ export default function Post({ post }) {
 
                     {itemsToShow ? itemsToShow : 'Loading...'}
                 </div>
-                {comments?.length !== itemsToShow?.length ? (
+                {comments?.length > 0 && comments?.length !== itemsToShow?.length ? (
                     <Typography style={{ cursor: 'pointer', textAlign: 'center' }} onClick={showMore}>
                         Show more
                     </Typography>

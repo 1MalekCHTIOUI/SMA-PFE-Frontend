@@ -17,7 +17,7 @@ import GetAppTwoToneIcon from '@material-ui/icons/GetAppOutlined';
 import FileCopyTwoToneIcon from '@material-ui/icons/FileCopyOutlined';
 import PictureAsPdfTwoToneIcon from '@material-ui/icons/PictureAsPdfOutlined';
 import ArchiveTwoToneIcon from '@material-ui/icons/ArchiveOutlined';
-import { replaceDash } from '../../../utils/scripts'
+import { replaceDash } from '../../../utils/scripts';
 // style constant
 const useStyles = makeStyles((theme) => ({
     card: {
@@ -100,7 +100,7 @@ const useStyles = makeStyles((theme) => ({
 
 //===========================|| DASHBOARD DEFAULT - EARNING CARD ||===========================//
 
-const EarningCard = ({ isLoading, onlineUsers, roles }) => {
+const EarningCard = ({ isLoading, title, info }) => {
     const classes = useStyles();
 
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -119,35 +119,26 @@ const EarningCard = ({ isLoading, onlineUsers, roles }) => {
                 <SkeletonEarningCard />
             ) : (
                 <MainCard border={false} className={classes.card} contentClass={classes.content}>
-                        <Grid item>
-                            <Grid container alignItems="center">
-                                <Grid container>
-                                    <Grid item style={{display: 'flex', justifyContent:'space-evenly'}}>
-                                        <Typography className={classes.cardHeading} style={{ borderRight: '0.1em solid grey', paddingRight:"0.5rem", borderRadius: "1rem"}}>{onlineUsers.length}</Typography>
-                                        <Grid container style={{display: "block", margin:"auto"}}>
-                                            {
-                                                roles.map((role, index) => {
-                                                    if(index <= onlineUsers.length) {
-                                                        return <div style={{display: "flex", justifyContent: "center"}}>
-                                                            <Typography className={classes.subHeading}> {role.count + " "+ replaceDash(role.role)}</Typography>
-                                                        </div> 
-                                                    }
-
-                                                })
-                                            }
-                                        </Grid>
+                    <Grid item>
+                        <Grid container alignItems="center">
+                            <Grid container>
+                                <Grid item>
+                                    <Typography className={classes.cardHeading}>{title}</Typography>
+                                    <Grid container style={{ display: 'block', margin: 'auto' }}>
+                                        <Typography className={classes.cardHeading}>{info}</Typography>
                                     </Grid>
                                 </Grid>
-                                <Grid item>
-                                    <Avatar className={classes.avatarCircle}>
-                                        <ArrowUpwardIcon fontSize="inherit" className={classes.circleIcon} />
-                                    </Avatar>
-                                </Grid>
+                            </Grid>
+                            <Grid item>
+                                <Avatar className={classes.avatarCircle}>
+                                    <ArrowUpwardIcon fontSize="inherit" className={classes.circleIcon} />
+                                </Avatar>
                             </Grid>
                         </Grid>
-                        <Grid item sx={{ mb: 1.25 }}>
+                    </Grid>
+                    {/* <Grid item sx={{ mb: 1.25 }}>
                             <Typography className={classes.subHeading}>Online Users</Typography>
-                        </Grid>
+                        </Grid> */}
                 </MainCard>
             )}
         </React.Fragment>
