@@ -69,7 +69,7 @@ const Share = ({ user, setPosts }) => {
                 <div className="shareTop">
                     <img
                         className="shareProfileImg"
-                        src={user.profilePicture ? `/uploads/profilePictures/${user.profilePicture}` : User1}
+                        src={user.profilePicture ? config.HOST + `public/uploads/${user.profilePicture}` : User1}
                         alt=""
                     />
                     <input

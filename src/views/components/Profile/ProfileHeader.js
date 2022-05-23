@@ -3,6 +3,7 @@ import { Grid, Typography, Button, Container, CircularProgress } from '@material
 import { makeStyles } from '@material-ui/styles';
 import User1 from './../../../assets/images/users/user.svg';
 import MainCard from './../../../ui-component/cards/MainCard';
+import config from '../../../config';
 
 const useStyles = makeStyles((theme) => ({
     cover: {
@@ -44,10 +45,13 @@ const ProfileHeader = ({ user }) => {
     return (
         <div className={classes.container}>
             <div className={classes.coverContainer}>
-                <img className={classes.cover} src={user.coverPicture ? `/uploads/profilePictures/${user.coverPicture}` : ''} alt="" />
+                <img className={classes.cover} src={user.coverPicture ? config.HOST + `public/uploads/${user.coverPicture}` : ''} alt="" />
             </div>
             <div className={classes.profileContainer}>
-                <img className={classes.profile} src={user.profilePicture ? `/uploads/profilePictures/${user.profilePicture}` : User1} />
+                <img
+                    className={classes.profile}
+                    src={user.profilePicture ? config.HOST + `public/uploads/${user.profilePicture}` : User1}
+                />
                 <Typography variant="h3" className={classes.title}>
                     {user.first_name} {user.last_name}
                 </Typography>

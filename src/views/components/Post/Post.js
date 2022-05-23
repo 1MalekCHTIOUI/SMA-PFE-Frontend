@@ -140,7 +140,7 @@ export default function Post({ post }) {
                             className="postProfileImg"
                             src={
                                 user._id === post.userId &&
-                                (user.profilePicture ? `/uploads/profilePictures/${user.profilePicture}` : User1)
+                                (user.profilePicture ? config.HOST + `public/uploads/${user.profilePicture}` : User1)
                             }
                         />
                         <div className="postTopLeftRight">
@@ -198,9 +198,9 @@ export default function Post({ post }) {
                             {/* <span className="commentOptionText">Photo or Video</span> */}
                             <input type="file" ref={hiddenFileInput} onChange={onChangeFileUpload} style={{ display: 'none' }} />
                         </div>
-                        <button onClick={submitComment} className="commentButton">
+                        <Pres onClick={submitComment} className="commentButton">
                             Post
-                        </button>
+                        </Pres>
                     </div>
 
                     {itemsToShow ? itemsToShow : 'Loading...'}

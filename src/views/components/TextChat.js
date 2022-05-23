@@ -391,12 +391,14 @@ const Chat = () => {
         const random = randomNumber();
 
         let newName;
-        for (let x = 0; x < file.length; x++) {
-            const dotIndex = file[0].name.indexOf('.');
-            const newFilename = addStr(file[0].name, dotIndex, random);
-            newName = newFilename;
-            formData.append(`files[${x}]`, file[x], newFilename);
-        }
+        // for (let x = 0; x < file.length; x++) {
+        //     const dotIndex = file[0].name.indexOf('.');
+        //     const newFilename = addStr(file[0].name, dotIndex, random);
+        //     newName = newFilename;
+        //     // formData.append(`files[${x}]`, file[x], newFilename);
+        //     formData.append('file', file[x]);
+        // }
+        formData.append('file', file[0]);
         const receiverId = currentChat.members.find((m) => m !== account.user._id);
 
         const message = {
@@ -409,32 +411,31 @@ const Chat = () => {
                 [receiverId]: false
             }
         };
-        if (file) {
-            file?.map((file) => {
-                message.attachment = [
-                    ...message.attachment,
-                    {
-                        displayName: file.name,
-                        actualName: newName
-                    }
-                ];
-            });
-        }
 
-        if (message.text || message.attachment.length > 0) {
+        if (message.text || file.length > 0) {
             sendMessage(message.sender, receiverId, newMessage, currentChat._id);
             try {
-                const res = await axios.post(configData.API_SERVER + 'messages', message);
-                setMessages([...messages, res.data]);
-                setNewMessage('');
-                try {
-                    if (message.attachment.length > 0) {
-                        await axios.post(configData.API_SERVER + 'upload/file', formData, {
-                            headers: { 'Content-Type': 'multipart/form-data' }
+                if (file.length > 0) {
+                    const x = await axios.post(configData.API_SERVER + 'upload', formData);
+                    if (file) {
+                        file?.map((file) => {
+                            message.attachment = [
+                                ...message.attachment,
+                                {
+                                    displayName: file.name,
+                                    actualName: x.data.upload
+                                }
+                            ];
                         });
                     }
+                }
+                console.log(message.attachment);
+                try {
+                    const res = await axios.post(configData.API_SERVER + 'messages', message);
+                    setMessages([...messages, res.data]);
+                    setNewMessage('');
                 } catch (error) {
-                    console.log(error.response.data.message);
+                    console.lZog(error.response.data.message);
                 }
             } catch (error) {
                 console.log(error);

@@ -37,6 +37,7 @@ import { LOGOUT } from './../../../../store/actions';
 // assets
 import { IconLogout, IconSearch, IconSettings } from '@tabler/icons';
 import User1 from './../../../../assets/images/users/user-round.svg';
+import config from '../../../../config';
 
 // style const
 const useStyles = makeStyles((theme) => ({
@@ -112,11 +113,11 @@ const useStyles = makeStyles((theme) => ({
     badgeWarning: {
         backgroundColor: theme.palette.warning.dark,
         color: '#fff'
-    }, 
+    },
     role: {
         width: '100%',
         marginBottom: '16px',
-        marginTop: '16px',
+        marginTop: '16px'
     }
 }));
 
@@ -130,7 +131,7 @@ const ProfileSection = () => {
     const dispatcher = useDispatch();
     const history = useHistory();
 
-    const [data, setData] = React.useState({})
+    const [data, setData] = React.useState({});
     const [sdm, setSdm] = React.useState(true);
     const [value, setValue] = React.useState('');
     const [notification, setNotification] = React.useState(false);
@@ -142,9 +143,9 @@ const ProfileSection = () => {
         dispatcher({ type: LOGOUT, payload: account.user._id });
     };
     const onClickEditInformation = () => {
-        history.push({pathname: "/edit", state: {accessFrom: "USER-C", user: account.user}})
-        handleToggle()
-    }
+        history.push({ pathname: '/edit', state: { accessFrom: 'USER-C', user: account.user } });
+        handleToggle();
+    };
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
     };
@@ -163,16 +164,15 @@ const ProfileSection = () => {
 
         prevOpen.current = open;
     }, [open]);
-    const [picture, setPicture] = React.useState('')
+    const [picture, setPicture] = React.useState('');
     React.useEffect(() => {
-        
-        if(account.user) {
-            setPicture(account?.user.profilePicture)
+        if (account.user) {
+            setPicture(account?.user.profilePicture);
             setData({
-                first_name: account?.user.first_name, 
-                service: account?.user.service.replaceAll("_", " "),
-                role: account?.user.role[0].replaceAll("_", " ")
-            })
+                first_name: account?.user.first_name,
+                service: account?.user.service.replaceAll('_', ' '),
+                role: account?.user.role[0].replaceAll('_', ' ')
+            });
         }
     }, [account.user]);
 
@@ -183,7 +183,7 @@ const ProfileSection = () => {
                 className={classes.profileChip}
                 icon={
                     <Avatar
-                        src={picture ? `/uploads/profilePictures/${picture}` : User1}
+                        src={picture ? config.HOST + `public/uploads/${picture}` : User1}
                         className={classes.headerAvatar}
                         ref={anchorRef}
                         aria-controls={open ? 'menu-list-grow' : undefined}
@@ -227,12 +227,16 @@ const ProfileSection = () => {
                                             <Grid item className={classes.flex}>
                                                 <Typography variant="h4">Good Morning,</Typography>
                                                 <Typography component="span" variant="h4" className={classes.name}>
-                                                    {data ? data.first_name : ""}
+                                                    {data ? data.first_name : ''}
                                                 </Typography>
                                             </Grid>
                                             <Grid item className={classes.role}>
-                                                {(data.role === "SUPER ADMIN" || data.role==="ADMIN") ? <Typography variant="h5">{`${data.role}`}</Typography> : ""}
-                                                <Typography variant="subtitle2">{`${data.service ? data.service : ""}`}</Typography>
+                                                {data.role === 'SUPER ADMIN' || data.role === 'ADMIN' ? (
+                                                    <Typography variant="h5">{`${data.role}`}</Typography>
+                                                ) : (
+                                                    ''
+                                                )}
+                                                <Typography variant="subtitle2">{`${data.service ? data.service : ''}`}</Typography>
                                             </Grid>
                                         </Grid>
                                         <Divider />

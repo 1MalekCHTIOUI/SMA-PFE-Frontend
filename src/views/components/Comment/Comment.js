@@ -32,7 +32,7 @@ const Comment = ({ comment }) => {
             <div className="commentWrapper">
                 <img
                     style={{ width: '2rem', height: '2rem', borderRadius: '50%' }}
-                    src={`/uploads/profilePictures/${user.profilePicture}`}
+                    src={config.HOST + `public/uploads/${user.profilePicture}`}
                     alt=""
                 />
                 <div className="commentContentWrapper">
@@ -46,7 +46,7 @@ const Comment = ({ comment }) => {
                                 return (
                                     <img
                                         style={{ padding: '10px', width: '10rem', height: '10rem', borderRadius: '10px' }}
-                                        src={`/uploads/profilePictures/${a}`}
+                                        src={config.HOST + `public/uploads/${a}`}
                                         alt=""
                                     />
                                 );
