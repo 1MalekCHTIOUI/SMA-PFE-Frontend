@@ -198,9 +198,9 @@ export default function Post({ post }) {
                             {/* <span className="commentOptionText">Photo or Video</span> */}
                             <input type="file" ref={hiddenFileInput} onChange={onChangeFileUpload} style={{ display: 'none' }} />
                         </div>
-                        <Pres onClick={submitComment} className="commentButton">
+                        <div onClick={submitComment} className="commentButton">
                             Post
-                        </Pres>
+                        </div>
                     </div>
 
                     {itemsToShow ? itemsToShow : 'Loading...'}

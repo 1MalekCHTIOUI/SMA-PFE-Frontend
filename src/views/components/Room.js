@@ -17,7 +17,7 @@ import {
     Divider,
     Button
 } from '@material-ui/core';
-import configData from '../../config';
+import config from '../../config';
 import { makeStyles, styled } from '@material-ui/styles';
 import { selectedGridRowsCountSelector } from '@material-ui/data-grid';
 import GetAppTwoToneIcon from '@material-ui/icons/GetAppOutlined';
