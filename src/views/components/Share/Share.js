@@ -11,6 +11,7 @@ const Share = ({ user, setPosts }) => {
     const hiddenFileInput = React.useRef(null);
     const account = useSelector((s) => s.account);
     const [content, setContent] = React.useState('');
+    const [announcement, setAnnouncement] = React.useState(false);
     const [postPrivacy, setPostPrivacy] = React.useState(true);
     const handleClick = (event) => {
         hiddenFileInput.current.click();
@@ -31,7 +32,8 @@ const Share = ({ user, setPosts }) => {
 
         const post = {
             userId: account.user._id,
-            visibility: postPrivacy
+            visibility: postPrivacy,
+            priority: announcement
         };
         if (content !== '') {
             post.content = content;
@@ -39,7 +41,7 @@ const Share = ({ user, setPosts }) => {
         if (selectedFiles.length > 0) {
             post.selectedFiles = selectedFiles;
         }
-
+        console.log(post);
         try {
             const res = await axios.post(config.API_SERVER + 'posts', post);
             setPosts((prev) => [...prev, res.data]);
@@ -49,7 +51,7 @@ const Share = ({ user, setPosts }) => {
     };
 
     return (
-        <div className="share">
+        <div className="share" style={{ backgroundColor: 'white' }}>
             <div className="shareWrapper">
                 <div className="sharePrivacy">
                     <Select
@@ -66,6 +68,24 @@ const Share = ({ user, setPosts }) => {
                         <MenuItem value={false}>Private</MenuItem>
                     </Select>
                 </div>
+                {user.role !== 'USER' && (
+                    <div className="sharePrivacy">
+                        <Select
+                            size="small"
+                            label="Type"
+                            name="type"
+                            id="Type"
+                            type="text"
+                            value={announcement}
+                            onChange={(e) => setAnnouncement(e.target.value)}
+                            className="shareSelect"
+                        >
+                            <MenuItem value={false}>Normal Post</MenuItem>
+                            <MenuItem value={true}>Announcement</MenuItem>
+                        </Select>
+                    </div>
+                )}
+
                 <div className="shareTop">
                     <img
                         className="shareProfileImg"

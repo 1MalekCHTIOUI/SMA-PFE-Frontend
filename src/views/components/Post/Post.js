@@ -132,7 +132,7 @@ export default function Post({ post }) {
     }, []);
     const itemsToShow = comments?.slice(0, numberOfitemsShown).map((comment) => <Comment comment={comment} />);
     return (
-        <div className="post">
+        <div className="post" style={{ backgroundColor: 'white' }}>
             <div className="postWrapper">
                 <div className="postTop">
                     <div className="postTopLeft">

@@ -18,7 +18,7 @@ import {
     Stack,
     Typography
 } from '@material-ui/core';
-import {format} from 'timeago.js'
+import { format } from 'timeago.js';
 // assets
 import { IconBrandTelegram, IconBuildingStore, IconMailbox, IconPhoto } from '@tabler/icons';
 import User1 from './../../assets/images/users/user-round.svg';
@@ -33,16 +33,16 @@ const useStyles = makeStyles((theme) => ({
         borderRadius: '10px',
         [theme.breakpoints.down('sm')]: {
             maxWidth: '300px'
-        },
+        }
     },
     listAction: {
-        top: '22px',
+        top: '22px'
     },
     actionColor: {
         color: theme.palette.grey[500]
     },
     listItem: {
-        padding: 0,
+        padding: 0
     },
     sendIcon: {
         marginLeft: '8px',
@@ -86,7 +86,7 @@ const useStyles = makeStyles((theme) => ({
         backgroundColor: theme.palette.secondary.light
     },
     paddingBottom: {
-        paddingBottom: '16px',
+        paddingBottom: '16px'
     },
     itemAction: {
         cursor: 'pointer',
@@ -96,57 +96,63 @@ const useStyles = makeStyles((theme) => ({
         }
     },
     unread: {
-        background: 'rgba(0,0,0,0.05)',
+        background: 'rgba(0,0,0,0.05)'
     },
     listDivider: {
-        background:'grey',
-        height:"0.05rem",
-        
-    },
+        background: 'grey',
+        height: '0.05rem'
+    }
 }));
 
-const Notification = ({unreadNotification, notif}) => {
-    const classes = useStyles()
-    const [isRead, setIsRead] = React.useState(notif.read)
+const Notification = ({ unreadNotification, notif }) => {
+    const classes = useStyles();
+    const [isRead, setIsRead] = React.useState(notif.read);
 
     return (
-            <div className={`${classes.itemAction} ${isRead===false ? classes.unread: ""}`}>
-                <ListItem alignItems="center" className={classes.listItem}>
-                    <ListItemAvatar>
-                        <Avatar className={classes.listAvatarSuccess}>
-                            <IconBuildingStore stroke={1.5} size="1.3rem" />
-                        </Avatar>
-                    </ListItemAvatar>
-                    <Grid direction="row">
-                        <ListItemText primary={<Typography variant="subtitle1">{notif.title}</Typography>} />
-                        <ListItemText primary={<Typography variant="caption">{notif.username}</Typography>} />
-                    </Grid>
-                    <ListItemSecondaryAction className={classes.listAction}>
-                        <Grid container justifyContent="flex-end">
-                            <Grid item xs={12}>
-                                <Typography variant="caption" display="block" gutterBottom className={classes.actionColor}>
-                                    {format(notif.createdAt)}
-                                </Typography>
-                            </Grid>
+        <div className={`${classes.itemAction} ${isRead === false ? classes.unread : ''}`}>
+            <ListItem alignItems="center" className={classes.listItem}>
+                <ListItemAvatar>
+                    <Avatar className={classes.listAvatarSuccess}>
+                        <IconBuildingStore stroke={1.5} size="1.3rem" />
+                    </Avatar>
+                </ListItemAvatar>
+                <Grid direction="row">
+                    <ListItemText primary={<Typography variant="subtitle1">{notif.title}</Typography>} />
+                    <ListItemText primary={<Typography variant="caption">{notif.username}</Typography>} />
+                </Grid>
+                <ListItemSecondaryAction className={classes.listAction}>
+                    <Grid container justifyContent="flex-end">
+                        <Grid item xs={12}>
+                            <Typography variant="caption" display="block" gutterBottom className={classes.actionColor}>
+                                {format(notif.createdAt)}
+                            </Typography>
                         </Grid>
-                    </ListItemSecondaryAction>
-                </ListItem>
-                <Grid container direction="column" className={classes.listContainer}>
-                    <Grid item xs={12} className={classes.paddingBottom}>
-                        <Typography variant="subtitle2">{notif.content}</Typography>
                     </Grid>
-                    <Grid item xs={12}>
-                        <Grid container>
-                            <Grid item>
-                                {notif.read===false && <Chip label="Read" className={classes.listChipError} onClick={() => {unreadNotification(notif._id); setIsRead(true)}}/>}
-                            </Grid>
+                </ListItemSecondaryAction>
+            </ListItem>
+            <Grid container direction="column" className={classes.listContainer}>
+                <Grid item xs={12} className={classes.paddingBottom}>
+                    <Typography variant="subtitle2">{notif.content}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                    <Grid container>
+                        <Grid item>
+                            {notif.read === false && (
+                                <Chip
+                                    label="Read"
+                                    className={classes.listChipError}
+                                    onClick={() => {
+                                        unreadNotification(notif._id);
+                                        setIsRead(true);
+                                    }}
+                                />
+                            )}
                         </Grid>
                     </Grid>
                 </Grid>
-
-            </div>
-            
+            </Grid>
+        </div>
     );
-}
+};
 
 export default Notification;

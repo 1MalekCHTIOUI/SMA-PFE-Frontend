@@ -74,7 +74,7 @@ const useStyles = makeStyles((theme) => ({
         paddingBottom: '16px'
     },
     box: {
-        position:"relative", 
+        position: 'relative',
         marginLeft: '16px',
         marginRight: '24px',
         [theme.breakpoints.down('sm')]: {
@@ -88,13 +88,13 @@ const useStyles = makeStyles((theme) => ({
         padding: '0px 16px'
     },
     parentNotif: {
-        position:"relative", 
-    }, 
+        position: 'relative'
+    },
     childNotif: {
-        zIndex:"1",
-        position:"absolute", 
-        fontSize: "0.65rem", 
-        bottom: '1.35rem', 
+        zIndex: '1',
+        position: 'absolute',
+        fontSize: '0.65rem',
+        bottom: '1.35rem',
         left: '1.45rem'
     }
 }));
@@ -130,8 +130,8 @@ const NotificationSection = () => {
     const [value, setValue] = React.useState('');
     const anchorRef = React.useRef(null);
 
-    const account = useSelector(s => s.account)
-    const {arrivalNotification} = React.useContext(SocketContext)
+    const account = useSelector((s) => s.account);
+    const { arrivalNotification } = React.useContext(SocketContext);
 
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
@@ -156,44 +156,42 @@ const NotificationSection = () => {
         setValue(event.target.value);
     };
 
-    const [notifLength, setNotifLength] = React.useState(0)
-    const [notifs, setNotifs] = React.useState(null)
+    const [notifLength, setNotifLength] = React.useState(0);
+    const [notifs, setNotifs] = React.useState(null);
 
     const resetNotifs = () => {
-        setNotifLength(0)
-    }
+        setNotifLength(0);
+    };
     const getUserNotifications = async () => {
         try {
-            const notifications = await axios.get(config.API_SERVER+"notifications/"+account.user._id)
-            setNotifs(notifications.data)
+            const notifications = await axios.get(config.API_SERVER + 'notifications/' + account.user._id);
+            setNotifs(notifications.data);
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
-        } catch(e) {console.log(e);}
-    }
-
-
-    React.useEffect(()=>{
+    React.useEffect(() => {
         console.log(notifs);
-        if(notifs) {
+        if (notifs) {
             notifs.map((notif, i) => {
-                if(notif.read === false) {
-                    setNotifLength(i+1);
+                if (notif.read === false) {
+                    setNotifLength(i + 1);
                 } else {
                     console.log(notif);
                 }
-            })
+            });
         }
+    }, [notifs]);
 
-    },[notifs])
+    React.useEffect(() => {
+        console.log('Notification CAME');
+        arrivalNotification && setNotifs((prev) => [...prev, arrivalNotification]) && setNotifLength((prev) => prev + 1);
+    }, [arrivalNotification]);
 
-    React.useEffect(()=>{
-        console.log("Notification CAME");
-        arrivalNotification && setNotifs(prev => [...prev, arrivalNotification]) && setNotifLength(prev => prev+1);
-    }, [arrivalNotification])
-
-
-    React.useEffect(()=>{
-        getUserNotifications()
-    },[])
+    React.useEffect(() => {
+        getUserNotifications();
+    }, []);
 
     return (
         <React.Fragment>
@@ -208,9 +206,14 @@ const NotificationSection = () => {
                         onClick={handleToggle}
                         color="inherit"
                     >
-                    <IconBell stroke={1.5} size="1.3rem" />
-                    <Typography variant="outlined" className={classes.childNotif} style={notifLength>9 ? {fontSize: "0.65rem", bottom: '1.35rem', left: '1.3rem'}: {}}>{notifLength<10 ? notifLength : '9+'}</Typography>
-                        
+                        <IconBell stroke={1.5} size="1.3rem" />
+                        <Typography
+                            variant="outlined"
+                            className={classes.childNotif}
+                            style={notifLength > 9 ? { fontSize: '0.65rem', bottom: '1.35rem', left: '1.3rem' } : {}}
+                        >
+                            {notifLength < 10 ? notifLength : '9+'}
+                        </Typography>
                     </Avatar>
                 </ButtonBase>
             </Box>
@@ -245,7 +248,11 @@ const NotificationSection = () => {
                                                         <Grid item>
                                                             <Stack direction="row" spacing={2}>
                                                                 <Typography variant="subtitle1">All Notification</Typography>
-                                                                <Chip size="small" label={notifLength < 10 ? "0"+notifLength : notifLength} className={classes.notificationChip} />
+                                                                <Chip
+                                                                    size="small"
+                                                                    label={notifLength < 10 ? '0' + notifLength : notifLength}
+                                                                    className={classes.notificationChip}
+                                                                />
                                                             </Stack>
                                                         </Grid>
                                                         <Grid item>

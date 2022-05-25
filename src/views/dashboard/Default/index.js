@@ -32,6 +32,8 @@ import { makeStyles } from '@material-ui/styles';
 import Post from '../../components/Post/Post';
 import DashboardRoom from '../../components/DashboardRoom';
 import moment from 'moment';
+import Share from '../../components/Share/Share';
+import Announcement from '../../components/Announcement/announcement';
 //-----------------------|| DEFAULT DASHBOARD ||-----------------------//
 const useStyles = makeStyles((theme) => ({
     content: {
@@ -50,7 +52,6 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
         width: 'fit-content',
-        flexDirection: 'column',
         minHeight: '6.8rem'
     },
     item: {
@@ -72,6 +73,10 @@ const useStyles = makeStyles((theme) => ({
         flexDirection: 'column',
         width: '100%'
     },
+    announcementItems: {
+        display: 'flex',
+        flexDirection: 'row'
+    },
     mainCard: {
         display: 'flex',
         justifyContent: 'center',
@@ -81,6 +86,40 @@ const useStyles = makeStyles((theme) => ({
         fontWeight: '500',
         marginBottom: '1rem',
         borderBottom: '1px solid rgba(0,0,0,0.2)'
+    },
+    body: {
+        display: 'flex',
+        justifyContent: 'center',
+        marginTop: '3vh'
+    },
+    announcementContainer: {
+        position: 'absolute',
+        left: '50%',
+        right: '50%',
+        margin: '5rem',
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row'
+        // overflowX: 'scroll'
+    },
+    anHolder: {
+        position: 'relative',
+        height: '20vh',
+        width: '70vw',
+        overflowX: 'auto',
+        display: 'flex',
+        justifyContent: 'center',
+        marginBottom: '15vh'
+    },
+    anItem: {
+        position: 'absolute',
+        display: 'flex',
+        flexDirection: 'row',
+        overflowY: 'hidden',
+        height: '100%'
     }
 }));
 const Dashboard = () => {
@@ -171,16 +210,36 @@ const Dashboard = () => {
                             </MainCard>
                         </Grid>
                     </Grid>
+                    <Grid item xs={12} style={{ display: 'flex', alignItems: 'center', marginTop: '10vh', height: '30vh' }}>
+                        <Container style={{ marginTop: '5vh' }} className={classes.anHolder}>
+                            {postsLoading && <CircularProgress />}
+                            <Container className={classes.anItem}>
+                                {usersLoading === false &&
+                                    posts?.filter((p) => p.priority === true).map((post) => <Announcement post={post} />)}
+                            </Container>
+                        </Container>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
+                            <div className={classes.posts}>
+                                <div className={classes.postItems}>
+                                    <Share user={account.user} setPosts={setPosts} />
+                                </div>
+                            </div>
+                        </Grid>
+                    </Grid>
                     <Grid item xs={12}>
                         <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
                             <div className={classes.posts}>
                                 {postsLoading && <CircularProgress />}
                                 <div className={classes.postItems}>
-                                    {usersLoading === false && posts?.map((post) => <Post post={post} />)}
+                                    {usersLoading === false &&
+                                        posts?.filter((p) => p.priority === false).map((post) => <Post post={post} />)}
                                 </div>
                             </div>
                         </Grid>
                     </Grid>
+
                     {/* <Grid item lg={4} md={6} sm={6} xs={12}>
                         <TotalOrderLineChartCard isLoading={isLoading} />
                     </Grid> */}
