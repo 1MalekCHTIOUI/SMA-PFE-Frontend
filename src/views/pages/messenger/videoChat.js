@@ -109,13 +109,6 @@ const Modals = (props) => {
                     <h3 align="center">{props.message}</h3>
                 </Box>
             </Modal>
-            <Grid justifyContent="center" direction="row">
-                {props.allowed && (
-                    <Button variant="outlined" color="error" onClick={() => props.history.push('/chat')}>
-                        Hang UP
-                    </Button>
-                )}
-            </Grid>
         </>
     );
 };
@@ -273,6 +266,13 @@ const Room = (props) => {
                         })}
                 </div>
                 <Modals show={show} allowed={location.state.allowed} history={history} message={'User joined!'} />
+                <Grid justifyContent="center" direction="row">
+                    {props.allowed && (
+                        <Button variant="outlined" color="error" onClick={() => props.history.push('/chat')}>
+                            Hang UP
+                        </Button>
+                    )}
+                </Grid>
             </MainCard>
         </>
     );

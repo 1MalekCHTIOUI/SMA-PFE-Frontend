@@ -66,13 +66,13 @@ import config from '../../config';
 import ModalC from './ModalC';
 import { addStr, generateRandomString, randomNumber } from '../../utils/scripts';
 import USER1 from '../../assets/images/users/user.svg';
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
     table: {
         minWidth: 650
     },
     chatSection: {
         width: '100%',
-        height: '85vh'
+        height: 'min(70vh, 100%)'
     },
     headBG: {
         backgroundColor: '#e0e0e0'
@@ -148,7 +148,7 @@ const useStyles = makeStyles({
         height: 'auto',
         maxHeight: '30vh !important'
     }
-});
+}));
 
 const transitionStyles = {
     entering: { opacity: 0 },
@@ -170,7 +170,9 @@ const chatStyle = {
 };
 
 const ConfirmDialog = (props) => {
-    const { title, children, openConfirm, setOpenConfirm, onClose, onConfirm, status, code } = props;
+    const { title, children, openConfirm, setOpenConfirm, onClose, onConfirm, status, code, isCode } = props;
+    console.log('code');
+    console.log(code);
     const [copied, setCopied] = React.useState(false);
     return (
         <Dialog open={openConfirm} onClose={onClose} aria-labelledby="confirm-dialog">
@@ -189,7 +191,7 @@ const ConfirmDialog = (props) => {
                         <Button onClick={() => setOpenConfirm(false)}>Ok</Button>
                     </>
                 )}
-                {code && (
+                {!status && isCode && (
                     <>
                         <Button onClick={onConfirm}>Generate room link</Button>
                         {
@@ -651,7 +653,7 @@ const Chat = () => {
 
     return (
         <>
-            <MainCard style={{ height: '100%' }} title="Chat">
+            <MainCard title="Chat">
                 <ConfirmDialog
                     title="Please confirm"
                     openConfirm={openConfirm}
@@ -671,11 +673,12 @@ const Chat = () => {
                     openConfirm={openGenerateCode}
                     setOpenConfirm={setOpenGenerateCode}
                     onConfirm={generateCode}
+                    isCode={true}
                     code={generatedCode}
                 >
                     <div className={classes.center} style={{ marginTop: '1rem' }}>
                         <OutlinedInput
-                            style={{ width: '12vw' }}
+                            style={{ width: '100%' }}
                             className={classes.disableTextSelection}
                             id="generate-code"
                             type="text"
@@ -712,7 +715,7 @@ const Chat = () => {
                 {inviteCode ||
                     (startCall === false && (
                         <Grid container component={Paper} className={classes.chatSection}>
-                            <Grid item xs={4} md={4} style={{ overflowY: 'auto' }} className={classes.borderRight500}>
+                            <Grid item xs={12} md={4} style={{ overflowY: 'auto' }} className={classes.borderRight500}>
                                 <List>
                                     <ListItem button key={userFirstName}>
                                         <ListItemIcon>
@@ -817,7 +820,7 @@ const Chat = () => {
                                     </PerfectScrollbar>
                                 </Collapse>
                             </Grid>
-                            <Grid item xs={8} sm={8}>
+                            <Grid item xs={12} md={8}>
                                 {currentChat && currentChatUser && currentChat.type === 'PRIVATE' && (
                                     <Grid container xs={12} direction="column" className={classes.center}>
                                         <Typography variant="outline">
@@ -865,7 +868,7 @@ const Chat = () => {
                                     </Typography>
                                 )}
                                 {currentChat ? (
-                                    <Container className={classes.messageArea}>
+                                    <Grid item className={classes.messageArea}>
                                         {messagesLoading && <CircularProgress />}
 
                                         <ScrollableFeed>
@@ -883,7 +886,7 @@ const Chat = () => {
                                         </ScrollableFeed>
 
                                         {/* <div ref={scrollRef} /> */}
-                                    </Container>
+                                    </Grid>
                                 ) : (
                                     <Container className={classes.center}>
                                         <img width="700vw" height="700vh" src={loader} />
@@ -892,7 +895,7 @@ const Chat = () => {
                                 <Divider />
                                 {currentChat && (
                                     <>
-                                        <Grid container style={{ padding: '20px' }}>
+                                        <Grid item container style={{ padding: '20px' }}>
                                             <Grid item xs={10}>
                                                 <TextField
                                                     id="outlined-basic-email"
