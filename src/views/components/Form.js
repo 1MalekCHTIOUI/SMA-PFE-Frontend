@@ -195,6 +195,7 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                     linkedin: user && user.social.linkedin ? user.social.linkedin : '',
                     github: user && user.social.github ? user.social.github : '',
                     facebook: user && user.social.facebook ? user.social.facebook : '',
+                    bio: user && user.bio ? user.bio : '',
                     oldPassword: '',
                     newPassword: '',
                     submit: null
@@ -229,6 +230,7 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                                     email: values.email,
                                     role: [values.role],
                                     service: values.service,
+                                    bio: values.bio,
                                     social: {
                                         linkedin: values.linkedin,
                                         github: values.github,
@@ -381,6 +383,22 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                                     {errors.email}{' '}
                                 </FormHelperText>
                             )}
+                        </FormControl>
+                        <FormControl fullWidth className={classes.loginInput}>
+                            <InputLabel htmlFor="outlined-adornment-email-register">Bio</InputLabel>
+                            <OutlinedInput
+                                id="outlined-adornment-email-register"
+                                type="text"
+                                value={values.bio}
+                                name="bio"
+                                onBlur={handleBlur}
+                                onChange={handleChange}
+                                inputProps={{
+                                    classes: {
+                                        notchedOutline: classes.notchedOutline
+                                    }
+                                }}
+                            />
                         </FormControl>
                         <FormControl fullWidth>
                             <InputLabel id="role">Service</InputLabel>

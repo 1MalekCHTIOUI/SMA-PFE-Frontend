@@ -4,6 +4,7 @@ import { Container, Typography } from '@material-ui/core';
 import axios from 'axios';
 import config from '../../../config';
 import { format } from 'timeago.js';
+import { useSelector } from 'react-redux';
 const useStyles = makeStyles({
     container: {
         margin: 10,
@@ -29,9 +30,10 @@ const useStyles = makeStyles({
     }
 });
 
-const Announcement = ({ post }) => {
+const Announcement = ({ post, posts, setPosts }) => {
     const [user, setUser] = useState({});
     const [loading, setLoading] = useState(false);
+    const account = useSelector((q) => q.account);
     const getUser = async () => {
         try {
             setLoading(true);
@@ -47,6 +49,14 @@ const Announcement = ({ post }) => {
     useEffect(() => {
         getUser();
     }, []);
+    const deletePost = async () => {
+        try {
+            axios.delete(config.API_SERVER + 'posts/' + post._id);
+            setPosts(posts.filter((u) => u._id !== post._id));
+        } catch (error) {
+            console.log(error);
+        }
+    };
     const classes = useStyles();
     return (
         <Container className={classes.container}>
@@ -63,6 +73,11 @@ const Announcement = ({ post }) => {
                     <Typography variant="overline" color="white" style={{ fontFamily: 'Poppins' }}>
                         {post.content}
                     </Typography>
+                    {post.userId === account.user._id && (
+                        <Button variant="outlined" onClick={deletePost}>
+                            Delete
+                        </Button>
+                    )}
                 </div>
             )}
         </Container>

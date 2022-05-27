@@ -218,7 +218,9 @@ const Dashboard = () => {
                             {postsLoading && <CircularProgress />}
                             <Container className={classes.anItem}>
                                 {usersLoading === false &&
-                                    posts?.filter((p) => p.priority === true).map((post) => <Announcement post={post} />)}
+                                    posts
+                                        ?.filter((p) => p.priority === true)
+                                        .map((post) => <Announcement post={post} posts={posts} setPosts={setPosts} />)}
                             </Container>
                         </Container>
                     </Grid>
@@ -237,7 +239,9 @@ const Dashboard = () => {
                                 {postsLoading && <CircularProgress />}
                                 <div className={classes.postItems}>
                                     {usersLoading === false &&
-                                        posts?.filter((p) => p.priority === false).map((post) => <Post post={post} />)}
+                                        posts
+                                            ?.filter((p) => p.priority === false)
+                                            .map((post) => <Post post={post} posts={posts} setPosts={setPosts} />)}
                                 </div>
                             </div>
                         </Grid>

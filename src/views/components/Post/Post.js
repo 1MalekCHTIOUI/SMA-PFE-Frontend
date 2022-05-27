@@ -11,7 +11,7 @@ import Comment from '../Comment/Comment';
 import User1 from './../../../assets/images/users/user.svg';
 import { SocketContext } from '../../../utils/socket/SocketContext';
 
-export default function Post({ post }) {
+export default function Post({ post, posts, setPosts }) {
     const account = useSelector((s) => s.account);
     const [like, setLike] = useState(post.likes.length);
     const [isLiked, setIsLiked] = useState(post.likes.some((u) => u.userId === account?.user._id));
@@ -22,11 +22,21 @@ export default function Post({ post }) {
     const [comments, setComments] = useState(null);
     const [comment, setComment] = useState('');
     const [show, setShow] = useState(false);
+    const [showOptions, setShowOptions] = useState(false);
     const hiddenFileInput = useRef(null);
     const [content, setContent] = useState('');
 
     const handleClick = (event) => {
         hiddenFileInput.current.click();
+    };
+
+    const deletePost = async () => {
+        try {
+            axios.delete(config.API_SERVER + 'posts/' + post._id);
+            setPosts(posts.filter((u) => u._id !== post._id));
+        } catch (error) {
+            console.log(error);
+        }
     };
     const [selectedFiles, setSelectedFiles] = useState([]);
 
@@ -149,7 +159,14 @@ export default function Post({ post }) {
                     </div>
                     <div className="postTopRight">
                         <Typography variant="subtitle2">{post.visibility ? 'Public' : 'Private'}</Typography>
-                        <MoreVert />
+                        {showOptions && account.user._id === post.userId && (
+                            <div>
+                                <Button variant="outlined" onClick={deletePost}>
+                                    Delete
+                                </Button>
+                            </div>
+                        )}
+                        <MoreVert onClick={() => setShowOptions(!options)} />
                     </div>
                 </div>
                 <div className="postCenter">
