@@ -45,13 +45,10 @@ const ProfileHeader = ({ user }) => {
     return (
         <div className={classes.container}>
             <div className={classes.coverContainer}>
-                <img className={classes.cover} src={user.coverPicture ? config.HOST + `public/uploads/${user.coverPicture}` : ''} alt="" />
+                <img className={classes.cover} src={user.coverPicture ? config.CONTENT + user.coverPicture : ''} alt="" />
             </div>
             <div className={classes.profileContainer}>
-                <img
-                    className={classes.profile}
-                    src={user.profilePicture ? config.HOST + `public/uploads/${user.profilePicture}` : User1}
-                />
+                <img className={classes.profile} src={user.profilePicture ? config.CONTENT + user.profilePicture : User1} />
                 <Typography variant="h3" className={classes.title}>
                     {user.first_name} {user.last_name}
                 </Typography>

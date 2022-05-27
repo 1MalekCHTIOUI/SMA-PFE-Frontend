@@ -65,7 +65,7 @@ import { SocketContext } from '../../utils/socket/SocketContext';
 import config from '../../config';
 import ModalC from './ModalC';
 import { addStr, generateRandomString, randomNumber } from '../../utils/scripts';
-
+import USER1 from '../../assets/images/users/user.svg';
 const useStyles = makeStyles({
     table: {
         minWidth: 650
@@ -716,7 +716,10 @@ const Chat = () => {
                                 <List>
                                     <ListItem button key={userFirstName}>
                                         <ListItemIcon>
-                                            <Avatar alt={userFirstName} src="../../assets/images/users/user.svg" />
+                                            <Avatar
+                                                alt={userFirstName}
+                                                src={account.user.profilePicture ? config.CONTENT + account.user.profilePicture : ' '}
+                                            />
                                         </ListItemIcon>
 
                                         <Grid direction="row">

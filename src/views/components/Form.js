@@ -86,6 +86,7 @@ const useStyles = makeStyles((theme) => ({
     image: {
         width: '200px',
         height: '200px',
+        objectFit: 'cover',
         borderRadius: '125px',
         '&:hover': {
             filter: 'brightness(50%)'
@@ -209,11 +210,11 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                     service: Yup.string().required('Service is required')
                 })}
                 onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
-                    const random = randomNumber();
-                    const dotIndex = file.name.indexOf('.');
-                    const newFilename = addStr(file.name, dotIndex, random);
+                    // const random = randomNumber();
+                    // const dotIndex = file.name.indexOf('.');
+                    // const newFilename = addStr(file.name, dotIndex, random);
                     const formData = new FormData();
-                    formData.append('file', file, newFilename);
+                    formData.append('file', file);
                     try {
                         try {
                             let test = await checkIfPasswordLegit(values.email, values.oldPassword);
@@ -291,12 +292,10 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                                         onMouseLeave={() => setIsHovering(false)}
                                     >
                                         {!file && account.user.profilePicture ? (
-                                            <img
-                                                className={classes.image}
-                                                src={config.HOST + `public/uploads/${account.user.profilePicture}`}
-                                                alt=""
-                                            />
-                                        ) : null}
+                                            <img className={classes.image} src={config.CONTENT + account.user.profilePicture} alt="" />
+                                        ) : (
+                                            <div className={classes.image}></div>
+                                        )}
                                         {file ? <img className={classes.image} src={URL.createObjectURL(file)} alt="" /> : null}
                                         {isHovering && <Build className={classes.tool} />}
                                     </Container>

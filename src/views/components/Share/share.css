@@ -6,8 +6,12 @@
     box-shadow: 0px 0px 16px -8px rgba(0, 0, 0, 0.68);
 }
 
-.shareWrapper {
-    padding: 10px;
+.selectHolder {
+    padding: 10;
+    height: fit-content;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: flex-end;
 }
 
 .uploadedImage {
@@ -28,6 +32,7 @@
 }
 .shareTop {
     background-color: 'red';
+    padding: 15px;
 }
 .shareMiddle {
     display: flex;
@@ -96,7 +101,7 @@
 .sharePrivacy {
     display: flex;
     justify-content: flex-end;
-    width: 100%;
+    width: fit-content;
 }
 .shareSelect {
     width: fit-content;

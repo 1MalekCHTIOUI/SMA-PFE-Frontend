@@ -58,7 +58,7 @@ const DashboardRoom = ({ item }) => {
         >
             <Grid item>
                 <ListItemIcon>
-                    <Avatar alt={item.first_name} src={config.HOST + `public/uploads/${item.profilePicture}`} />
+                    <Avatar alt={item.first_name} src={config.CONTENT + item.profilePicture} />
                 </ListItemIcon>
             </Grid>
             <Grid item>

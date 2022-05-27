@@ -31,7 +31,7 @@ const Card = ({ fullname, users, showCard, setShowCard, online }) => {
                             <div className="front">
                                 <div className="front__bkg-photo"></div>
                                 <div className="front__face-photo">
-                                    <img src={config.HOST + `public/uploads/${users.profilePicture}`} />
+                                    <img src={config.CONTENT + users.profilePicture} />
                                 </div>
                                 <div className="front__text">
                                     <h3 className="front__text-header">{fullname}</h3>

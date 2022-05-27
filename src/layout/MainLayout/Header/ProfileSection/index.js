@@ -183,7 +183,7 @@ const ProfileSection = () => {
                 className={classes.profileChip}
                 icon={
                     <Avatar
-                        src={picture ? config.HOST + `public/uploads/${picture}` : User1}
+                        src={picture ? config.CONTENT + picture : User1}
                         className={classes.headerAvatar}
                         ref={anchorRef}
                         aria-controls={open ? 'menu-list-grow' : undefined}

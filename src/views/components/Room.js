@@ -187,7 +187,7 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
                                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                                         variant="dot"
                                     >
-                                        <Avatar alt={users.first_name} src={config.HOST + `/public/uploads/${users.profilePicture}`} />
+                                        <Avatar alt={users.first_name} src={config.CONTENT + users.profilePicture} />
                                     </StyledBadgeOnline>
                                 ) : (
                                     <StyledBadgeOffline
@@ -195,7 +195,7 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
                                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                                         variant="dot"
                                     >
-                                        <Avatar alt={users.first_name} src={`/public/uploads/${users.profilePicture}`} />
+                                        <Avatar alt={users.first_name} src={config.CONTENT + users.profilePicture} />
                                     </StyledBadgeOffline>
                                 )}
                             </ListItemIcon>

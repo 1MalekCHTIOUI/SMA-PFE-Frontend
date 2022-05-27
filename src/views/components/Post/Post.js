@@ -1,6 +1,6 @@
 import './post.css';
 import { MoreVert, PermMedia } from '@material-ui/icons';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import axios from 'axios';
 import config from '../../../config';
 import { format } from 'timeago.js';
@@ -9,12 +9,13 @@ import { useSelector } from 'react-redux';
 import { Collapse, Grid, TextField, Typography } from '@material-ui/core';
 import Comment from '../Comment/Comment';
 import User1 from './../../../assets/images/users/user.svg';
+import { SocketContext } from '../../../utils/socket/SocketContext';
 
 export default function Post({ post }) {
     const account = useSelector((s) => s.account);
     const [like, setLike] = useState(post.likes.length);
     const [isLiked, setIsLiked] = useState(post.likes.some((u) => u.userId === account?.user._id));
-
+    const { emitNewLike } = useContext(SocketContext);
     const [user, setUser] = useState({});
     const [numberOfitemsShown, setNumberOfitemsShown] = useState(3);
 
@@ -50,6 +51,7 @@ export default function Post({ post }) {
                 userId: account.user._id,
                 username: `${user.first_name} ${user.last_name}`
             });
+            emitNewLike(account.user._id, post.userId);
         } catch (error) {
             console.log(error);
         }
@@ -138,10 +140,7 @@ export default function Post({ post }) {
                     <div className="postTopLeft">
                         <img
                             className="postProfileImg"
-                            src={
-                                user._id === post.userId &&
-                                (user.profilePicture ? config.HOST + `public/uploads/${user.profilePicture}` : User1)
-                            }
+                            src={user._id === post.userId && (user.profilePicture ? config.CONTENT + user.profilePicture : User1)}
                         />
                         <div className="postTopLeftRight">
                             <span className="postUsername">{user._id === post.userId && user.first_name + ' ' + user.last_name}</span>
