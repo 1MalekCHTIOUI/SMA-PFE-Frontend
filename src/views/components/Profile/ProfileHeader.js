@@ -22,12 +22,14 @@ const useStyles = makeStyles((theme) => ({
         width: '154px',
         height: '154px',
         float: 'left',
+        objectFit: 'cover',
         borderRadius: '50%',
         margin: '-90px 10px 0  0',
         position: 'relative',
         zIndex: 111,
         backgroundColor: 'white',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        border: '2px solid white'
     },
     container: {
         // display:'flex',
@@ -53,7 +55,7 @@ const ProfileHeader = ({ user }) => {
                     {user.first_name} {user.last_name}
                 </Typography>
                 <Typography variant="subtitle2" className={classes.subtitle}>
-                    THIS IS BIO
+                    {user.bio ? user.bio : 'This user has no bio'}
                 </Typography>
             </div>
         </div>

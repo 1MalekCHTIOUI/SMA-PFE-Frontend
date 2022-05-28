@@ -43,7 +43,7 @@ const ContextProvider = ({ children }) => {
     const classes = useStyles();
     React.useEffect(() => {
         if (account.token) {
-            socket.emit('addUser', account.user._id);
+            socket.emit('addUser', { userId: account.user._id, user: account.user });
             socket.on('getUsers', (users) => {
                 setOnlineUsers(users);
             });

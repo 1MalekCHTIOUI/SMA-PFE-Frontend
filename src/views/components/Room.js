@@ -93,7 +93,7 @@ const StyledBadgeOffline = styled(Badge)(({ theme }) => ({
 }));
 
 export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk, group }) {
-    const [online, setOnline] = React.useState(null);
+    const [online, setOnline] = React.useState(false);
     const [isHovering, setIsHovering] = React.useState(false);
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -110,14 +110,17 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
         !group &&
             onlineUsers &&
             onlineUsers.map((user) => {
-                if (currentUser._id !== user.userId) {
-                    handleOnline(user.userId === users._id);
+                if (users._id === user.userId) {
+                    console.log(users.first_name + ' is online');
+                    setOnline(true);
+                } else {
+                    setOnline(false);
                 }
             });
-        return () => {
-            setOnline(false);
-        };
-    }, [users, onlineUsers]);
+        // return () => {
+        //     setOnline(false);
+        // };
+    }, [onlineUsers]);
 
     const handleOnline = (o) => {
         if (o) {
@@ -181,7 +184,7 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
                     <Grid item xs={12}>
                         <ListItem button key={mk}>
                             <ListItemIcon>
-                                {online ? (
+                                {!group && onlineUsers && onlineUsers.some((u) => u.userId === users._id) ? (
                                     <StyledBadgeOnline
                                         overlap="circular"
                                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -198,6 +201,23 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
                                         <Avatar alt={users.first_name} src={config.CONTENT + users.profilePicture} />
                                     </StyledBadgeOffline>
                                 )}
+                                {/* {online ? (
+                                    <StyledBadgeOnline
+                                        overlap="circular"
+                                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                        variant="dot"
+                                    >
+                                        <Avatar alt={users.first_name} src={config.CONTENT + users.profilePicture} />
+                                    </StyledBadgeOnline>
+                                ) : (
+                                    <StyledBadgeOffline
+                                        overlap="circular"
+                                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                        variant="dot"
+                                    >
+                                        <Avatar alt={users.first_name} src={config.CONTENT + users.profilePicture} />
+                                    </StyledBadgeOffline>
+                                )} */}
                             </ListItemIcon>
                             <Grid container direction="row" style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <Grid item>

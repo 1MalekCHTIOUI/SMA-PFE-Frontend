@@ -21,6 +21,10 @@ const StyledVideo = styled.video`
     height: 100%;
     width: 100%;
 `;
+const StyledGuestVideo = styled.video`
+    height: fit-content;
+    width: fit-content;
+`;
 const style = {
     position: 'absolute',
     top: '50%',
@@ -36,7 +40,7 @@ const style = {
 
 const useStyles = makeStyles({
     container: {
-        height: '100vw',
+        height: '100vh',
         position: 'relative'
     },
     chatContainer: {
@@ -76,6 +80,11 @@ const useStyles = makeStyles({
         // alignItems: 'center',
         top: 0
         // left: '40%'
+    },
+    userGroupContainer: {
+        display: 'flex',
+        justifyContent: 'space-evenly',
+        alignItems: 'center'
     }
 });
 
@@ -89,6 +98,17 @@ const Video = (props) => {
     }, []);
 
     return <StyledVideo muted playsInline autoPlay ref={ref} />;
+};
+const GuestVideo = (props) => {
+    const ref = useRef();
+
+    useEffect(() => {
+        props.peer.on('stream', (stream) => {
+            ref.current.srcObject = stream;
+        });
+    }, []);
+
+    return <StyledGuestVideo muted playsInline autoPlay ref={ref} />;
 };
 
 const videoConstraints = {
@@ -235,35 +255,59 @@ const Room = (props) => {
                         >{`${account.user.first_name} ${account.user.last_name}`}</Typography>
                         <StyledVideo muted ref={userVideo} autoPlay playsInline />
                     </div>
-                    <div className={classes.userContainer}>
-                        <div>{joinedUsers === 0 && <CircularProgress />}</div>
-                        {location.state.type === 'PRIVATE' && (
-                            <>
-                                <Typography className={classes.typography} variant="overline">
-                                    {location.state.callData.caller || location.state.callData.receiver}
-                                </Typography>
-                                {peers[0]?.readable && <Video key={1} peer={peers[0]} />}
-                            </>
-                        )}
-                    </div>
-                    {location.state.type === 'PUBLIC' &&
-                        peers.map((peer, index) => {
-                            if (index === joinedUsers) {
-                                return peer.readable ? (
-                                    <Grid item>
-                                        <MainCard
-                                            style={{ width: 'fit-content' }}
-                                            title={location.state.callData.caller || location.state.callData.receiver}
-                                        >
-                                            <div>{joinedUsers === 0 && <CircularProgress />}</div>
-                                            <Video key={index} peer={peer} />
-                                        </MainCard>
-                                    </Grid>
-                                ) : (
-                                    console.log('LOADING')
+                    {location.state.type === 'PRIVATE' && (
+                        <div className={classes.userContainer}>
+                            <div>{joinedUsers === 0 && <CircularProgress />}</div>
+                            {location.state.type === 'PRIVATE' && (
+                                <>
+                                    <Typography className={classes.typography} variant="overline">
+                                        {location.state.callData.caller || location.state.callData.receiver}
+                                    </Typography>
+                                    {peers[0]?.readable && <Video key={1} peer={peers[0]} />}
+                                </>
+                            )}
+                        </div>
+                    )}
+                    {location.state.type === 'PUBLIC' && (
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                columnGap: 3,
+                                rowGap: 1,
+                                gridTemplateColumns: 'repeat(2, auto)',
+                                width: '50vw',
+                                height: '50vh'
+                            }}
+                        >
+                            {peers?.map((peer, index) => {
+                                // if (peer.readable) {
+                                return (
+                                    <Box style={{ backgroundColor: 'red', height: '50vh', width: 'fit-content' }}>
+                                        <div>{joinedUsers === 0 && <CircularProgress />}</div>
+                                        <Typography className={classes.typography} variant="overline">
+                                            {location.state.callData.caller || location.state.callData.receiver}
+                                        </Typography>
+                                        {peer.readable && <GuestVideo key={index} peer={peer} />}
+                                    </Box>
                                 );
-                            }
-                        })}
+                                // }
+                            })}
+                        </Box>
+                    )}
+
+                    {/* // peer.readable && (
+                            //     <Grid item style={{ backgroundColor: 'red' }}>
+                            //         <MainCard
+                            //             style={{ width: 'fit-content' }}
+                            //             title={location.state.callData.caller || location.state.callData.receiver}
+                            //         >
+                            //             <div>{joinedUsers === 0 && <CircularProgress />}</div>
+                            //             <Video key={index} peer={peer} />
+                            //         </MainCard>
+                            //     </Grid>
+                            // );
+                            // }
+                        // })} */}
                 </div>
                 <Modals show={show} allowed={location.state.allowed} history={history} message={'User joined!'} />
                 <Grid justifyContent="center" direction="row">

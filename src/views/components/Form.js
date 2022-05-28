@@ -235,8 +235,7 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                                         linkedin: values.linkedin,
                                         github: values.github,
                                         facebook: values.facebook
-                                    },
-                                    profilePicture: ''
+                                    }
                                 };
                                 if (values.newPassword != '' && values.oldPassword != '') {
                                     updatedUser.password = values.newPassword;
@@ -244,8 +243,10 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                                 try {
                                     // console.log(updatedUser)
                                     try {
-                                        const r = await axios.post(configData.API_SERVER + 'upload', formData);
-                                        updatedUser.profilePicture = r.data.upload;
+                                        if (file) {
+                                            const r = await axios.post(configData.API_SERVER + 'upload', formData);
+                                            updatedUser.profilePicture = r.data.upload;
+                                        }
                                         try {
                                             await axios.put(configData.API_SERVER + 'user/users/' + user._id, updatedUser);
 
@@ -296,7 +297,7 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                                         {!file && account.user.profilePicture ? (
                                             <img className={classes.image} src={config.CONTENT + account.user.profilePicture} alt="" />
                                         ) : (
-                                            <div className={classes.image}></div>
+                                            <div></div>
                                         )}
                                         {file ? <img className={classes.image} src={URL.createObjectURL(file)} alt="" /> : null}
                                         {isHovering && <Build className={classes.tool} />}

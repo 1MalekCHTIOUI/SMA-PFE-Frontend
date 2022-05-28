@@ -130,33 +130,36 @@ const Dashboard = () => {
     const [posts, setPosts] = useState([]);
     const [postsLoading, setPostsLoading] = useState(false);
     const [todaysPosts, setTodaysPosts] = useState(null);
-    const [onliners, setOnliners] = useState([]);
+    // const [onliners, setOnliners] = useState([]);
 
     const classes = useStyles();
     useEffect(() => {
         setLoading(false);
     }, []);
+    useEffect(() => {
+        console.log(onlineUsers);
+    }, [onlineUsers]);
 
     const [usersLoading, setUsersLoading] = React.useState(false);
-    React.useEffect(() => {
-        const getOnlineUsers = () => {
-            onlineUsers?.map(async (item) => {
-                try {
-                    setUsersLoading(true);
-                    const users = await axios.get(config.API_SERVER + 'user/users/' + item.userId);
-                    // onliners.map(item =>  {
-                    //     if(item._id )
-                    // })
-                    onliners.find((u) => u._id === users.data._id) === undefined && setOnliners((prev) => [...prev, users.data]);
-                    setUsersLoading(false);
-                } catch (error) {
-                    setUsersLoading(false);
-                    console.log(error);
-                }
-            });
-        };
-        getOnlineUsers();
-    }, [onlineUsers]);
+    // React.useEffect(() => {
+    //     const getOnlineUsers = () => {
+    //         onlineUsers?.map(async (item) => {
+    //             try {
+    //                 setUsersLoading(true);
+    //                 const users = await axios.get(config.API_SERVER + 'user/users/' + item.userId);
+    //                 // onliners.map(item =>  {
+    //                 //     if(item._id )
+    //                 // })
+    //                 onliners.find((u) => u._id === users.data._id) === undefined && setOnliners((prev) => [...prev, users.data]);
+    //                 setUsersLoading(false);
+    //             } catch (error) {
+    //                 setUsersLoading(false);
+    //                 console.log(error);
+    //             }
+    //         });
+    //     };
+    //     getOnlineUsers();
+    // }, [onlineUsers]);
 
     React.useEffect(() => {
         const fetchPublicPosts = async () => {
@@ -186,10 +189,11 @@ const Dashboard = () => {
                     <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
                         <MainCard border={false} className={classes.mainCard} contentClass={classes.content}>
                             <Container className={classes.carousel}>
-                                <Typography className={classes.title}>Online users: {onliners.length}</Typography>
+                                <Typography className={classes.title}>Online users: {onlineUsers.length}</Typography>
                                 {usersLoading && <CircularProgress />}
                                 <Container className={classes.carouselItems}>
-                                    {usersLoading === false && onliners?.map((item, index) => <DashboardRoom item={item} index={index} />)}
+                                    {usersLoading === false &&
+                                        onlineUsers?.map((item, index) => <DashboardRoom item={item.user} index={index} />)}
                                 </Container>
                             </Container>
                         </MainCard>
