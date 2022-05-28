@@ -6,7 +6,7 @@ import config from '../../../config';
 import { format } from 'timeago.js';
 import likeImage from '../../../assets/images/icons/like.png';
 import { useSelector } from 'react-redux';
-import { Collapse, Grid, TextField, Typography } from '@material-ui/core';
+import { Collapse, Grid, TextField, Typography, Button } from '@material-ui/core';
 import Comment from '../Comment/Comment';
 import User1 from './../../../assets/images/users/user.svg';
 import { SocketContext } from '../../../utils/socket/SocketContext';
@@ -143,6 +143,7 @@ export default function Post({ post, posts, setPosts }) {
         getPostComments();
     }, []);
     const itemsToShow = comments?.slice(0, numberOfitemsShown).map((comment) => <Comment comment={comment} />);
+    // const [showOptions, setShowOptions] = React.useState(false);
     return (
         <div className="post" style={{ backgroundColor: 'white' }}>
             <div className="postWrapper">
@@ -166,7 +167,7 @@ export default function Post({ post, posts, setPosts }) {
                                 </Button>
                             </div>
                         )}
-                        <MoreVert onClick={() => setShowOptions(!options)} />
+                        <MoreVert onClick={() => setShowOptions(!showOptions)} />
                     </div>
                 </div>
                 <div className="postCenter">
