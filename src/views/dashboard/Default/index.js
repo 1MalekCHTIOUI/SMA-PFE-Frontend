@@ -160,23 +160,23 @@ const Dashboard = () => {
     //     };
     //     getOnlineUsers();
     // }, [onlineUsers]);
-
+    const fetchPublicPosts = async () => {
+        try {
+            setPostsLoading(true);
+            const fetchPosts = await axios.get(config.API_SERVER + 'posts');
+            setPosts(fetchPosts.data.filter((p) => p.visibility === true).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+            setPostsLoading(false);
+        } catch (error) {
+            setPostsLoading(false);
+            console.log(error);
+        }
+    };
     React.useEffect(() => {
-        const fetchPublicPosts = async () => {
-            try {
-                setPostsLoading(true);
-                const fetchPosts = await axios.get(config.API_SERVER + 'posts');
-                setPosts(fetchPosts.data.filter((p) => p.visibility === true));
-                setPostsLoading(false);
-            } catch (error) {
-                setPostsLoading(false);
-                console.log(error);
-            }
-        };
         fetchPublicPosts();
     }, []);
     React.useEffect(() => {
         setTodaysPosts(posts.filter((p) => moment().diff(p.createdAt, 'hours') < 24).length);
+        fetchPublicPosts();
     }, [posts]);
 
     React.useEffect(() => {
@@ -198,7 +198,7 @@ const Dashboard = () => {
                             </Container>
                         </MainCard>
                     </Grid>
-                    <Grid item xs={12}>
+                    {/* <Grid item xs={12}>
                         <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
                             <MainCard border={false} className={classes.mainCard}>
                                 <Container
@@ -216,10 +216,10 @@ const Dashboard = () => {
                                 </Container>
                             </MainCard>
                         </Grid>
-                    </Grid>
+                    </Grid> */}
                     <Grid item xs={12} style={{ display: 'flex', alignItems: 'center', marginTop: '10vh', height: '30vh' }}>
                         <Container style={{ marginTop: '5vh' }} className={classes.anHolder}>
-                            {postsLoading && <CircularProgress />}
+                            {/* {postsLoading && <CircularProgress />} */}
                             <Container className={classes.anItem}>
                                 {usersLoading === false &&
                                     posts
@@ -238,10 +238,31 @@ const Dashboard = () => {
                         </Grid>
                     </Grid>
                     <Grid item xs={12}>
+                        {/* {postsLoading && <CircularProgress />} */}
                         <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
-                            <div className={classes.posts}>
-                                {postsLoading && <CircularProgress />}
+                            <div className={classes.posts} style={{ border: '2px solid rgba(0,0,0,0.2)', borderRadius: '2rem' }}>
+                                {/* <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        textAlign: 'center',
+                                        width: '100%',
+                                        flexDirection: 'column'
+                                    }}
+                                >
+   
+                                </div> */}
                                 <div className={classes.postItems}>
+                                    {posts.length === 0 && (
+                                        <Typography variant="outlined" style={{ fontWeight: 'Bold' }}>
+                                            Posts: {posts.length}
+                                        </Typography>
+                                    )}
+                                    {posts.length > 0 && (
+                                        <Typography variant="outlined" style={{ fontWeight: 'Bold' }}>
+                                            Today: {todaysPosts}
+                                        </Typography>
+                                    )}
                                     {usersLoading === false &&
                                         posts
                                             ?.filter((p) => p.priority === false)

@@ -142,8 +142,9 @@ export default function Post({ post, posts, setPosts }) {
         getUser();
         getPostComments();
     }, []);
+
     const itemsToShow = comments?.slice(0, numberOfitemsShown).map((comment) => <Comment comment={comment} />);
-    // const [showOptions, setShowOptions] = React.useState(false);
+    const [enlargeImage, setEnlargeImage] = useState(false);
     return (
         <div className="post" style={{ backgroundColor: 'white' }}>
             <div className="postWrapper">
@@ -176,7 +177,17 @@ export default function Post({ post, posts, setPosts }) {
                         <Grid container xs={12}>
                             {post?.attachment.map((f) => (
                                 <Grid item xs={12} justifyContent="center" alignItems="center">
-                                    <img className="postImg" src={`/uploads/files/${f.actualName}`} alt="loading..." />
+                                    <img
+                                        className="postImg"
+                                        style={
+                                            enlargeImage
+                                                ? { transform: 'scale(1.5)', transition: 'transform 0.25s ease' }
+                                                : { transform: 'scale(1)', transition: 'transform 0.25s ease' }
+                                        }
+                                        onClick={() => setEnlargeImage(!enlargeImage)}
+                                        src={user._id === post.userId && config.CONTENT + f.actualName}
+                                        alt="loading..."
+                                    />
                                 </Grid>
                             ))}
                         </Grid>
@@ -190,7 +201,6 @@ export default function Post({ post, posts, setPosts }) {
                         {/* <img className="likeIcon" src={likeImage} onClick={likeHandler} alt="" /> */}
                         {/* <img className="likeIcon" src="assets/heart.png" onClick={likeHandler} alt="" />  */}
                         <span className="postLikeCounter">
-                            {console.log(like)}
                             {isLiked ? 'You and ' + `${like - 1} people like it` : ''}
                             {!isLiked && `${like} people like it`}
                         </span>

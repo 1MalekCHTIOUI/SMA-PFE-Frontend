@@ -1,7 +1,7 @@
 import React from 'react';
 import './share.css';
 import { PermMedia, Label, Room, EmojiEmotions, Close } from '@material-ui/icons';
-import { TextField, ImageList, ImageListItem, Container, Select, MenuItem, FormControl } from '@material-ui/core';
+import { TextField, ImageList, ImageListItem, Container, Select, MenuItem, FormControl, CircularProgress } from '@material-ui/core';
 import config from '../../../config';
 import User1 from './../../../assets/images/users/user.svg';
 import { SocketContext } from '../../../utils/socket/SocketContext';
@@ -15,6 +15,8 @@ const Share = ({ user, setPosts }) => {
     const [content, setContent] = React.useState('');
     const [announcement, setAnnouncement] = React.useState(false);
     const [postPrivacy, setPostPrivacy] = React.useState(true);
+    const [posting, setPosting] = React.useState(false);
+
     const handleClick = (event) => {
         hiddenFileInput.current.click();
     };
@@ -32,7 +34,7 @@ const Share = ({ user, setPosts }) => {
     const submitPost = async () => {
         const formData = new FormData();
         if (content === '' && selectedFile === null) return;
-
+        setPosting(true);
         const post = {
             userId: account.user._id,
             visibility: postPrivacy,
@@ -43,22 +45,27 @@ const Share = ({ user, setPosts }) => {
         }
 
         formData.append('file', selectedFile);
+        console.log(selectedFile);
 
-        console.log(post);
         try {
             if (selectedFile !== null) {
                 try {
                     const up = await axios.post(config.API_SERVER + 'upload', formData);
-                    post.attachment = [up.data.upload];
+                    post.attachment = [{ displayName: selectedFile.name, actualName: up.data.upload }];
                 } catch (error) {
+                    setPosting(false);
                     console.log(error);
                 }
             }
-
+            console.log(post);
             const res = await axios.post(config.API_SERVER + 'posts', post);
             setPosts((prev) => [...prev, res.data]);
+            setContent('');
+            setSelectedFile({});
             emitNewPost(account.user._id, post.priority);
+            setPosting(false);
         } catch (error) {
+            setPosting(false);
             console.log(error);
         }
     };
@@ -67,21 +74,24 @@ const Share = ({ user, setPosts }) => {
         <div className="share" style={{ backgroundColor: 'white' }}>
             <div className="shareWrapper">
                 <div className="selectHolder">
-                    <div className="sharePrivacy">
-                        <Select
-                            size="small"
-                            label="Privacy"
-                            name="privacy"
-                            id="privacy"
-                            type="text"
-                            value={postPrivacy}
-                            onChange={(e) => setPostPrivacy(e.target.value)}
-                            className="shareSelect"
-                        >
-                            <MenuItem value={true}>Public</MenuItem>
-                            <MenuItem value={false}>Private</MenuItem>
-                        </Select>
-                    </div>
+                    {announcement === false && (
+                        <div className="sharePrivacy">
+                            <Select
+                                size="small"
+                                label="Privacy"
+                                name="privacy"
+                                id="privacy"
+                                type="text"
+                                value={postPrivacy}
+                                onChange={(e) => setPostPrivacy(e.target.value)}
+                                className="shareSelect"
+                            >
+                                <MenuItem value={true}>Public</MenuItem>
+                                <MenuItem value={false}>Private</MenuItem>
+                            </Select>
+                        </div>
+                    )}
+
                     {user.role !== 'USER' && (
                         <div className="sharePrivacy">
                             <Select
@@ -108,24 +118,22 @@ const Share = ({ user, setPosts }) => {
                         onChange={handleChange}
                         className="shareInput"
                     />
+                    {selectedFile?.name && console.log('FILE SELECTED') && (
+                        <div className="shareMiddle">
+                            {/* <ImageList sx={{ width: '100%' }} rowHeight={164} cols={3}>
+                            <ImageListItem key={1}> */}
+                            {(selectedFile.name?.includes('.png') || selectedFile.name?.includes('.jpg')) && (
+                                <div className="uploadedImageContainer">
+                                    <Close className="close" onClick={() => removeItem(selectedFile.name)} />
+                                    <img className="uploadedImage" src={`${URL.createObjectURL(selectedFile)}`} />
+                                </div>
+                            )}
+                            {/* </ImageListItem>
+                        </ImageList> */}
+                        </div>
+                    )}
                 </div>
-                {/* 
-                <div className="shareMiddle">
-                    <ImageList sx={{ width: '100%' }} rowHeight={164} cols={3}>
-                        {selectedFiles?.map((item, i) => {
-                            return (
-                                <ImageListItem key={i}>
-                                    {(item.name.includes('.png') || item.name.includes('.jpg')) && (
-                                        <div className="uploadedImageContainer">
-                                            <Close className="close" onClick={() => removeItem(item.name)} />
-                                            <img className="uploadedImage" src={`${URL.createObjectURL(item)}`} />
-                                        </div>
-                                    )}
-                                </ImageListItem>
-                            );
-                        })}
-                    </ImageList>
-                </div> */}
+
                 <hr className="shareHr" />
                 <div className="shareBottom">
                     <div className="shareOptions">
@@ -148,7 +156,7 @@ const Share = ({ user, setPosts }) => {
                         </div>
                     </div>
                     <button className="shareButton" onClick={submitPost}>
-                        Share
+                        {posting ? <CircularProgress /> : 'Share'}
                     </button>
                 </div>
             </div>

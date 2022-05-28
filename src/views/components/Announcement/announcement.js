@@ -10,7 +10,8 @@ const useStyles = makeStyles({
         margin: 10,
         minWidth: '15rem',
         height: '80%',
-        backgroundColor: '#f8006d',
+        // backgroundColor: '#f8006d',
+        backgroundColor: 'lightblue',
         display: 'flex',
         alignItems: 'center',
         borderRadius: '0.25rem'
@@ -63,20 +64,22 @@ const Announcement = ({ post, posts, setPosts }) => {
             {loading === false && (
                 <div className={classes.content}>
                     <div className={classes.header}>
-                        <Typography variant="overline" color="white" style={{ fontFamily: 'Poppins' }}>
+                        <Typography variant="overline" color="black" style={{ fontFamily: 'Poppins', fontWeight: 'bold' }}>
                             {user.first_name} {user.last_name}
                         </Typography>
-                        <Typography variant="subtitle2" color="white" style={{ fontFamily: 'Poppins' }}>
+                        <Typography variant="subtitle2" color="black" style={{ fontFamily: 'Poppins', fontWeight: '300' }}>
                             {format(post.createdAt)}
                         </Typography>
                     </div>
-                    <Typography variant="overline" color="white" style={{ fontFamily: 'Poppins' }}>
+                    <Typography variant="overline" color="black" style={{ fontFamily: 'Poppins' }}>
                         {post.content}
                     </Typography>
                     {post.userId === account.user._id && (
-                        <Button variant="outlined" onClick={deletePost}>
-                            Delete
-                        </Button>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+                            <Button variant="outlined" style={{ color: 'white', width: '20%' }} onClick={deletePost}>
+                                Delete
+                            </Button>
+                        </div>
                     )}
                 </div>
             )}

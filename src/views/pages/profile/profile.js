@@ -28,7 +28,7 @@ const Profile = () => {
             try {
                 setPostsLoading(true);
                 const fetchPosts = await axios.get(config.API_SERVER + 'posts/' + userId);
-                setPosts(fetchPosts.data);
+                setPosts(fetchPosts.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
                 setPostsLoading(false);
             } catch (error) {
                 setPostsLoading(false);
