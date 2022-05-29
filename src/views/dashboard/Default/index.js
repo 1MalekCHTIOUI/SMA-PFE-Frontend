@@ -253,16 +253,16 @@ const Dashboard = () => {
    
                                 </div> */}
                                 <div className={classes.postItems}>
-                                    {posts.length === 0 && (
+                                    {/* {posts.length === 0 && (
                                         <Typography variant="outlined" style={{ fontWeight: 'Bold' }}>
                                             Posts: {posts.length}
                                         </Typography>
-                                    )}
-                                    {posts.length > 0 && (
-                                        <Typography variant="outlined" style={{ fontWeight: 'Bold' }}>
-                                            Today: {todaysPosts}
-                                        </Typography>
-                                    )}
+                                    )} */}
+                                    {/* {posts.length > 0 && ( */}
+                                    <Typography variant="outlined" style={{ fontWeight: 'Bold' }}>
+                                        Today: {todaysPosts}
+                                    </Typography>
+                                    {/* )} */}
                                     {usersLoading === false &&
                                         posts
                                             ?.filter((p) => p.priority === false)

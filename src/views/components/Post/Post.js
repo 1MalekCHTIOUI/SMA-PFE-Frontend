@@ -1,5 +1,5 @@
 import './post.css';
-import { MoreVert, PermMedia } from '@material-ui/icons';
+import { MoreVert, PermMedia, PictureAsPdf } from '@material-ui/icons';
 import { useState, useEffect, useRef, useContext } from 'react';
 import axios from 'axios';
 import config from '../../../config';
@@ -10,6 +10,7 @@ import { Collapse, Grid, TextField, Typography, Button } from '@material-ui/core
 import Comment from '../Comment/Comment';
 import User1 from './../../../assets/images/users/user.svg';
 import { SocketContext } from '../../../utils/socket/SocketContext';
+import { Link } from 'react-router-dom';
 
 export default function Post({ post, posts, setPosts }) {
     const account = useSelector((s) => s.account);
@@ -177,17 +178,29 @@ export default function Post({ post, posts, setPosts }) {
                         <Grid container xs={12}>
                             {post?.attachment.map((f) => (
                                 <Grid item xs={12} justifyContent="center" alignItems="center">
-                                    <img
-                                        className="postImg"
-                                        style={
-                                            enlargeImage
-                                                ? { transform: 'scale(1.5)', transition: 'transform 0.25s ease' }
-                                                : { transform: 'scale(1)', transition: 'transform 0.25s ease' }
-                                        }
-                                        onClick={() => setEnlargeImage(!enlargeImage)}
-                                        src={user._id === post.userId && config.CONTENT + f.actualName}
-                                        alt="loading..."
-                                    />
+                                    {f.actualName.includes('.jpg') ||
+                                        (f.actualName.includes('.png') && (
+                                            <img
+                                                className="postImg"
+                                                style={
+                                                    enlargeImage
+                                                        ? { transform: 'scale(1.5)', transition: 'transform 0.25s ease' }
+                                                        : { transform: 'scale(1)', transition: 'transform 0.25s ease' }
+                                                }
+                                                onClick={() => setEnlargeImage(!enlargeImage)}
+                                                src={user._id === post.userId && config.CONTENT + f.actualName}
+                                                alt="loading..."
+                                            />
+                                        ))}
+
+                                    {f.actualName.includes('.docx') ||
+                                        (f.actualName.includes('.pdf') && (
+                                            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                                <a component={Link} href={config.CONTENT + f.actualName} target="_blank">
+                                                    <PictureAsPdf /> <Typography className="wrapText">{f.displayName}</Typography>
+                                                </a>
+                                            </div>
+                                        ))}
                                 </Grid>
                             ))}
                         </Grid>

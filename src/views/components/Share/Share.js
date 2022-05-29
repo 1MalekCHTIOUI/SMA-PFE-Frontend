@@ -1,12 +1,25 @@
 import React from 'react';
 import './share.css';
-import { PermMedia, Label, Room, EmojiEmotions, Close } from '@material-ui/icons';
-import { TextField, ImageList, ImageListItem, Container, Select, MenuItem, FormControl, CircularProgress } from '@material-ui/core';
+import { PermMedia, Label, Room, EmojiEmotions, Close, PictureAsPdf } from '@material-ui/icons';
+import {
+    TextField,
+    ImageList,
+    ImageListItem,
+    Container,
+    Select,
+    MenuItem,
+    FormControl,
+    CircularProgress,
+    Typography,
+    Button,
+    Box
+} from '@material-ui/core';
 import config from '../../../config';
 import User1 from './../../../assets/images/users/user.svg';
 import { SocketContext } from '../../../utils/socket/SocketContext';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import { green } from '@material-ui/core/colors';
 
 const Share = ({ user, setPosts }) => {
     const hiddenFileInput = React.useRef(null);
@@ -64,10 +77,21 @@ const Share = ({ user, setPosts }) => {
             setSelectedFile({});
             emitNewPost(account.user._id, post.priority);
             setPosting(false);
+            setSuccess(true);
         } catch (error) {
             setPosting(false);
+            setSuccess(false);
             console.log(error);
         }
+    };
+    const [success, setSuccess] = React.useState(false);
+    const buttonSx = {
+        ...(success && {
+            bgcolor: green[500],
+            '&:hover': {
+                bgcolor: green[700]
+            }
+        })
     };
 
     return (
@@ -118,20 +142,26 @@ const Share = ({ user, setPosts }) => {
                         onChange={handleChange}
                         className="shareInput"
                     />
-                    {selectedFile?.name && console.log('FILE SELECTED') && (
-                        <div className="shareMiddle">
-                            {/* <ImageList sx={{ width: '100%' }} rowHeight={164} cols={3}>
-                            <ImageListItem key={1}> */}
-                            {(selectedFile.name?.includes('.png') || selectedFile.name?.includes('.jpg')) && (
+                    <div className="shareMiddle">
+                        {selectedFile?.name &&
+                            /* <ImageList sx={{ width: '100%' }} rowHeight={164} cols={3}>
+                            <ImageListItem key={1}> */
+
+                            (selectedFile.name?.includes('.png') || selectedFile.name?.includes('.jpg')) && (
                                 <div className="uploadedImageContainer">
                                     <Close className="close" onClick={() => removeItem(selectedFile.name)} />
                                     <img className="uploadedImage" src={`${URL.createObjectURL(selectedFile)}`} />
                                 </div>
                             )}
-                            {/* </ImageListItem>
+                        {selectedFile?.name && (selectedFile.name?.includes('.pdf') || selectedFile.name?.includes('.docx')) && (
+                            <div className="uploadedImageContainer">
+                                <Close className="close" onClick={() => removeItem(selectedFile.name)} />
+                                <PictureAsPdf /> <Typography className="wrapText">{selectedFile.name}</Typography>
+                            </div>
+                        )}
+                        {/* </ImageListItem>
                         </ImageList> */}
-                        </div>
-                    )}
+                    </div>
                 </div>
 
                 <hr className="shareHr" />
@@ -155,9 +185,27 @@ const Share = ({ user, setPosts }) => {
                             <span className="shareOptionText">Feelings</span>
                         </div>
                     </div>
-                    <button className="shareButton" onClick={submitPost}>
-                        {posting ? <CircularProgress /> : 'Share'}
-                    </button>
+                    <Box sx={{ m: 1, position: 'relative' }}>
+                        <Button variant="contained" sx={buttonSx} disabled={posting} onClick={submitPost}>
+                            Share
+                        </Button>
+                        {posting && (
+                            <CircularProgress
+                                size={24}
+                                sx={{
+                                    color: green[500],
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    marginTop: '-12px',
+                                    marginLeft: '-12px'
+                                }}
+                            />
+                        )}
+                    </Box>
+                    {/* <button className="shareButton" onClick={submitPost}>
+                        {posting ? <CircularProgress size="small" /> : 'Share'}
+                    </button> */}
                 </div>
             </div>
         </div>

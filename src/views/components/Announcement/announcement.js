@@ -7,11 +7,12 @@ import { format } from 'timeago.js';
 import { useSelector } from 'react-redux';
 const useStyles = makeStyles({
     container: {
-        margin: 10,
+        // margin: 10,
         minWidth: '15rem',
         height: '80%',
+        padding: 10,
         // backgroundColor: '#f8006d',
-        backgroundColor: 'lightblue',
+
         display: 'flex',
         alignItems: 'center',
         borderRadius: '0.25rem'
@@ -20,14 +21,18 @@ const useStyles = makeStyles({
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
-        flexDirection: 'column'
+        flexDirection: 'column',
+
+        border: '1px solid lightblue'
     },
     header: {
         width: '100%',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        backgroundColor: 'lightblue',
+        padding: 10
     }
 });
 
@@ -71,12 +76,12 @@ const Announcement = ({ post, posts, setPosts }) => {
                             {format(post.createdAt)}
                         </Typography>
                     </div>
-                    <Typography variant="overline" color="black" style={{ fontFamily: 'Poppins' }}>
+                    <Typography variant="overline" color="black" style={{ fontFamily: 'Poppins', padding: 10 }}>
                         {post.content}
                     </Typography>
                     {post.userId === account.user._id && (
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button variant="outlined" style={{ color: 'white', width: '20%' }} onClick={deletePost}>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginRight: '5px' }}>
+                            <Button variant="outlined" color="error" style={{ width: '20%' }} onClick={deletePost}>
                                 Delete
                             </Button>
                         </div>
