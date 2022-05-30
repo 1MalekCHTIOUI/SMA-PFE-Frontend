@@ -39,19 +39,18 @@ const Profile = () => {
     }, []);
 
     return (
-        <Container style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <Container style={{ width: 'fit-content' }}>
             <MainCard border={false} style={{ minHeight: '100vh', width: 'fit-content' }}>
-                <Container style={{ width: 'fit-content' }}>
-                    <ProfileHeader user={user} />
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '3fr 9fr' }}>
-                        <div>
-                            <ProfileSidebar user={user} />
-                        </div>
-                        <div style={{ width: '100%' }}>
-                            <ProfileContent setPosts={setPosts} user={user} posts={posts} postsLoading={postsLoading} />
-                        </div>
-                    </Box>
-                </Container>
+                <ProfileHeader user={user} />
+                <Grid xs={12} container direction="row">
+                    <Grid item xs={12} md={4}>
+                        <ProfileSidebar user={user} />
+                    </Grid>
+
+                    <Grid item xs={12} md={8}>
+                        <ProfileContent setPosts={setPosts} user={user} posts={posts} postsLoading={postsLoading} />
+                    </Grid>
+                </Grid>
             </MainCard>
         </Container>
     );

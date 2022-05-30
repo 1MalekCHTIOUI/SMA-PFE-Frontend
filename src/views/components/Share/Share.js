@@ -167,23 +167,14 @@ const Share = ({ user, setPosts }) => {
                 <hr className="shareHr" />
                 <div className="shareBottom">
                     <div className="shareOptions">
-                        <div className="shareOption" onClick={handleClick}>
+                        <div className="shareOption" style={{ width: '150px' }} onClick={handleClick}>
                             <PermMedia htmlColor="tomato" className="shareIcon" />
                             <span className="shareOptionText">Photo or Video</span>
                             <input type="file" ref={hiddenFileInput} onChange={onChangeFileUpload} style={{ display: 'none' }} />
                         </div>
-                        <div className="shareOption">
-                            <Label htmlColor="blue" className="shareIcon" />
-                            <span className="shareOptionText">Tag</span>
-                        </div>
-                        <div className="shareOption">
-                            <Room htmlColor="green" className="shareIcon" />
-                            <span className="shareOptionText">Location</span>
-                        </div>
-                        <div className="shareOption">
-                            <EmojiEmotions htmlColor="goldenrod" className="shareIcon" />
-                            <span className="shareOptionText">Feelings</span>
-                        </div>
+                        <div className="shareOption" style={{ width: '50px', cursor: 'default' }}></div>
+                        <div className="shareOption" style={{ width: '50px', cursor: 'default' }}></div>
+                        <div className="shareOption" style={{ width: '50px', cursor: 'default' }}></div>
                     </div>
                     <Box sx={{ m: 1, position: 'relative' }}>
                         <Button variant="contained" sx={buttonSx} disabled={posting} onClick={submitPost}>

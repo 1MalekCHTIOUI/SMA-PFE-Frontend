@@ -35,7 +35,7 @@ import UpgradePlanCard from './UpgradePlanCard';
 import { LOGOUT } from './../../../../store/actions';
 
 // assets
-import { IconLogout, IconSearch, IconSettings } from '@tabler/icons';
+import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons';
 import User1 from './../../../../assets/images/users/user-round.svg';
 import config from '../../../../config';
 
@@ -244,6 +244,17 @@ const ProfileSection = () => {
                                             {/* <UpgradePlanCard /> */}
                                             <Divider />
                                             <List component="nav" className={classes.navContainer}>
+                                                <ListItemButton
+                                                    className={classes.listItem}
+                                                    sx={{ borderRadius: customization.borderRadius + 'px' }}
+                                                    selected={selectedIndex === 3}
+                                                    onClick={() => history.push('/profile/' + account.user._id)}
+                                                >
+                                                    <ListItemIcon>
+                                                        <IconUser stroke={1.5} size="1.3rem" />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={<Typography variant="body2">Profile</Typography>} />
+                                                </ListItemButton>
                                                 <ListItemButton
                                                     className={classes.listItem}
                                                     sx={{ borderRadius: customization.borderRadius + 'px' }}

@@ -400,7 +400,7 @@ const Chat = () => {
         //     // formData.append(`files[${x}]`, file[x], newFilename);
         //     formData.append('file', file[x]);
         // }
-        formData.append('file', file[0]);
+        formData.append('file', file);
         const receiverId = currentChat.members.find((m) => m !== account.user._id);
 
         const message = {
@@ -624,16 +624,16 @@ const Chat = () => {
         }
     };
 
-    const [file, setFile] = React.useState('');
+    const [file, setFile] = React.useState({});
     const [selectedFiles, setSelectedFiles] = React.useState([]);
     const onChangeFileUpload = (e) => {
-        setSelectedFiles((prev) => [...prev, e.target.files[0]]);
-        setFile((prev) => [...prev, e.target.files[0]]);
+        // setSelectedFiles((prev) => [...prev, e.target.files[0]]);
+        setFile(e.target.files[0]);
     };
 
     const removeItem = (val) => {
-        setSelectedFiles((prev) => prev.filter((item) => item.name !== val));
-        setFile((prev) => prev.filter((item) => item.name !== val));
+        // setSelectedFiles((prev) => prev.filter((item) => item.name !== val));
+        setFile({});
     };
 
     const handleGroupCallButton = () => {
@@ -940,41 +940,36 @@ const Chat = () => {
                                                 </ButtonGroup>
                                             </Grid>
                                         </Grid>
-                                        <Grid container ys={12} style={{ padding: '20px', overflowY: 'auto', height: '100%' }}>
-                                            <Grid item ys={12} xs={10}>
-                                                <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
-                                                    {selectedFiles?.map((item, i) => {
-                                                        return (
-                                                            <ImageListItem key={i}>
-                                                                {(item.name.includes('.png') || item.name.includes('.jpg')) && (
-                                                                    <Container>
-                                                                        <img
-                                                                            className={classes.selectedItem}
-                                                                            src={`${URL.createObjectURL(item)}`}
-                                                                        />
-                                                                        <Close
-                                                                            className={classes.X}
-                                                                            onClick={() => removeItem(item.name)}
-                                                                        />
-                                                                    </Container>
-                                                                )}
-                                                                {(item.name.includes('.pdf') || item.name.includes('.docx')) && (
-                                                                    <Typography className={classes.selectedItem}>
-                                                                        <PictureAsPdf />
-                                                                        {item.name}
-                                                                        <Close
-                                                                            className={classes.X}
-                                                                            z
-                                                                            onClick={() => removeItem(item.name)}
-                                                                        />
-                                                                    </Typography>
-                                                                )}
-                                                            </ImageListItem>
-                                                        );
-                                                    })}
-                                                </ImageList>
+                                        {file && (
+                                            <Grid container ys={12} style={{ padding: '20px', overflowY: 'auto', height: '100%' }}>
+                                                <Grid item ys={12} xs={10}>
+                                                    <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={100}>
+                                                        {/* {selectedFiles?.map((item, i) => { */}
+                                                        {/* return ( */}
+                                                        <ImageListItem>
+                                                            {(file.name.includes('.png') || file.name.includes('.jpg')) && (
+                                                                <Container>
+                                                                    <img
+                                                                        className={classes.selectedItem}
+                                                                        src={`${URL.createObjectURL(file)}`}
+                                                                    />
+                                                                    <Close className={classes.X} onClick={() => removeItem(file.name)} />
+                                                                </Container>
+                                                            )}
+                                                            {(file.name.includes('.pdf') || file.name.includes('.docx')) && (
+                                                                <Typography className={classes.selectedItem}>
+                                                                    <PictureAsPdf />
+                                                                    {file.name}
+                                                                    <Close className={classes.X} onClick={() => removeItem(file.name)} />
+                                                                </Typography>
+                                                            )}
+                                                        </ImageListItem>
+                                                        {/* );
+                                                        })} */}
+                                                    </ImageList>
+                                                </Grid>
                                             </Grid>
-                                        </Grid>
+                                        )}
                                     </>
                                 )}
                             </Grid>

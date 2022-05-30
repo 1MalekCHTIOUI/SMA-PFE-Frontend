@@ -55,7 +55,7 @@ const ProfileHeader = ({ user }) => {
                     {user.first_name} {user.last_name}
                 </Typography>
                 <Typography variant="subtitle2" className={classes.subtitle}>
-                    {user.bio ? user.bio : 'This user has no bio'}
+                    {user.bio ? user.bio : <i>This user has no bio</i>}
                 </Typography>
             </div>
         </div>
