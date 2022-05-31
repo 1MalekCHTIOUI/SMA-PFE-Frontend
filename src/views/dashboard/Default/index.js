@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
-        width: '100%'
+        width: '40vw'
     },
     announcementItems: {
         display: 'flex',

@@ -24,6 +24,8 @@ import GetAppTwoToneIcon from '@material-ui/icons/GetAppOutlined';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import Card from './Card/Card';
 import { Close, PersonAdd } from '@material-ui/icons';
+import { useHistory } from 'react-router-dom';
+import { IconUser } from '@tabler/icons';
 
 const useStyles = makeStyles((theme) => ({
     items: {
@@ -98,8 +100,9 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
-
+    const history = useHistory();
     const handleClick = (event) => {
+        event.preventDefault();
         setAnchorEl(event.currentTarget);
     };
     const handleClose = () => {
@@ -138,9 +141,8 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
         setIsHovering(false);
     };
     const [showCard, setShowCard] = React.useState(false);
-    const showProfile = () => {
-        setShowCard(true);
-        return () => setShowCard(false);
+    const showProfile = (e) => {
+        history.push('/profile/' + users._id);
     };
     const [loading, setLoading] = React.useState(true);
 
@@ -172,7 +174,7 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
                     onMouseEnter={handleMouseOver}
                     onMouseLeave={handleMouseOut}
                 >
-                    <Grid direction="row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    {/* <Grid direction="row" style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Card
                             fullname={`${users.first_name} ${users.last_name}`}
                             setShowCard={setShowCard}
@@ -180,7 +182,7 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
                             users={users}
                             online={online}
                         />
-                    </Grid>
+                    </Grid> */}
                     <Grid item xs={12}>
                         <ListItem button key={mk}>
                             <ListItemIcon>
@@ -240,7 +242,7 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
                             </Grid>
                         </ListItem>
                     </Grid>
-                    <Grid item style={{ position: 'absolute', right: 0 }}>
+                    <Grid item style={{ position: 'absolute', right: '3px' }}>
                         {isHovering && (
                             <Avatar
                                 variant="rounded"
@@ -250,17 +252,19 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
                                 sx={{ ml: 2 }}
                                 aria-controls={open ? 'account-menu' : undefined}
                                 aria-expanded={open ? 'true' : undefined}
-                                onClick={handleClick}
+                                onClick={showProfile}
                             >
-                                <MoreHorizIcon fontSize="inherit" />
+                                {/* <MoreHorizIcon fontSize="inherit" /> */}
+                                <IconUser stroke={1.5} size="1.3rem" />
+                                {/* <Typography>Show profile</Typography> */}
                             </Avatar>
                         )}
-                        <Menu
+                        {/* <Menu
                             anchorEl={anchorEl}
                             id="account-menu"
                             open={open}
                             onClose={handleClose}
-                            onClick={handleClose}
+                            onClick={handleClick}
                             PaperProps={{
                                 elevation: 0,
                                 sx: {
@@ -291,7 +295,7 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
                             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                         >
                             <MenuItem onClick={showProfile}>View</MenuItem>
-                        </Menu>
+                        </Menu> */}
                     </Grid>
                 </Grid>
             )}

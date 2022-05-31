@@ -12,6 +12,13 @@ import User1 from './../../../assets/images/users/user.svg';
 import { SocketContext } from '../../../utils/socket/SocketContext';
 import { Link } from 'react-router-dom';
 
+const isImage = (str) => {
+    return str.includes('.png') || str.includes('.jpg');
+};
+const isDocument = (str) => {
+    return str.includes('.pdf') || str.includes('.docx');
+};
+
 export default function Post({ post, posts, setPosts }) {
     const account = useSelector((s) => s.account);
     const [like, setLike] = useState(post.likes.length);
@@ -104,7 +111,6 @@ export default function Post({ post, posts, setPosts }) {
 
     const getPostComments = async () => {
         try {
-            console.log(post?._id);
             const fetchComments = await axios.get(config.API_SERVER + 'posts/comment/' + post?._id);
             setComments(fetchComments.data);
         } catch (error) {
@@ -142,6 +148,9 @@ export default function Post({ post, posts, setPosts }) {
     useEffect(() => {
         getUser();
         getPostComments();
+        if (post?.attachment.length) {
+            console.log(post.attachment);
+        }
     }, []);
 
     const itemsToShow = comments?.slice(0, numberOfitemsShown).map((comment) => <Comment comment={comment} />);
@@ -178,29 +187,36 @@ export default function Post({ post, posts, setPosts }) {
                         <Grid container xs={12}>
                             {post?.attachment.map((f) => (
                                 <Grid item xs={12} justifyContent="center" alignItems="center">
-                                    {f.actualName.includes('.jpg') ||
-                                        (f.actualName.includes('.png') && (
-                                            <img
-                                                className="postImg"
-                                                style={
-                                                    enlargeImage
-                                                        ? { transform: 'scale(1.5)', transition: 'transform 0.25s ease' }
-                                                        : { transform: 'scale(1)', transition: 'transform 0.25s ease' }
-                                                }
-                                                onClick={() => setEnlargeImage(!enlargeImage)}
-                                                src={user._id === post.userId && config.CONTENT + f.actualName}
-                                                alt="loading..."
-                                            />
-                                        ))}
+                                    {isImage(f.actualName) && (
+                                        <img
+                                            className="postImg"
+                                            style={
+                                                enlargeImage
+                                                    ? { transform: 'scale(1.5)', transition: 'transform 0.25s ease' }
+                                                    : { transform: 'scale(1)', transition: 'transform 0.25s ease' }
+                                            }
+                                            onClick={() => setEnlargeImage(!enlargeImage)}
+                                            src={user._id === post.userId && config.CONTENT + f.actualName}
+                                            alt="loading..."
+                                        />
+                                    )}
+                                    {f.actualName.includes('.mp4') && (
+                                        <video
+                                            src={config.VIDEO_CONTENT + f.actualName}
+                                            width="600"
+                                            height="300"
+                                            controls="controls"
+                                            autoplay="true"
+                                        />
+                                    )}
 
-                                    {f.actualName.includes('.docx') ||
-                                        (f.actualName.includes('.pdf') && (
-                                            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                                                <a component={Link} href={config.CONTENT + f.actualName} target="_blank">
-                                                    <PictureAsPdf /> <Typography className="wrapText">{f.displayName}</Typography>
-                                                </a>
-                                            </div>
-                                        ))}
+                                    {isDocument(f.actualName) && (
+                                        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                            <a component={Link} href={config.CONTENT + f.actualName} target="_blank">
+                                                <PictureAsPdf /> <Typography className="wrapText">{f.displayName}</Typography>
+                                            </a>
+                                        </div>
+                                    )}
                                 </Grid>
                             ))}
                         </Grid>

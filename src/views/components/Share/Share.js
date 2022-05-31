@@ -1,6 +1,6 @@
 import React from 'react';
 import './share.css';
-import { PermMedia, Label, Room, EmojiEmotions, Close, PictureAsPdf } from '@material-ui/icons';
+import { PermMedia, Label, Room, EmojiEmotions, Close, PictureAsPdf, VideoLibrary } from '@material-ui/icons';
 import {
     TextField,
     ImageList,
@@ -60,30 +60,33 @@ const Share = ({ user, setPosts }) => {
         formData.append('file', selectedFile);
         console.log(selectedFile);
 
-        try {
-            if (selectedFile !== null) {
+        if (selectedFile !== null) {
+            try {
+                const up = await axios.post(config.API_SERVER + 'upload', formData);
+                post.attachment = [{ displayName: selectedFile.name, actualName: up.data.upload }];
                 try {
-                    const up = await axios.post(config.API_SERVER + 'upload', formData);
-                    post.attachment = [{ displayName: selectedFile.name, actualName: up.data.upload }];
+                    console.log(post);
+                    const res = await axios.post(config.API_SERVER + 'posts', post);
+                    setPosts((prev) => [...prev, res.data]);
+                    setContent('');
+                    setSelectedFile({});
+                    emitNewPost(account.user._id, post.priority);
+                    setPosting(false);
+                    setSuccess(true);
+                    setShareError('');
                 } catch (error) {
                     setPosting(false);
+                    setSuccess(false);
                     console.log(error);
                 }
+            } catch (error) {
+                setPosting(false);
+                setShareError(error.response.data.error.message);
+                console.log(error);
             }
-            console.log(post);
-            const res = await axios.post(config.API_SERVER + 'posts', post);
-            setPosts((prev) => [...prev, res.data]);
-            setContent('');
-            setSelectedFile({});
-            emitNewPost(account.user._id, post.priority);
-            setPosting(false);
-            setSuccess(true);
-        } catch (error) {
-            setPosting(false);
-            setSuccess(false);
-            console.log(error);
         }
     };
+    const [shareError, setShareError] = React.useState('');
     const [success, setSuccess] = React.useState(false);
     const buttonSx = {
         ...(success && {
@@ -93,6 +96,9 @@ const Share = ({ user, setPosts }) => {
             }
         })
     };
+    React.useEffect(() => {
+        console.log(selectedFile);
+    }, [selectedFile]);
 
     return (
         <div className="share" style={{ backgroundColor: 'white' }}>
@@ -134,6 +140,13 @@ const Share = ({ user, setPosts }) => {
                         </div>
                     )}
                 </div>
+                {shareError && (
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <Typography variant="overlined" color="error" style={{ fontWeight: 'bold' }}>
+                            {shareError}
+                        </Typography>
+                    </div>
+                )}
                 <div className="shareTop">
                     <img className="shareProfileImg" src={user.profilePicture ? config.CONTENT + user.profilePicture : User1} alt="" />
                     <input
@@ -157,6 +170,12 @@ const Share = ({ user, setPosts }) => {
                             <div className="uploadedImageContainer">
                                 <Close className="close" onClick={() => removeItem(selectedFile.name)} />
                                 <PictureAsPdf /> <Typography className="wrapText">{selectedFile.name}</Typography>
+                            </div>
+                        )}
+                        {selectedFile?.name && selectedFile.name?.includes('.mp4') && (
+                            <div className="uploadedImageContainer">
+                                <Close className="close" onClick={() => removeItem(selectedFile.name)} />
+                                <video width="100" height="100" controls src={`${URL.createObjectURL(selectedFile)}`} />
                             </div>
                         )}
                         {/* </ImageListItem>

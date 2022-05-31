@@ -100,6 +100,7 @@ const ContextProvider = ({ children }) => {
                         setArrivalMessage({
                             sender: data.senderId,
                             text: data.text,
+                            attachment: data.attachement,
                             createdAt: Date.now(),
                             currentChat: data.currentChat
                         });
@@ -357,12 +358,13 @@ const ContextProvider = ({ children }) => {
             console.log(error);
         }
     };
-    const sendMessage = (senderId, receiverId, newMessage, currentChat) => {
+    const sendMessage = (senderId, receiverId, newMessage, attachement = [], currentChat) => {
         sendMessageNotification(senderId, receiverId, newMessage);
         socket.emit('sendMessage', {
             senderId: senderId,
             receiverId,
             text: newMessage,
+            attachement,
             currentChat
         });
     };

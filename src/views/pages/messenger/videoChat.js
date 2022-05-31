@@ -129,12 +129,20 @@ const Modals = (props) => {
                     <h3 align="center">{props.message}</h3>
                 </Box>
             </Modal>
+            <Grid justifyContent="center" direction="row" style={{ zIndex: 100 }}>
+                {props.allowed && (
+                    <Button variant="outlined" color="error" onClick={() => props.history.push('/chat')}>
+                        Hang UP
+                    </Button>
+                )}
+            </Grid>
         </>
     );
 };
 const Room = (props) => {
     const { roomCode } = useParams();
     const [peers, setPeers] = useState([]);
+    const [joinedUsersArray, setJoinedUsersArray] = useState([]);
     const account = useSelector((s) => s.account);
     const socketRef = useRef(io('https://sma-socket-01.herokuapp.com/'));
     const userVideo = useRef();
@@ -149,32 +157,35 @@ const Room = (props) => {
             window.location.reload(false);
         };
     }, []);
-
+    React.useEffect(() => {
+        peers && console.log(peers);
+    }, [peers]);
     useEffect(() => {
         location.state &&
             navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then((stream) => {
                 userVideo.current.srcObject = stream;
-                socketRef.current.emit('join room', roomID);
+                socketRef.current.emit('join room', { roomID: roomID, user: account.user });
                 socketRef.current.on('all users', (users) => {
                     const peers = [];
-                    users.forEach((userID) => {
-                        const peer = createPeer(userID, socketRef.current.id, stream);
+                    // setJoinedUsersArray((prev) => [...prev, users.user]);
+                    users.forEach((socket) => {
+                        const peer = createPeer(socket.socket, socketRef.current.id, stream, socket.user);
                         peersRef.current.push({
-                            peerID: userID,
+                            peerID: socket.socket,
                             peer
                         });
-                        peers.push(peer);
+                        peers.push({ peer: peer, user: socket.user });
                     });
                     setPeers(peers);
                 });
 
                 socketRef.current.on('user joined', (payload) => {
-                    const peer = addPeer(payload.signal, payload.callerID, stream);
+                    const peer = addPeer(payload.signal, payload.callerID, stream, payload.user);
                     peersRef.current.push({
                         peerID: payload.callerID,
                         peer
                     });
-                    setPeers((users) => [...users, peer]);
+                    setPeers((users) => [...users, { peer: peer, user: payload.user }]);
                 });
 
                 socketRef.current.on('receiving returned signal', (payload) => {
@@ -185,7 +196,7 @@ const Room = (props) => {
             });
     }, []);
 
-    function createPeer(userToSignal, callerID, stream) {
+    function createPeer(userToSignal, callerID, stream, user) {
         const peer = new Peer({
             initiator: true,
             trickle: false,
@@ -193,13 +204,13 @@ const Room = (props) => {
         });
 
         peer.on('signal', (signal) => {
-            socketRef.current.emit('sending signal', { userToSignal, callerID, signal });
+            socketRef.current.emit('sending signal', { userToSignal, callerID, signal, user: account.user });
         });
 
         return peer;
     }
 
-    function addPeer(incomingSignal, callerID, stream) {
+    function addPeer(incomingSignal, callerID, stream, user) {
         const peer = new Peer({
             initiator: false,
             trickle: false,
@@ -208,7 +219,7 @@ const Room = (props) => {
 
         peer.on('signal', (signal) => {
             setJoinedUsers(joinedUsers + 1);
-            socketRef.current.emit('returning signal', { signal, callerID });
+            socketRef.current.emit('returning signal', { signal, callerID, user });
         });
 
         peer.signal(incomingSignal);
@@ -261,9 +272,9 @@ const Room = (props) => {
                             {location.state.type === 'PRIVATE' && (
                                 <>
                                     <Typography className={classes.typography} variant="overline">
-                                        {location.state.callData.caller || location.state.callData.receiver}
+                                        {peers[0]?.user.first_name + ' ' + peers[0]?.user.last_name}
                                     </Typography>
-                                    {peers[0]?.readable && <Video key={1} peer={peers[0]} />}
+                                    {peers[0]?.peer.readable && <Video key={1} peer={peers[0].peer} />}
                                 </>
                             )}
                         </div>
@@ -285,9 +296,9 @@ const Room = (props) => {
                                     <Box style={{ backgroundColor: 'red', height: '50vh', width: 'fit-content' }}>
                                         <div>{joinedUsers === 0 && <CircularProgress />}</div>
                                         <Typography className={classes.typography} variant="overline">
-                                            {location.state.callData.caller || location.state.callData.receiver}
+                                            {peer.user.first_name + ' ' + peer.user.last_name}
                                         </Typography>
-                                        {peer.readable && <GuestVideo key={index} peer={peer} />}
+                                        {peer.peer.readable && <GuestVideo key={index} peer={peer.peer} />}
                                     </Box>
                                 );
                                 // }
@@ -310,13 +321,6 @@ const Room = (props) => {
                         // })} */}
                 </div>
                 <Modals show={show} allowed={location.state.allowed} history={history} message={'User joined!'} />
-                <Grid justifyContent="center" direction="row">
-                    {props.allowed && (
-                        <Button variant="outlined" color="error" onClick={() => props.history.push('/chat')}>
-                            Hang UP
-                        </Button>
-                    )}
-                </Grid>
             </MainCard>
         </>
     );

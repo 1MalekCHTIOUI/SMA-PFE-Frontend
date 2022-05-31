@@ -53,7 +53,8 @@ import {
     Delete,
     AttachFile,
     PictureAsPdf,
-    Close
+    Close,
+    VideoLibrary
 } from '@material-ui/icons';
 import Room from './Room';
 import Message from './Message';
@@ -128,17 +129,18 @@ const useStyles = makeStyles((theme) => ({
 
     X: {
         position: 'absolute',
-        bottom: '1.75rem',
+        top: 0,
         color: 'black',
-        left: '6rem',
+        left: '10vw',
         cursor: 'pointer'
     },
     selectedItem: {
+        padding: '10px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '3rem',
-        width: 'fit-content',
+        height: '3rem',
+        width: '3rem',
         position: 'relative'
     },
     disableTextSelection: {
@@ -387,19 +389,13 @@ const Chat = () => {
         getMessages();
     }, [currentChat]);
 
+    const [file, setFile] = React.useState(null);
+    // const [selectedFiles, setSelectedFiles] = React.useState([]);
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (newMessage === '' && file === null) return;
         const formData = new FormData();
-        const random = randomNumber();
 
-        let newName;
-        // for (let x = 0; x < file.length; x++) {
-        //     const dotIndex = file[0].name.indexOf('.');
-        //     const newFilename = addStr(file[0].name, dotIndex, random);
-        //     newName = newFilename;
-        //     // formData.append(`files[${x}]`, file[x], newFilename);
-        //     formData.append('file', file[x]);
-        // }
         formData.append('file', file);
         const receiverId = currentChat.members.find((m) => m !== account.user._id);
 
@@ -414,21 +410,20 @@ const Chat = () => {
             }
         };
 
-        if (message.text || file.length > 0) {
-            sendMessage(message.sender, receiverId, newMessage, currentChat._id);
+        if (message.text || file !== null) {
             try {
-                if (file.length > 0) {
+                if (file !== null) {
                     const x = await axios.post(configData.API_SERVER + 'upload', formData);
                     if (file) {
-                        file?.map((file) => {
-                            message.attachment = [
-                                ...message.attachment,
-                                {
-                                    displayName: file.name,
-                                    actualName: x.data.upload
-                                }
-                            ];
-                        });
+                        // file?.map((file) => {
+                        message.attachment = [
+                            ...message.attachment,
+                            {
+                                displayName: file.name,
+                                actualName: x.data.upload
+                            }
+                        ];
+                        // });
                     }
                 }
                 console.log(message.attachment);
@@ -436,15 +431,16 @@ const Chat = () => {
                     const res = await axios.post(configData.API_SERVER + 'messages', message);
                     setMessages([...messages, res.data]);
                     setNewMessage('');
+                    sendMessage(message.sender, receiverId, newMessage, message.attachment, currentChat._id);
                 } catch (error) {
-                    console.lZog(error.response.data.message);
+                    console.log(error.response.data.message);
                 }
             } catch (error) {
                 console.log(error);
             }
         }
-        setSelectedFiles([]);
-        setFile('');
+        // setSelectedFiles([]);
+        setFile({});
     };
 
     const checkUserOnline = (id) => {
@@ -624,8 +620,6 @@ const Chat = () => {
         }
     };
 
-    const [file, setFile] = React.useState({});
-    const [selectedFiles, setSelectedFiles] = React.useState([]);
     const onChangeFileUpload = (e) => {
         // setSelectedFiles((prev) => [...prev, e.target.files[0]]);
         setFile(e.target.files[0]);
@@ -940,9 +934,9 @@ const Chat = () => {
                                                 </ButtonGroup>
                                             </Grid>
                                         </Grid>
-                                        {file && (
-                                            <Grid container ys={12} style={{ padding: '20px', overflowY: 'auto', height: '100%' }}>
-                                                <Grid item ys={12} xs={10}>
+                                        {file?.name && (
+                                            <Grid container style={{ padding: '20px', overflowY: 'auto', height: '10vh' }}>
+                                                <Grid item xs={10}>
                                                     <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={100}>
                                                         {/* {selectedFiles?.map((item, i) => { */}
                                                         {/* return ( */}
@@ -959,6 +953,17 @@ const Chat = () => {
                                                             {(file.name.includes('.pdf') || file.name.includes('.docx')) && (
                                                                 <Typography className={classes.selectedItem}>
                                                                     <PictureAsPdf />
+                                                                    {file.name}
+                                                                    <Close className={classes.X} onClick={() => removeItem(file.name)} />
+                                                                </Typography>
+                                                            )}
+                                                            {file.name.includes('.mp4') && (
+                                                                <Typography className={classes.selectedItem}>
+                                                                    <video
+                                                                        className={classes.selectedItem}
+                                                                        controls
+                                                                        src={`${URL.createObjectURL(file)}`}
+                                                                    />
                                                                     {file.name}
                                                                     <Close className={classes.X} onClick={() => removeItem(file.name)} />
                                                                 </Typography>

@@ -145,9 +145,20 @@ const Message = ({ message, own, mk, type }) => {
 
                         <Grid item className={classes.message}>
                             {message.sender !== 'CHAT' && (
-                                <ListItemText align="left">
-                                    <Typography style={{ fontFamily: 'Poppins, sans-serif' }}>{linkify(message.text)}</Typography>
-                                </ListItemText>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ marginRight: '5px' }}>
+                                        {user.profilePicture && own === false && (
+                                            <img
+                                                src={config.CONTENT + user.profilePicture}
+                                                style={{ borderRadius: '50%', width: '35px', height: '35px', objectFit: 'cover' }}
+                                            />
+                                        )}
+                                    </div>
+
+                                    <ListItemText align="left">
+                                        <Typography style={{ fontFamily: 'Poppins, sans-serif' }}>{linkify(message.text)}</Typography>
+                                    </ListItemText>
+                                </div>
                             )}
                             {message.sender === 'CHAT' && (
                                 <ListItemText align="center">
@@ -159,14 +170,19 @@ const Message = ({ message, own, mk, type }) => {
                                 message.attachment.map((file) => (
                                     <Container>
                                         {file.displayName.includes('.pdf') && (
-                                            <a component={Link} href={`/uploads/files/${file.actualName}`} target="_blank">
+                                            <a component={Link} href={config.CONTENT + file.actualName} target="_blank">
                                                 <PictureAsPdf /> {file.displayName}
                                             </a>
                                         )}
                                         {(file.displayName.includes('.jpg') || file.displayName.includes('.png')) && (
-                                            <a component={Link} href={`/uploads/files/${file.actualName}`} target="_blank">
-                                                <Image /> {file.displayName}
+                                            <a component={Link} href={config.CONTENT + file.actualName} target="_blank">
+                                                <img src={config.CONTENT + file.actualName} width="100%" height="100%" />
                                             </a>
+                                        )}
+                                        {file.displayName.includes('.mp4') && (
+                                            // <a component={Link} href={config.VIDEO_CONTENT + file.actualName} target="_blank">
+                                            <video controls src={config.VIDEO_CONTENT + file.actualName} width="100%" height="100%" />
+                                            // </a>
                                         )}
                                     </Container>
                                 ))}
