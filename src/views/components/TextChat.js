@@ -386,7 +386,22 @@ const Chat = () => {
                 console.log(error.message);
             }
         };
+        const readMessages = async () => {
+            console.log('Setting as read');
+            messages?.map(async (m) => {
+                try {
+                    if (m.read[account.user._id] === false) {
+                        axios.put(config.API_SERVER + 'messages/readMessages/' + m.roomId, {
+                            currentUserId: account.user._id
+                        });
+                    }
+                } catch (error) {
+                    console.log(error.message);
+                }
+            });
+        };
         getMessages();
+        readMessages();
     }, [currentChat]);
 
     const [file, setFile] = React.useState(null);

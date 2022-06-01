@@ -139,6 +139,13 @@ const Modals = (props) => {
         </>
     );
 };
+const handleCheck = (arr, val) => {
+    if (arr.length === 0) {
+        return false;
+    } else {
+        return arr.some((item) => val._id === item.user._id);
+    }
+};
 const Room = (props) => {
     const { roomCode } = useParams();
     const [peers, setPeers] = useState([]);
@@ -168,14 +175,18 @@ const Room = (props) => {
                 socketRef.current.on('all users', (users) => {
                     const peers = [];
                     // setJoinedUsersArray((prev) => [...prev, users.user]);
-                    users.forEach((socket) => {
-                        const peer = createPeer(socket.socket, socketRef.current.id, stream, socket.user);
-                        peersRef.current.push({
-                            peerID: socket.socket,
-                            peer
+                    users
+                        .filter((u) => u.user._id !== account.user._id)
+                        .forEach((socket) => {
+                            const peer = createPeer(socket.socket, socketRef.current.id, stream, socket.user);
+                            peersRef.current.push({
+                                peerID: socket.socket,
+                                peer
+                            });
+                            // if (peers.length === 0) {
+                            peers.push({ peer: peer, user: socket.user });
+                            // }
                         });
-                        peers.push({ peer: peer, user: socket.user });
-                    });
                     setPeers(peers);
                 });
 
@@ -185,7 +196,9 @@ const Room = (props) => {
                         peerID: payload.callerID,
                         peer
                     });
-                    setPeers((users) => [...users, { peer: peer, user: payload.user }]);
+                    console.log('ADD PEERS');
+
+                    handleCheck(peers, payload.user) == false && setPeers((users) => [...users, { peer: peer, user: payload.user }]);
                 });
 
                 socketRef.current.on('receiving returned signal', (payload) => {
@@ -280,30 +293,23 @@ const Room = (props) => {
                         </div>
                     )}
                     {location.state.type === 'PUBLIC' && (
-                        <Box
-                            sx={{
-                                display: 'grid',
-                                columnGap: 3,
-                                rowGap: 1,
-                                gridTemplateColumns: 'repeat(2, auto)',
-                                width: '50vw',
-                                height: '50vh'
-                            }}
-                        >
-                            {peers?.map((peer, index) => {
-                                // if (peer.readable) {
-                                return (
-                                    <Box style={{ backgroundColor: 'red', height: '50vh', width: 'fit-content' }}>
-                                        <div>{joinedUsers === 0 && <CircularProgress />}</div>
-                                        <Typography className={classes.typography} variant="overline">
-                                            {peer.user.first_name + ' ' + peer.user.last_name}
-                                        </Typography>
-                                        {peer.peer.readable && <GuestVideo key={index} peer={peer.peer} />}
-                                    </Box>
-                                );
-                                // }
-                            })}
-                        </Box>
+                        <Grid container xs={12}>
+                            {peers
+                                ?.filter((p) => p.user._id !== account.user._id)
+                                .map((peer, index) => {
+                                    // if (peer.readable) {
+                                    return (
+                                        <Grid item style={{ height: '35vh', width: '35vw' }}>
+                                            <div>{joinedUsers === 0 && <CircularProgress />}</div>
+                                            <Typography className={classes.typography} variant="overline">
+                                                {peer.user.first_name + ' ' + peer.user.last_name}
+                                            </Typography>
+                                            <GuestVideo key={index} peer={peer.peer} />
+                                        </Grid>
+                                    );
+                                    // }
+                                })}
+                        </Grid>
                     )}
 
                     {/* // peer.readable && (

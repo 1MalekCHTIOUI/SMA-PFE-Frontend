@@ -170,15 +170,15 @@ export default function Post({ post, posts, setPosts }) {
                         </div>
                     </div>
                     <div className="postTopRight">
-                        <Typography variant="subtitle2">{post.visibility ? 'Public' : 'Private'}</Typography>
                         {showOptions && account.user._id === post.userId && (
-                            <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography variant="subtitle2">{post.visibility ? 'Public' : 'Private'}</Typography>
                                 <Button variant="outlined" onClick={deletePost}>
                                     Delete
                                 </Button>
                             </div>
                         )}
-                        <MoreVert onClick={() => setShowOptions(!showOptions)} />
+                        {account.user._id === post.userId && <MoreVert onClick={() => setShowOptions(!showOptions)} />}
                     </div>
                 </div>
                 <div className="postCenter">

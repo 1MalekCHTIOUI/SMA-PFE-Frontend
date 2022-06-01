@@ -33,7 +33,7 @@ const Share = ({ user, setPosts }) => {
     const handleClick = (event) => {
         hiddenFileInput.current.click();
     };
-    const [selectedFile, setSelectedFile] = React.useState({});
+    const [selectedFile, setSelectedFile] = React.useState(null);
 
     const onChangeFileUpload = (e) => {
         setSelectedFile(e.target.files[0]);
@@ -45,8 +45,8 @@ const Share = ({ user, setPosts }) => {
         setContent(e.target.value);
     };
     const submitPost = async () => {
-        const formData = new FormData();
         if (content === '' && selectedFile === null) return;
+        const formData = new FormData();
         setPosting(true);
         const post = {
             userId: account.user._id,
@@ -57,33 +57,34 @@ const Share = ({ user, setPosts }) => {
             post.content = content;
         }
 
-        formData.append('file', selectedFile);
         console.log(selectedFile);
 
         if (selectedFile !== null) {
+            formData.append('file', selectedFile);
+            console.log('THERE IS A FILE');
             try {
                 const up = await axios.post(config.API_SERVER + 'upload', formData);
                 post.attachment = [{ displayName: selectedFile.name, actualName: up.data.upload }];
-                try {
-                    console.log(post);
-                    const res = await axios.post(config.API_SERVER + 'posts', post);
-                    setPosts((prev) => [...prev, res.data]);
-                    setContent('');
-                    setSelectedFile({});
-                    emitNewPost(account.user._id, post.priority);
-                    setPosting(false);
-                    setSuccess(true);
-                    setShareError('');
-                } catch (error) {
-                    setPosting(false);
-                    setSuccess(false);
-                    console.log(error);
-                }
             } catch (error) {
                 setPosting(false);
                 setShareError(error.response.data.error.message);
                 console.log(error);
             }
+        }
+        try {
+            console.log(post);
+            const res = await axios.post(config.API_SERVER + 'posts', post);
+            setPosts((prev) => [...prev, res.data]);
+            setContent('');
+            setSelectedFile(null);
+            emitNewPost(account.user._id, post.priority);
+            setPosting(false);
+            setSuccess(true);
+            setShareError('');
+        } catch (error) {
+            setPosting(false);
+            setSuccess(false);
+            console.log(error);
         }
     };
     const [shareError, setShareError] = React.useState('');
@@ -195,6 +196,7 @@ const Share = ({ user, setPosts }) => {
                         <div className="shareOption" style={{ width: '50px', cursor: 'default' }}></div>
                         <div className="shareOption" style={{ width: '50px', cursor: 'default' }}></div>
                     </div>
+
                     <Box sx={{ m: 1, position: 'relative' }}>
                         <Button variant="contained" sx={buttonSx} disabled={posting} onClick={submitPost}>
                             Share
@@ -213,6 +215,7 @@ const Share = ({ user, setPosts }) => {
                             />
                         )}
                     </Box>
+
                     {/* <button className="shareButton" onClick={submitPost}>
                         {posting ? <CircularProgress size="small" /> : 'Share'}
                     </button> */}

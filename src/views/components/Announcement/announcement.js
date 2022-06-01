@@ -5,10 +5,12 @@ import axios from 'axios';
 import config from '../../../config';
 import { format } from 'timeago.js';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 const useStyles = makeStyles({
     container: {
         // margin: 10,
         minWidth: '15rem',
+        width: '15rem',
         height: '80%',
         padding: 10,
         // backgroundColor: '#f8006d',
@@ -79,6 +81,11 @@ const Announcement = ({ post, posts, setPosts }) => {
                     <Typography variant="overline" color="black" style={{ fontFamily: 'Poppins', padding: 10 }}>
                         {post.content}
                     </Typography>
+                    {post.attachment.length > 0 && (
+                        <a component={Link} href={config.CONTENT + post.attachment[0].actualName} target="_blank">
+                            {post.attachment[0].displayName}
+                        </a>
+                    )}
                     {post.userId === account.user._id && (
                         <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginRight: '5px' }}>
                             <Button variant="outlined" color="error" style={{ width: '20%' }} onClick={deletePost}>

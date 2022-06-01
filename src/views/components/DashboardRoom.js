@@ -48,7 +48,7 @@ const DashboardRoom = ({ item }) => {
     return (
         <Grid
             container
-            onClick={() => handleClick(item._id)}
+            onClick={() => handleClick(item?._id)}
             alignItems="center"
             justifyContent="center"
             className={classes.container}
@@ -58,12 +58,12 @@ const DashboardRoom = ({ item }) => {
         >
             <Grid item>
                 <ListItemIcon>
-                    <Avatar alt={item.first_name} src={config.CONTENT + item.profilePicture} />
+                    <Avatar alt={item?.first_name} src={config.CONTENT + item?.profilePicture} />
                 </ListItemIcon>
             </Grid>
             <Grid item>
                 <Typography className={classes.item} style={{ fontWeight: 500 }}>
-                    {item.first_name} {item.last_name}
+                    {item?.first_name} {item?.last_name}
                 </Typography>
             </Grid>
             {/* {isHovering && <Button variant={outl} style={{position:'absolute', top: '25%', right: '25%'}} color='error'>Test</Button>} */}
