@@ -27,6 +27,8 @@ import { Check, FiberManualRecord, CloudQueue, CloudOff } from '@material-ui/ico
 import { SocketContext } from '../../utils/socket/SocketContext';
 import { makeStyles } from '@material-ui/styles';
 import Card from './Card/Card';
+import moment from 'moment';
+import { useHistory } from 'react-router-dom';
 const style = {
     position: 'absolute',
     top: '50%',
@@ -78,7 +80,8 @@ const ModalC = ({
     submitCreateGroup,
     type
 }) => {
-    // console.log(groupMembers);
+    console.log('groupMembers');
+    console.log(groupMembers);
     // console.log(users);
     const { onlineUsers } = React.useContext(SocketContext);
     const styles = useStyles();
@@ -92,8 +95,8 @@ const ModalC = ({
     };
 
     React.useEffect(() => {
-        console.log(current);
-    }, [current]);
+        console.log(groupMembers);
+    }, [groupMembers]);
 
     React.useEffect(() => {
         if (onlineUsers.includes(user._id)) {
@@ -116,7 +119,16 @@ const ModalC = ({
             );
         }
     };
-
+    function containsObject(obj, list) {
+        var i;
+        for (i = 0; i < list.length; i++) {
+            if (list[i]._id === obj._id) {
+                return true;
+            }
+        }
+        return false;
+    }
+    const history = useHistory();
     return (
         <>
             {card()}
@@ -178,7 +190,7 @@ const ModalC = ({
                                 {users
                                     ?.filter((user) => user._id !== current)
                                     .map((variant) => {
-                                        if (groupMembers.some((m) => m._id !== variant._id)) {
+                                        if (containsObject(variant, groupMembers) === false) {
                                             return (
                                                 <MenuItem key={variant._id} value={variant}>
                                                     <Checkbox checked={addedMembers.findIndex((item) => item._id === variant._id) >= 0} />
@@ -216,7 +228,7 @@ const ModalC = ({
                                             variant._id !== current && (
                                                 <MenuItem key={variant._id} value={variant}>
                                                     <Checkbox checked={addedMembers.findIndex((item) => item._id === variant._id) >= 0} />
-                                                    <ListItemText primary={variant.first_name + ' ' + variant.first_name} />
+                                                    <ListItemText primary={variant.first_name + ' ' + variant.last_name} />
                                                 </MenuItem>
                                             )
                                     )}
@@ -224,24 +236,44 @@ const ModalC = ({
                             </FormControl>
                         </>
                     )}
-                    {type === 'list' &&
-                        groupMembers?.length > 0 &&
-                        groupMembers?.map((m, i) => (
-                            <List>
-                                <ListItem onClick={() => showProfile(m)} button key={i} className={styles.center}>
-                                    <Grid container xs={6} direction="row">
-                                        <ListItemText>
-                                            <Typography style={{ fontWeight: 'bold' }}>{m.first_name + ' ' + m.last_name}</Typography>{' '}
-                                        </ListItemText>
-                                        {onlineUsers.some((u) => u._id === m._id) ? (
-                                            <CloudQueue style={{ color: '#00C853' }} className="front-icons" />
-                                        ) : (
-                                            <CloudOff style={{ color: '#F44336' }} className="front-icons" />
-                                        )}
-                                    </Grid>
-                                </ListItem>
-                            </List>
-                        ))}
+                    {type === 'list' && groupMembers?.length > 0 && (
+                        <>
+                            <Typography style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 20 }}>{currentChat?.name}</Typography>
+                            <Typography variant="subtitle2" style={{ textAlign: 'center', fontStyle: 'italic' }}>
+                                Created: {moment().format('DD/MM/YYYY', currentChat?.createdAt)}
+                            </Typography>
+                            {groupMembers?.map((m, i) => (
+                                <List>
+                                    <ListItem
+                                        onClick={() => history.push('/profile/' + m._id)}
+                                        button
+                                        key={i + 1}
+                                        className={styles.center}
+                                    >
+                                        <Grid container xs={6} direction="row">
+                                            <ListItemText>
+                                                <Typography style={{ fontWeight: 'bold' }}>{m.first_name + ' ' + m.last_name}</Typography>
+                                                {currentChat?.members.map((item) => {
+                                                    if (item.userId === m._id) {
+                                                        return (
+                                                            <Typography variant="subtitle2">
+                                                                Joined in: {moment().format('DD/MM/YYYY', item.joinedIn)}
+                                                            </Typography>
+                                                        );
+                                                    }
+                                                })}
+                                            </ListItemText>
+                                            {onlineUsers.some((u) => u.user._id === m._id) ? (
+                                                <CloudQueue style={{ color: '#00C853' }} className="front-icons" />
+                                            ) : (
+                                                <CloudOff style={{ color: '#F44336' }} className="front-icons" />
+                                            )}
+                                        </Grid>
+                                    </ListItem>
+                                </List>
+                            ))}
+                        </>
+                    )}
                     {type === 'list' && groupMembers?.length === 0 && (
                         <List>
                             <ListItem className={styles.center}>

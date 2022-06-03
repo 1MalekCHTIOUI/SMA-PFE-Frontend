@@ -8,7 +8,7 @@ import { Button, notification } from 'antd';
 import { v4 } from 'uuid';
 import { makeStyles } from '@material-ui/styles';
 import { Message, Notifications } from '@material-ui/icons';
-
+import moment from 'moment';
 const SocketContext = createContext();
 
 const socket = io('https://sma-socket-01.herokuapp.com/');
@@ -225,13 +225,13 @@ const ContextProvider = ({ children }) => {
         console.log(data);
         socket.emit('createGroup', data);
         data.members.map(async (item) => {
-            if (account.user._id !== item) {
+            if (account.user._id !== item.userId) {
                 socket.emit('sendNotification', {
                     senderId: account.user._id,
-                    receiverId: item,
+                    receiverId: item.userId,
                     content: `You have been added to the new group ${data.name}!`
                 });
-                await sendNotification(account.user._id, item, `You have been added to the new group ${data.name}!`);
+                await sendNotification(account.user._id, item.userId, `You have been added to the new group ${data.name}!`);
             }
         });
     };
@@ -239,13 +239,13 @@ const ContextProvider = ({ children }) => {
         console.log(data);
 
         data.members.map(async (item) => {
-            if (account.user._id !== item) {
+            if (account.user._id !== item.userId) {
                 socket.emit('sendNotification', {
                     senderId: account.user._id,
-                    receiverId: item,
+                    receiverId: item.userId,
                     content: `${data.name} has been removed!`
                 });
-                await sendNotification(account.user._id, item, `${data.name} has been removed!`);
+                await sendNotification(account.user._id, item.userId, `${data.name} has been removed!`);
             }
         });
         socket.emit('removeGroup', data);
@@ -358,8 +358,9 @@ const ContextProvider = ({ children }) => {
             console.log(error);
         }
     };
-    const sendMessage = (senderId, receiverId, newMessage, attachement = [], currentChat) => {
+    const sendMessage = (senderId, receiverId, newMessage, currentChat, attachement = []) => {
         sendMessageNotification(senderId, receiverId, newMessage);
+        console.log(currentChat);
         socket.emit('sendMessage', {
             senderId: senderId,
             receiverId,
@@ -382,7 +383,9 @@ const ContextProvider = ({ children }) => {
         try {
             addedMembers?.map(async (m) => {
                 try {
-                    const res = await axios.put(config.API_SERVER + 'rooms/addNewGroupMember/' + currentChat._id, { members: m._id });
+                    const res = await axios.put(config.API_SERVER + 'rooms/addNewGroupMember/' + currentChat._id, {
+                        members: { userId: m._id, joinedIn: moment().toISOString(), leftIn: '' }
+                    });
                     socket.emit('sendNotification', {
                         senderId: account.user._id,
                         receiverId: m._id,
@@ -403,7 +406,7 @@ const ContextProvider = ({ children }) => {
                                 const room = await axios.get(config.API_SERVER + 'rooms/room/' + currentChat._id);
                                 if (room.data.type === 'PUBLIC') {
                                     room.data.members.map((member) => {
-                                        sendMessage('CHAT', member, res.data.text, currentChat._id);
+                                        sendMessage('CHAT', member.userId, res.data.text, currentChat._id);
                                     });
                                 }
                                 setAdminMessage(data);
@@ -420,6 +423,49 @@ const ContextProvider = ({ children }) => {
                     console.log(e.response.data.message);
                 }
             });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const exitGroup = async (currentChat, user) => {
+        try {
+            try {
+                await axios.put(config.API_SERVER + `rooms/removeGroupMember/${currentChat._id}/${user._id}`);
+
+                try {
+                    const data = {
+                        roomId: currentChat._id,
+                        sender: 'CHAT',
+                        text: `${user.first_name} ${user.last_name} has exited the group!`
+                    };
+                    try {
+                        const res = await axios.post(config.API_SERVER + 'messages', data);
+                        try {
+                            const room = await axios.get(config.API_SERVER + 'rooms/room/' + currentChat._id);
+                            try {
+                                if (room.data.type === 'PUBLIC') {
+                                    room.data.members?.map((member) => {
+                                        if (member.userId !== account.user._id)
+                                            sendMessage('CHAT', member.userId, res.data.text, currentChat._id);
+                                    });
+                                }
+                                setAdminMessage(data);
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    } catch (e) {
+                        console.log(e);
+                    }
+                    window.location.reload();
+                } catch (e) {
+                    console.log(e);
+                }
+            } catch (e) {
+                console.log(e);
+            }
         } catch (error) {
             console.log(error);
         }
@@ -451,7 +497,8 @@ const ContextProvider = ({ children }) => {
                                 try {
                                     if (room.data.type === 'PUBLIC') {
                                         room.data.members?.map((member) => {
-                                            if (member !== account.user._id) sendMessage('CHAT', member, res.data.text, currentChat._id);
+                                            if (member.userId !== account.user._id)
+                                                sendMessage('CHAT', member.userId, res.data.text, currentChat._id);
                                         });
                                     }
                                     setAdminMessage(data);
@@ -507,6 +554,7 @@ const ContextProvider = ({ children }) => {
                 handleAnswer,
                 handleHangup,
                 handleCallButton,
+                exitGroup,
                 emitNewPost,
                 emitNewLike
             }}

@@ -35,9 +35,7 @@ const ProfileContent = ({ user, posts, setPosts, postsLoading }) => {
             <div>
                 <div className={classes.center}>{postsLoading && <CircularProgress />}</div>
 
-                <div className={classes.postItems}>
-                    <Share user={user} setPosts={setPosts} />
-                </div>
+                <div className={classes.postItems}>{user._id === account.user._id && <Share user={user} setPosts={setPosts} />}</div>
 
                 {posts &&
                     postsLoading === false &&

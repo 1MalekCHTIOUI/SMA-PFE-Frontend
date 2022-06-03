@@ -4,6 +4,7 @@ import Peer from 'simple-peer';
 import styled from 'styled-components';
 import { CircularProgress, Grid, Modal, Box, Button, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { PhoneDisabled } from '@material-ui/icons';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import MainCard from '../../../ui-component/cards/MainCard';
 import { useSelector } from 'react-redux';
@@ -129,13 +130,6 @@ const Modals = (props) => {
                     <h3 align="center">{props.message}</h3>
                 </Box>
             </Modal>
-            <Grid justifyContent="center" direction="row" style={{ zIndex: 100 }}>
-                {props.allowed && (
-                    <Button variant="outlined" color="error" onClick={() => props.history.push('/chat')}>
-                        Hang UP
-                    </Button>
-                )}
-            </Grid>
         </>
     );
 };
@@ -165,7 +159,14 @@ const Room = (props) => {
         };
     }, []);
     React.useEffect(() => {
-        peers && console.log(peers);
+        console.log(peers);
+        // peers.map((peer) => {
+        //     if (peer.readable) {
+        //         console.log(peer);
+        //     } else {
+        //         console.log(peer.user);
+        //     }
+        // });
     }, [peers]);
     useEffect(() => {
         location.state &&
@@ -270,7 +271,14 @@ const Room = (props) => {
     // title={location.state.callData.caller || location.state.callData.receiver}
     return (
         <>
-            <MainCard title="Video chat" className={classes.container}>
+            <MainCard
+                title={
+                    <Button variant="outlined" color="error" onClick={() => props.history.push('/chat')}>
+                        <PhoneDisabled />
+                    </Button>
+                }
+                className={classes.container}
+            >
                 <div className={classes.chatContainer}>
                     <div className={classes.myContainer}>
                         <Typography

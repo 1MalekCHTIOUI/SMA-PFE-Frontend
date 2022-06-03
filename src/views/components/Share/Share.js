@@ -197,7 +197,7 @@ const Share = ({ user, setPosts }) => {
                         <div className="shareOption" style={{ width: '50px', cursor: 'default' }}></div>
                     </div>
 
-                    <Box sx={{ m: 1, position: 'relative' }}>
+                    <Box sx={{ m: 1, position: 'absolute', right: 0 }}>
                         <Button variant="contained" sx={buttonSx} disabled={posting} onClick={submitPost}>
                             Share
                         </Button>

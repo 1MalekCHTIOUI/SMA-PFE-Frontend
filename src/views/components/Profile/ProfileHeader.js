@@ -21,22 +21,19 @@ const useStyles = makeStyles((theme) => ({
     profile: {
         width: '154px',
         height: '154px',
-        float: 'left',
         objectFit: 'cover',
         borderRadius: '50%',
-        margin: '-90px 10px 0  0',
-        position: 'relative',
         zIndex: 111,
         backgroundColor: 'white',
         overflow: 'hidden',
         border: '2px solid white'
     },
     container: {
-        // display:'flex',
-        // justifyContent:'center',
-        // alignItems:'center',
-        width: '970',
-        height: 'auto 13',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minWidth: '100%',
+        minHeight: '200px',
         borderRadius: '5px',
         overflow: 'hidden'
     }
@@ -46,15 +43,15 @@ const ProfileHeader = ({ user }) => {
     const classes = useStyles();
     return (
         <div className={classes.container}>
-            <div className={classes.coverContainer}>
+            {/* <div className={classes.coverContainer}>
                 <img className={classes.cover} src={user.coverPicture ? config.CONTENT + user.coverPicture : ''} alt="" />
-            </div>
+            </div> */}
             <div className={classes.profileContainer}>
                 <img className={classes.profile} src={user.profilePicture ? config.CONTENT + user.profilePicture : User1} />
-                <Typography variant="h3" className={classes.title}>
+                <Typography variant="h3" style={{ textAlign: 'center' }} className={classes.title}>
                     {user.first_name} {user.last_name}
                 </Typography>
-                <Typography variant="subtitle2" className={classes.subtitle}>
+                <Typography variant="subtitle2" style={{ textAlign: 'center' }} className={classes.subtitle}>
                     {user.bio ? user.bio : <i>This user has no bio</i>}
                 </Typography>
             </div>

@@ -46,37 +46,40 @@ const useStyles = makeStyles((theme) => ({
     gutter: {
         marginBottom: '1rem'
     }
-
-
 }));
 
 //-----------------------|| NOTIFICATION LIST ITEM ||-----------------------//
 
-const NotificationList = ({setNotifLength, notifs}) => {
+const NotificationList = ({ setNotifLength, notifs }) => {
     const classes = useStyles();
-    const account = useSelector(s=> s.account)
+    const account = useSelector((s) => s.account);
 
     const unreadNotification = async (notifId) => {
         try {
-            await axios.put(config.API_SERVER+'notifications/'+notifId)
-            setNotifLength(prev => prev-1)
-        }catch(e) {console.log(e);}
-    }
-
-    
+            await axios.put(config.API_SERVER + 'notifications/' + notifId);
+            setNotifLength((prev) => prev - 1);
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
     return (
         <List className={classes.navContainer}>
-            {
-                notifs?.map((notif)=>(
-                    <Notification unreadNotification={unreadNotification} notif={notif} username={account?.user.first_name+" "+account?.user.last_name}/>
-                ))
-            }
-            {
-                notifs?.length === 0 && <Typography align="center" className={classes.gutter} variant="subtitle2">No notifications</Typography>
-            }
+            {notifs
+                ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .map((notif) => (
+                    <Notification
+                        unreadNotification={unreadNotification}
+                        notif={notif}
+                        username={account?.user.first_name + ' ' + account?.user.last_name}
+                    />
+                ))}
+            {notifs?.length === 0 && (
+                <Typography align="center" className={classes.gutter} variant="subtitle2">
+                    No notifications
+                </Typography>
+            )}
             <Divider className={classes.listDivider} />
-
         </List>
     );
 };

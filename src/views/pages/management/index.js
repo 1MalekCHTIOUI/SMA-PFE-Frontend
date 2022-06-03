@@ -99,7 +99,7 @@ const Management = () => {
                     Users successfully deleted!
                 </Alert>
             )}
-            {account.user.role[0] === 'SUPER_ADMIN' && (
+            {account.user.role[0] !== 'USER' && (
                 <Grid item xs={12}>
                     <Grid container direction="column" alignItems="center" sx={{ marginBottom: '1rem' }}>
                         <Typography variant="subtitle1" gutterBottom component={RouterLink} to="/register" sx={{ textDecoration: 'none' }}>

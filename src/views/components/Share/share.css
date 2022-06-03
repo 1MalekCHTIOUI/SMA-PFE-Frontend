@@ -71,6 +71,8 @@
 }
 
 .shareBottom {
+    margin: 0.75rem;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;

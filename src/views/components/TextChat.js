@@ -41,6 +41,7 @@ import ScrollToBottom from 'react-scroll-to-bottom';
 import ScrollableFeed from 'react-scrollable-feed';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 // import {CSSTransition} from 'react-transition-group';
+import moment from 'moment';
 import SendIcon from '@material-ui/icons/Send';
 import {
     Add,
@@ -54,7 +55,8 @@ import {
     AttachFile,
     PictureAsPdf,
     Close,
-    VideoLibrary
+    VideoLibrary,
+    KeyboardReturn
 } from '@material-ui/icons';
 import Room from './Room';
 import Message from './Message';
@@ -254,7 +256,8 @@ const Chat = () => {
         adminMessage,
         onlineUsers,
         sendMessage,
-        handleCallButton
+        handleCallButton,
+        exitGroup
     } = useContext(SocketContext);
     const account = useSelector((state) => state.account);
     const scrollRef = React.useRef(null);
@@ -446,7 +449,7 @@ const Chat = () => {
                     const res = await axios.post(configData.API_SERVER + 'messages', message);
                     setMessages([...messages, res.data]);
                     setNewMessage('');
-                    sendMessage(message.sender, receiverId, newMessage, message.attachment, currentChat._id);
+                    sendMessage(message.sender, receiverId, newMessage, currentChat._id, message.attachment);
                 } catch (error) {
                     console.log(error.response.data.message);
                 }
@@ -494,11 +497,12 @@ const Chat = () => {
 
     const getGroupMembers = async () => {
         try {
-            const members = await axios.get(config.API_SERVER + 'rooms/room/' + currentChat?._id);
-            members.data.members?.map(async (m) => {
+            const room = await axios.get(config.API_SERVER + 'rooms/room/' + currentChat?._id);
+            room.data.members?.map(async (m) => {
                 try {
-                    if (account.user._id !== m) {
-                        const member = await axios.get(config.API_SERVER + 'user/users/' + m);
+                    if (account.user._id !== m.userId) {
+                        const member = await axios.get(config.API_SERVER + 'user/users/' + m.userId);
+                        console.log(member.data);
                         setGroupMembers((prev) => [...prev, member.data]);
                     }
                 } catch (e) {
@@ -556,6 +560,10 @@ const Chat = () => {
         setOpenMenu(true);
         setGroupMembers(groupMembers.filter((m) => addedMembers.includes(m._id)));
         console.log(groupMembers);
+    };
+    const exitFromGroup = () => {
+        setStatus(0);
+        setOpenConfirm(true);
     };
 
     const handleCreate = () => {
@@ -618,11 +626,11 @@ const Chat = () => {
             members: []
         };
         addedMembers.map((m) => {
-            data.members.push(m._id);
+            data.members.push({ userId: m._id, joinedIn: moment().toISOString(), leftIn: '' });
         });
 
         if (account.user.role[0] !== 'USER') {
-            data.members.push(account.user._id);
+            data.members.push({ userId: account.user._id, joinedIn: moment().toISOString(), leftIn: '' });
         }
 
         try {
@@ -676,7 +684,15 @@ const Chat = () => {
                         <Typography align="center">Group deleted!</Typography>
                     )}
                 </ConfirmDialog>
-
+                <ConfirmDialog
+                    title="Please confirm"
+                    openConfirm={openConfirm}
+                    setOpenConfirm={setOpenConfirm}
+                    onConfirm={() => exitGroup(currentChat, account.user)}
+                    status={status}
+                >
+                    <Typography align="center">Are you sure you want to exit the group?</Typography>
+                </ConfirmDialog>
                 <ConfirmDialog
                     title="Generate Link"
                     openConfirm={openGenerateCode}
@@ -782,7 +798,7 @@ const Chat = () => {
                                             <MenuItem value="FULLSTACK_DEVELOPER">Fullstack developer</MenuItem>
                                             <MenuItem value="BACKEND_DEVELOPER">Backend developer</MenuItem>
                                             <MenuItem value="FRONTEND_DEVELOPER">Frontend developer</MenuItem>
-                                            <MenuItem value="UX/UI_DESIGNER">UX/UI designer</MenuItem>
+                                            <MenuItem value="UI/UX_DESIGNER">UI/UX designer</MenuItem>
                                         </Select>
                                     </FormControl>
                                 </Grid>
@@ -862,6 +878,7 @@ const Chat = () => {
                                             <Grid item className={classes.toolbar}>
                                                 <Remove className={classes.tool} onClick={removeMember} />
                                                 <Add className={classes.tool} onClick={addMember} />
+                                                <KeyboardReturn className={classes.tool} onClick={exitFromGroup} />
                                             </Grid>
                                         )}
                                         <Grid item className={classes.toolbar}>

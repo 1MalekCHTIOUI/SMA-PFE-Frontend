@@ -1,12 +1,12 @@
 import './post.css';
-import { MoreVert, PermMedia, PictureAsPdf } from '@material-ui/icons';
+import { Close, MoreVert, PermMedia, PictureAsPdf } from '@material-ui/icons';
 import { useState, useEffect, useRef, useContext } from 'react';
 import axios from 'axios';
 import config from '../../../config';
 import { format } from 'timeago.js';
 import likeImage from '../../../assets/images/icons/like.png';
 import { useSelector } from 'react-redux';
-import { Collapse, Grid, TextField, Typography, Button } from '@material-ui/core';
+import { Collapse, Grid, TextField, Typography, Button, CircularProgress, Fade } from '@material-ui/core';
 import Comment from '../Comment/Comment';
 import User1 from './../../../assets/images/users/user.svg';
 import { SocketContext } from '../../../utils/socket/SocketContext';
@@ -46,13 +46,13 @@ export default function Post({ post, posts, setPosts }) {
             console.log(error);
         }
     };
-    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [selectedFiles, setSelectedFiles] = useState(null);
 
     const onChangeFileUpload = (e) => {
-        setSelectedFiles((prev) => [...prev, e.target.files[0]]);
+        setSelectedFiles(e.target.files[0]);
     };
     const removeItem = (val) => {
-        setSelectedFiles((prev) => prev.filter((item) => item.name !== val));
+        setSelectedFiles(null);
     };
     const handleChange = (e) => {
         setContent(e.target.value);
@@ -93,12 +93,14 @@ export default function Post({ post, posts, setPosts }) {
     // }, [isLiked]);
 
     const showMore = () => {
-        if (numberOfitemsShown + 3 <= comments.length) {
+        if (numberOfitemsShown <= comments.length) {
             setNumberOfitemsShown(numberOfitemsShown + 3);
         }
     };
     const showLess = () => {
-        setNumberOfitemsShown(numberOfitemsShown - 3);
+        if (numberOfitemsShown - 3 <= comments.length) {
+            setNumberOfitemsShown(numberOfitemsShown - 3);
+        }
     };
     const getUser = async () => {
         try {
@@ -117,10 +119,11 @@ export default function Post({ post, posts, setPosts }) {
             console.log(error.message);
         }
     };
-
+    const [posting, setPosting] = useState(false);
     const submitComment = async () => {
-        if (comment === '' && selectedFiles.length === 0) return;
-
+        if (comment === '' && selectedFiles === null) return;
+        setPosting(true);
+        const formData = new FormData();
         const postedComment = {
             postId: post._id,
             content: comment,
@@ -132,17 +135,26 @@ export default function Post({ post, posts, setPosts }) {
         if (content !== '') {
             postedComment.content = content;
         }
-        if (selectedFiles.length > 0) {
-            postedComment.selectedFiles = selectedFiles;
+        if (selectedFiles !== null) {
+            formData.append('file', selectedFiles);
+            try {
+                const up = await axios.post(config.API_SERVER + 'upload', formData);
+                postedComment.attachment = [{ displayName: selectedFiles.name, actualName: up.data.upload }];
+            } catch (error) {
+                setPosting(false);
+                console.log(error.message);
+            }
         }
-
+        console.log(postedComment);
         try {
             const res = await axios.post(config.API_SERVER + 'posts/comment', postedComment);
             setComments((prev) => [...prev, res.data]);
             setComment('');
         } catch (error) {
+            setPosting(false);
             console.log(error.message);
         }
+        setPosting(false);
     };
 
     useEffect(() => {
@@ -170,14 +182,19 @@ export default function Post({ post, posts, setPosts }) {
                         </div>
                     </div>
                     <div className="postTopRight">
-                        {showOptions && account.user._id === post.userId && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography variant="subtitle2">{post.visibility ? 'Public' : 'Private'}</Typography>
-                                <Button variant="outlined" onClick={deletePost}>
-                                    Delete
-                                </Button>
-                            </div>
-                        )}
+                        <Collapse in={showOptions}>
+                            {account.user._id === post.userId && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Typography variant="subtitle2" style={{ marginRight: '1rem' }}>
+                                        {post.visibility ? 'Public' : 'Private'}
+                                    </Typography>
+                                    <Button variant="outlined" color="error" onClick={deletePost}>
+                                        Delete
+                                    </Button>
+                                </div>
+                            )}
+                        </Collapse>
+
                         {account.user._id === post.userId && <MoreVert onClick={() => setShowOptions(!showOptions)} />}
                     </div>
                 </div>
@@ -241,6 +258,17 @@ export default function Post({ post, posts, setPosts }) {
             </div>
             <Collapse in={show}>
                 <div className="commentsContainer">
+                    {selectedFiles && (
+                        <div style={{ width: 'fit-content', height: '100%', position: 'relative' }}>
+                            <Close style={{ position: 'absolute', top: 0, right: 0, cursor: 'pointer' }} onClick={removeItem} />
+                            {isImage(selectedFiles.name) && <img src={URL.createObjectURL(selectedFiles)} width="100" height="100" />}
+                            {isDocument(selectedFiles.name) && (
+                                <p style={{ marginLeft: '1rem' }}>
+                                    <PictureAsPdf /> {selectedFiles.name}
+                                </p>
+                            )}
+                        </div>
+                    )}
                     <div className="writeComment">
                         <input
                             className="commentInput"
@@ -249,13 +277,15 @@ export default function Post({ post, posts, setPosts }) {
                             fullWidth
                             placeholder="Write comment"
                         />
+
                         <div className="commentOption" onClick={handleClick}>
                             <PermMedia htmlColor="tomato" className="commentIcon" />
                             {/* <span className="commentOptionText">Photo or Video</span> */}
                             <input type="file" ref={hiddenFileInput} onChange={onChangeFileUpload} style={{ display: 'none' }} />
                         </div>
+
                         <div onClick={submitComment} className="commentButton">
-                            Post
+                            {posting ? <CircularProgress size="small" /> : 'Post'}
                         </div>
                     </div>
 

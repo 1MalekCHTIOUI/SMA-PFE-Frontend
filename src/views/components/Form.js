@@ -45,7 +45,7 @@ import { Avatar } from 'antd';
 import { addStr, randomNumber } from '../../utils/scripts';
 import { Build } from '@material-ui/icons';
 import config from '../../config';
-
+import USER from '../../assets/images/users/user.svg';
 // style constant
 const useStyles = makeStyles((theme) => ({
     redButton: {
@@ -191,7 +191,7 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                     email: user ? user.email : '',
                     role: user ? user.role[0] : '',
                     service: user ? user.service : '',
-                    profilePicture: user ? user.profilePicture : '',
+                    profilePicture: user && user.profilePicture ? user.profilePicture : '',
                     linkedin: user && user.social.linkedin ? user.social.linkedin : '',
                     github: user && user.social.github ? user.social.github : '',
                     facebook: user && user.social.facebook ? user.social.facebook : '',
@@ -235,7 +235,8 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                                         linkedin: values.linkedin,
                                         github: values.github,
                                         facebook: values.facebook
-                                    }
+                                    },
+                                    profilePicture: values.profilePicture
                                 };
                                 if (values.newPassword != '' && values.oldPassword != '') {
                                     updatedUser.password = values.newPassword;
@@ -294,11 +295,12 @@ const Form = ({ user, setIsEditing, setIs, setEditedUser, accessFrom, ...others 
                                         onMouseEnter={() => setIsHovering(true)}
                                         onMouseLeave={() => setIsHovering(false)}
                                     >
-                                        {!file && account.user.profilePicture ? (
-                                            <img className={classes.image} src={config.CONTENT + account.user.profilePicture} alt="" />
-                                        ) : (
-                                            <div></div>
-                                        )}
+                                        {!file &&
+                                            (user.profilePicture ? (
+                                                <img className={classes.image} src={config.CONTENT + user.profilePicture} alt="" />
+                                            ) : (
+                                                <img className={classes.image} src={USER} alt="test" />
+                                            ))}
                                         {file ? <img className={classes.image} src={URL.createObjectURL(file)} alt="" /> : null}
                                         {isHovering && <Build className={classes.tool} />}
                                     </Container>

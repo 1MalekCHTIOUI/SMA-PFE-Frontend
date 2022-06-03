@@ -40,7 +40,7 @@ const Profile = () => {
 
     return (
         <Container style={{ width: 'fit-content' }}>
-            <MainCard border={false} style={{ minHeight: '100vh', width: 'fit-content' }}>
+            <MainCard border={false} style={{ minHeight: '100vh', minWidth: '60vw' }}>
                 <ProfileHeader user={user} />
                 <Grid xs={12} container direction="row">
                     <Grid item xs={12} md={4}>

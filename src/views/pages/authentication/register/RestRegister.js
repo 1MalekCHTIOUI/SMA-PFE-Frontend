@@ -21,7 +21,7 @@ import {
     Typography,
     useMediaQuery,
     Select,
-    MenuItem,
+    MenuItem
 } from '@material-ui/core';
 
 // third party
@@ -87,7 +87,7 @@ const RestRegister = ({ ...others }) => {
     const matchDownSM = useMediaQuery((theme) => theme.breakpoints.down('sm'));
     // const [showPassword, setShowPassword] = React.useState(false);
     const [checked, setChecked] = React.useState(true);
-    const account = useSelector(s => s.account)
+    const account = useSelector((s) => s.account);
     // const [strength, setStrength] = React.useState(0);
     // const [level, setLevel] = React.useState('');
 
@@ -116,7 +116,7 @@ const RestRegister = ({ ...others }) => {
                     firstName: '',
                     lastName: '',
                     email: '',
-                    role:'',
+                    role: '',
                     service: '',
                     submit: null
                 }}
@@ -125,20 +125,20 @@ const RestRegister = ({ ...others }) => {
                     firstName: Yup.string().required('First name is required'),
                     lastName: Yup.string().required('Last name is required'),
                     role: Yup.string().required('Role is required'),
-                    service: Yup.string().required('Service is required'),
+                    service: Yup.string().required('Service is required')
                 })}
                 onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
                     try {
                         try {
-                            await axios.post( configData.API_SERVER + 'auth/signup', {
+                            await axios.post(configData.API_SERVER + 'auth/signup', {
                                 first_name: values.firstName,
                                 last_name: values.lastName,
                                 email: values.email,
                                 role: values.role,
-                                service: values.service,
-                            })
+                                service: values.service
+                            });
                             history.push('/management');
-                        }catch(e) {
+                        } catch (e) {
                             setStatus({ success: false });
                             setErrors({ submit: e.response.data.message });
                             setSubmitting(false);
@@ -223,7 +223,7 @@ const RestRegister = ({ ...others }) => {
                         </FormControl>
                         <FormControl fullWidth>
                             <InputLabel id="role">Service</InputLabel>
-                            
+
                             <Select
                                 fullWidth
                                 label="Service"
@@ -231,12 +231,11 @@ const RestRegister = ({ ...others }) => {
                                 id="service"
                                 type="text"
                                 value={values.service}
-                                disabled={account.user.role[0] !== "SUPER_ADMIN"}
                                 onBlur={handleBlur}
                                 onChange={handleChange}
                                 className={classes.loginInput}
                                 error={touched.service && Boolean(errors.service)}
-                            >                        
+                            >
                                 <MenuItem value="HUMAN_RESOURCES">Human resources manager</MenuItem>
                                 <MenuItem value="GRAPHIC_DESIGNER">Graphic designer</MenuItem>
                                 <MenuItem value="PRODUCT_MANAGER">Product manager</MenuItem>
@@ -246,15 +245,15 @@ const RestRegister = ({ ...others }) => {
                                 <MenuItem value="FRONTEND_DEVELOPER">Frontend developer</MenuItem>
                                 <MenuItem value="UX/UI_DESIGNER">UX/UI designer</MenuItem>
                             </Select>
-                                {touched.service && errors.service && (
-                                    <FormHelperText error id="standard-weight-helper-text--register">
-                                        {errors.service}
-                                    </FormHelperText>
-                                )}    
+                            {touched.service && errors.service && (
+                                <FormHelperText error id="standard-weight-helper-text--register">
+                                    {errors.service}
+                                </FormHelperText>
+                            )}
                         </FormControl>
                         <FormControl fullWidth>
                             <InputLabel id="role">Role</InputLabel>
-                            
+
                             <Select
                                 fullWidth
                                 label="Role"
@@ -266,15 +265,15 @@ const RestRegister = ({ ...others }) => {
                                 onChange={handleChange}
                                 className={classes.loginInput}
                                 error={touched.role && Boolean(errors.role)}
-                            >                        
-                                <MenuItem value="ADMIN">Admin</MenuItem>
+                            >
+                                {account.user.role[0] === 'SUPER_ADMIN' && <MenuItem value="ADMIN">Admin</MenuItem>}
                                 <MenuItem value="USER">User</MenuItem>
                             </Select>
-                                {touched.role && errors.role && (
-                                    <FormHelperText error id="standard-weight-helper-text--register">
-                                        {errors.role}
-                                    </FormHelperText>
-                                )}    
+                            {touched.role && errors.role && (
+                                <FormHelperText error id="standard-weight-helper-text--register">
+                                    {errors.role}
+                                </FormHelperText>
+                            )}
                         </FormControl>
 
                         {/* <FormControl fullWidth error={Boolean(touched.password && errors.password)} className={classes.loginInput}>
@@ -343,7 +342,7 @@ const RestRegister = ({ ...others }) => {
                             </FormControl>
                         )}
  */}
-                        <Grid container alignItems="center" justifyContent="space-between">
+                        {/* <Grid container alignItems="center" justifyContent="space-between">
                             <Grid item>
                                 <FormControlLabel
                                     control={
@@ -364,7 +363,7 @@ const RestRegister = ({ ...others }) => {
                                     }
                                 />
                             </Grid>
-                        </Grid>
+                        </Grid> */}
                         {errors.submit && (
                             <Box
                                 sx={{

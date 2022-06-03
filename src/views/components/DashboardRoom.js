@@ -17,7 +17,8 @@ const useStyles = makeStyles((theme) => ({
     },
     item: {
         marginLeft: '10px',
-        marginRight: '10px'
+        marginRight: '10px',
+        textAlign: 'center'
     },
     container: {
         position: 'relative',
