@@ -175,8 +175,6 @@ const chatStyle = {
 
 const ConfirmDialog = (props) => {
     const { title, children, openConfirm, setOpenConfirm, onClose, onConfirm, status, code, isCode } = props;
-    console.log('code');
-    console.log(code);
     const [copied, setCopied] = React.useState(false);
     return (
         <Dialog open={openConfirm} onClose={onClose} aria-labelledby="confirm-dialog">
@@ -292,7 +290,7 @@ const Chat = () => {
     React.useEffect(() => {
         console.log(arrivalMessage);
         arrivalMessage &&
-            currentChat?.members.includes(arrivalMessage.sender) &&
+            currentChat?.members.some((u) => u.userId === arrivalMessage.sender) &&
             currentChat?._id === arrivalMessage.currentChat &&
             setMessages((prev) => [...prev, arrivalMessage]);
     }, [arrivalMessage]);
@@ -360,7 +358,7 @@ const Chat = () => {
                 console.log('No room found');
             }
             const resp = res.data.map((room) => {
-                if (room.members.includes(account.user._id) && room.type === 'PRIVATE') {
+                if (room.members.some((u) => u.userId === account.user._id) && room.type === 'PRIVATE') {
                     setCurrentChat(room);
                     return true;
                 } else {
@@ -415,7 +413,7 @@ const Chat = () => {
         const formData = new FormData();
 
         formData.append('file', file);
-        const receiverId = currentChat.members.find((m) => m !== account.user._id);
+        const receiverId = currentChat.members.find((m) => m.userId !== account.user._id);
 
         const message = {
             roomId: currentChat._id,
@@ -424,13 +422,14 @@ const Chat = () => {
             attachment: [],
             read: {
                 [account.user._id]: true,
-                [receiverId]: false
+                [receiverId.userId]: false
             }
         };
 
         if (message.text || file !== null) {
             try {
-                if (file !== null) {
+                if (file !== null && Object.entries(file).length > 0) {
+                    console.log(file);
                     const x = await axios.post(configData.API_SERVER + 'upload', formData);
                     if (file) {
                         // file?.map((file) => {
@@ -449,7 +448,7 @@ const Chat = () => {
                     const res = await axios.post(configData.API_SERVER + 'messages', message);
                     setMessages([...messages, res.data]);
                     setNewMessage('');
-                    sendMessage(message.sender, receiverId, newMessage, currentChat._id, message.attachment);
+                    sendMessage(message.sender, receiverId.userId, newMessage, currentChat._id, message.attachment);
                 } catch (error) {
                     console.log(error.response.data.message);
                 }
@@ -559,7 +558,6 @@ const Chat = () => {
         setType('remove');
         setOpenMenu(true);
         setGroupMembers(groupMembers.filter((m) => addedMembers.includes(m._id)));
-        console.log(groupMembers);
     };
     const exitFromGroup = () => {
         setStatus(0);

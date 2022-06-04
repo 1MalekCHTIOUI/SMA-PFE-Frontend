@@ -46,6 +46,7 @@ const ContextProvider = ({ children }) => {
             socket.emit('addUser', { userId: account.user._id, user: account.user });
             socket.on('getUsers', (users) => {
                 setOnlineUsers(users);
+                console.log(onlineUsers);
             });
         }
     }, [account.user]);
@@ -92,6 +93,7 @@ const ContextProvider = ({ children }) => {
                 });
             } else {
                 try {
+                    console.log(data);
                     const res = await axios.get(config.API_SERVER + 'user/users/' + data.senderId);
                     const name = `${res.data.first_name} ${res.data.last_name}`;
                     try {

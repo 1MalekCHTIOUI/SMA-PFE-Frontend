@@ -80,9 +80,6 @@ const ModalC = ({
     submitCreateGroup,
     type
 }) => {
-    console.log('groupMembers');
-    console.log(groupMembers);
-    // console.log(users);
     const { onlineUsers } = React.useContext(SocketContext);
     const styles = useStyles();
     const [showCard, setShowCard] = React.useState(false);
@@ -94,9 +91,9 @@ const ModalC = ({
         setShowCard(true);
     };
 
-    React.useEffect(() => {
-        console.log(groupMembers);
-    }, [groupMembers]);
+    // React.useEffect(() => {
+    //     console.log(groupMembers);
+    // }, [groupMembers]);
 
     React.useEffect(() => {
         if (onlineUsers.includes(user._id)) {

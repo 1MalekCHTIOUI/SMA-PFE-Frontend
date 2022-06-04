@@ -1,6 +1,6 @@
 import React from 'react';
 import './share.css';
-import { PermMedia, Label, Room, EmojiEmotions, Close, PictureAsPdf, VideoLibrary } from '@material-ui/icons';
+import { PermMedia, AttachFile, Label, Room, EmojiEmotions, Close, PictureAsPdf, VideoLibrary } from '@material-ui/icons';
 import {
     TextField,
     ImageList,
@@ -188,8 +188,8 @@ const Share = ({ user, setPosts }) => {
                 <div className="shareBottom">
                     <div className="shareOptions">
                         <div className="shareOption" style={{ width: '150px' }} onClick={handleClick}>
-                            <PermMedia htmlColor="tomato" className="shareIcon" />
-                            <span className="shareOptionText">Photo or Video</span>
+                            <AttachFile htmlColor="tomato" className="shareIcon" />
+                            <span className="shareOptionText">File or Media</span>
                             <input type="file" ref={hiddenFileInput} onChange={onChangeFileUpload} style={{ display: 'none' }} />
                         </div>
                         <div className="shareOption" style={{ width: '50px', cursor: 'default' }}></div>
