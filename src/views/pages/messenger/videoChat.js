@@ -21,10 +21,12 @@ const Container = styled.div`
 const StyledVideo = styled.video`
     height: 100%;
     width: 100%;
+    object-fit: cover;
 `;
 const StyledGuestVideo = styled.video`
-    height: fit-content;
-    width: fit-content;
+    height: 25vh;
+    width: 25vw;
+    object-fit: cover;
 `;
 const style = {
     position: 'absolute',
@@ -246,6 +248,10 @@ const Room = (props) => {
     const [show, setShow] = React.useState(false);
 
     React.useEffect(() => {
+        console.log(peersRef.current);
+    }, [peersRef]);
+
+    React.useEffect(() => {
         if (joinedUsers === 1) {
             setShow(true);
             const timeId = setTimeout(() => {
@@ -307,12 +313,16 @@ const Room = (props) => {
                                 .map((peer, index) => {
                                     // if (peer.readable) {
                                     return (
-                                        <Grid item style={{ height: '35vh', width: '35vw' }}>
+                                        <Grid item xs={6} style={{ display: 'flex', justifyContent: 'center' }}>
                                             <div>{joinedUsers === 0 && <CircularProgress />}</div>
+                                            {/* {joinedUsers > 0 && ( */}
+                                            {/* <> */}
                                             <Typography className={classes.typography} variant="overline">
                                                 {peer.user.first_name + ' ' + peer.user.last_name}
                                             </Typography>
                                             <GuestVideo key={index} peer={peer.peer} />
+                                            {/* </> */}
+                                            {/* )} */}
                                         </Grid>
                                     );
                                     // }

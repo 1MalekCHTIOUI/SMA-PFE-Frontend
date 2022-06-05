@@ -184,10 +184,6 @@ const ContextProvider = ({ children }) => {
         socket.on('newLike', (data) => {
             if (account.user._id !== data.senderId) {
                 openNotification('New like', data.content, 'notif');
-                saveNotificationToDB({
-                    actor: data.senderId,
-                    content: data.content
-                });
                 setArrivalNotification({
                     title: 'New like',
                     sender: data.senderId,
@@ -270,6 +266,10 @@ const ContextProvider = ({ children }) => {
                 senderId: account.user._id,
                 content: `${u.data.first_name} ${u.data.last_name} uploaded a new ${priority ? 'announcement' : 'post'}!`
             });
+            saveNotificationToDB({
+                actor: account.user._id,
+                content: `${u.data.first_name} ${u.data.last_name} uploaded a new ${priority ? 'announcement' : 'post'}!`
+            });
         } catch (error) {
             console.log(error);
         }
@@ -278,10 +278,13 @@ const ContextProvider = ({ children }) => {
     const emitNewLike = async (senderId, receiverId) => {
         // sendNotification(account.user._id, m._id, `You have been removed from the group ${res.data.name}!`);
         try {
-            // const u = await axios.get(config.API_SERVER + 'user/users/' + uid);
             socket.emit('newLike', {
                 senderId,
                 receiverId: receiverId,
+                content: `${account.user.first_name} ${account.user.last_name} liked your post!`
+            });
+            saveNotificationToDB({
+                actor: senderId,
                 content: `${account.user.first_name} ${account.user.last_name} liked your post!`
             });
         } catch (error) {

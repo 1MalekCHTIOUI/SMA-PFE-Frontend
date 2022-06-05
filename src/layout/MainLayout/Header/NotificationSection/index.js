@@ -155,9 +155,18 @@ const NotificationSection = () => {
     const handleChange = (event) => {
         setValue(event.target.value);
     };
-
+    const readAllNotifs = async () => {
+        try {
+            const res = await axios.put(config.API_SERVER + 'notifications/all/' + account.user._id);
+            console.log(res.data);
+            resetNotifs();
+        } catch (error) {
+            console.log(error);
+        }
+    };
     const [notifLength, setNotifLength] = React.useState(0);
     const [notifs, setNotifs] = React.useState(null);
+    const [readNotifs, setReadNotifs] = React.useState(false);
 
     const resetNotifs = () => {
         setNotifLength(0);
@@ -166,6 +175,7 @@ const NotificationSection = () => {
         try {
             const notifications = await axios.get(config.API_SERVER + 'notifications/' + account.user._id);
             setNotifs(notifications.data);
+            setReadNotifs(true);
         } catch (e) {
             console.log(e);
         }
@@ -256,7 +266,13 @@ const NotificationSection = () => {
                                                             </Stack>
                                                         </Grid>
                                                         <Grid item>
-                                                            <Typography component={Link} to="#" variant="subtitle2" color="primary">
+                                                            <Typography
+                                                                component={Link}
+                                                                onClick={readAllNotifs}
+                                                                to="#"
+                                                                variant="subtitle2"
+                                                                color="primary"
+                                                            >
                                                                 Mark as all read
                                                             </Typography>
                                                         </Grid>
@@ -290,7 +306,12 @@ const NotificationSection = () => {
                                                             <Divider className={classes.divider} />
                                                         </Grid>
                                                         <Grid item xs={12}>
-                                                            <NotificationList setNotifLength={setNotifLength} notifs={notifs} />
+                                                            <NotificationList
+                                                                readNotifs={readNotifs}
+                                                                setNotifLength={setNotifLength}
+                                                                notifLength={notifLength}
+                                                                notifs={notifs}
+                                                            />
                                                         </Grid>
                                                     </Grid>
                                                 </PerfectScrollbar>

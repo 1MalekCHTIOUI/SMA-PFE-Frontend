@@ -104,12 +104,12 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const Notification = ({ unreadNotification, notif }) => {
+const Notification = ({ unreadNotification, readNotifs, notif }) => {
     const classes = useStyles();
     const [isRead, setIsRead] = React.useState(notif.read);
 
     return (
-        <div className={`${classes.itemAction} ${isRead === false ? classes.unread : ''}`}>
+        <div className={`${classes.itemAction} ${isRead === false && classes.unread} ${readNotifs && classes.unread}`}>
             <ListItem alignItems="center" className={classes.listItem}>
                 <ListItemAvatar>
                     <Avatar className={classes.listAvatarSuccess}>

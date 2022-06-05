@@ -50,14 +50,16 @@ const useStyles = makeStyles((theme) => ({
 
 //-----------------------|| NOTIFICATION LIST ITEM ||-----------------------//
 
-const NotificationList = ({ setNotifLength, notifs }) => {
+const NotificationList = ({ setNotifLength, notifLength, notifs, readNotifs }) => {
     const classes = useStyles();
     const account = useSelector((s) => s.account);
 
     const unreadNotification = async (notifId) => {
         try {
             await axios.put(config.API_SERVER + 'notifications/' + notifId);
-            setNotifLength((prev) => prev - 1);
+            if (notifLength >= 0) {
+                setNotifLength((prev) => prev - 1);
+            }
         } catch (e) {
             console.log(e);
         }
@@ -71,6 +73,7 @@ const NotificationList = ({ setNotifLength, notifs }) => {
                     <Notification
                         unreadNotification={unreadNotification}
                         notif={notif}
+                        readNotifs={readNotifs}
                         username={account?.user.first_name + ' ' + account?.user.last_name}
                     />
                 ))}
