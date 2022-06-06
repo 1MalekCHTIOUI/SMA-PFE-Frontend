@@ -8,6 +8,7 @@ import { PhoneDisabled } from '@material-ui/icons';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import MainCard from '../../../ui-component/cards/MainCard';
 import { useSelector } from 'react-redux';
+import config from '../../../config';
 const Container = styled.div`
     padding: 20px;
     display: flex;
@@ -24,9 +25,10 @@ const StyledVideo = styled.video`
     object-fit: cover;
 `;
 const StyledGuestVideo = styled.video`
-    height: 25vh;
-    width: 25vw;
-    object-fit: cover;
+    height: 20rem;
+    width: 25rem;
+    border-radius: 4px;
+    object-fit: fill;
 `;
 const style = {
     position: 'absolute',
@@ -48,9 +50,8 @@ const useStyles = makeStyles({
     },
     chatContainer: {
         display: 'flex',
-        position: 'absolute',
         zIndex: 1,
-        height: '80vh',
+        height: '100%',
         width: '100%'
     },
     myContainer: {
@@ -100,7 +101,7 @@ const Video = (props) => {
         });
     }, []);
 
-    return <StyledVideo muted playsInline autoPlay ref={ref} />;
+    return <StyledVideo muted playsInline autoPlay ref={ref} onMouseEnter={props.onMouseEnter} onMouseLeave={props.onMouseLeave} />;
 };
 const GuestVideo = (props) => {
     const ref = useRef();
@@ -147,7 +148,7 @@ const Room = (props) => {
     const [peers, setPeers] = useState([]);
     const [joinedUsersArray, setJoinedUsersArray] = useState([]);
     const account = useSelector((s) => s.account);
-    const socketRef = useRef(io('https://sma-socket-01.herokuapp.com/'));
+    const socketRef = useRef(io.connect(config.SOCKET_SERVER));
     const userVideo = useRef();
     const peersRef = useRef([]);
     const location = useLocation();
@@ -160,15 +161,17 @@ const Room = (props) => {
             window.location.reload(false);
         };
     }, []);
+
     React.useEffect(() => {
         console.log(peers);
-        // peers.map((peer) => {
-        //     if (peer.readable) {
-        //         console.log(peer);
-        //     } else {
-        //         console.log(peer.user);
-        //     }
-        // });
+
+        peers.map((peer) => {
+            if (peer.peer.streams.some((s) => s.active === true)) {
+                console.log(peer.user.first_name + ' VIDEO ACTIVE');
+            } else {
+                console.log(peer.user.first_name + ' DISCONNECTED');
+            }
+        });
     }, [peers]);
     useEffect(() => {
         location.state &&
@@ -200,7 +203,6 @@ const Room = (props) => {
                         peer
                     });
                     console.log('ADD PEERS');
-
                     handleCheck(peers, payload.user) == false && setPeers((users) => [...users, { peer: peer, user: payload.user }]);
                 });
 
@@ -218,7 +220,6 @@ const Room = (props) => {
             trickle: false,
             stream
         });
-
         peer.on('signal', (signal) => {
             socketRef.current.emit('sending signal', { userToSignal, callerID, signal, user: account.user });
         });
@@ -246,7 +247,7 @@ const Room = (props) => {
     const [joinedUsers, setJoinedUsers] = React.useState(0);
 
     const [show, setShow] = React.useState(false);
-
+    const [isHovering, setIsHovering] = React.useState(false);
     React.useEffect(() => {
         console.log(peersRef.current);
     }, [peersRef]);
@@ -269,8 +270,8 @@ const Room = (props) => {
         if (location.state) {
             console.log(location.state);
         } else {
-            <Modals show={show} allowed={location.state.allowed} message="Your're not allowed!" />;
             history.push('/chat');
+            return <Modals show={show} allowed={location.state.allowed} message="Your're not allowed!" />;
         }
     }, []);
     // title={`${account.user.first_name} ${account.user.last_name}`}
@@ -285,14 +286,7 @@ const Room = (props) => {
                 }
                 className={classes.container}
             >
-                <div className={classes.chatContainer}>
-                    <div className={classes.myContainer}>
-                        <Typography
-                            className={classes.typography}
-                            variant="overline"
-                        >{`${account.user.first_name} ${account.user.last_name}`}</Typography>
-                        <StyledVideo muted ref={userVideo} autoPlay playsInline />
-                    </div>
+                <div style={{ minHeight: '50vh' }}>
                     {location.state.type === 'PRIVATE' && (
                         <div className={classes.userContainer}>
                             <div>{joinedUsers === 0 && <CircularProgress />}</div>
@@ -307,42 +301,31 @@ const Room = (props) => {
                         </div>
                     )}
                     {location.state.type === 'PUBLIC' && (
-                        <Grid container xs={12}>
+                        <Grid container xs={12} style={{ position: 'relative' }}>
                             {peers
-                                ?.filter((p) => p.user._id !== account.user._id)
+                                // ?.filter((p) => p.user._id !== account.user._id)
                                 .map((peer, index) => {
-                                    // if (peer.readable) {
                                     return (
-                                        <Grid item xs={6} style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <div>{joinedUsers === 0 && <CircularProgress />}</div>
-                                            {/* {joinedUsers > 0 && ( */}
-                                            {/* <> */}
+                                        <Grid item xs style={{ display: 'flex', justifyContent: 'center' }}>
                                             <Typography className={classes.typography} variant="overline">
                                                 {peer.user.first_name + ' ' + peer.user.last_name}
                                             </Typography>
                                             <GuestVideo key={index} peer={peer.peer} />
-                                            {/* </> */}
-                                            {/* )} */}
+
+                                            <div>{joinedUsers === 0 && <CircularProgress />}</div>
                                         </Grid>
                                     );
                                     // }
                                 })}
                         </Grid>
                     )}
-
-                    {/* // peer.readable && (
-                            //     <Grid item style={{ backgroundColor: 'red' }}>
-                            //         <MainCard
-                            //             style={{ width: 'fit-content' }}
-                            //             title={location.state.callData.caller || location.state.callData.receiver}
-                            //         >
-                            //             <div>{joinedUsers === 0 && <CircularProgress />}</div>
-                            //             <Video key={index} peer={peer} />
-                            //         </MainCard>
-                            //     </Grid>
-                            // );
-                            // }
-                        // })} */}
+                </div>
+                <div style={{ width: 'fit-content', height: '20vh', border: '1px solid red', position: 'relative' }}>
+                    <Typography
+                        className={classes.typography}
+                        variant="overline"
+                    >{`${account.user.first_name} ${account.user.last_name}`}</Typography>
+                    <StyledVideo muted ref={userVideo} autoPlay playsInline />
                 </div>
                 <Modals show={show} allowed={location.state.allowed} history={history} message={'User joined!'} />
             </MainCard>

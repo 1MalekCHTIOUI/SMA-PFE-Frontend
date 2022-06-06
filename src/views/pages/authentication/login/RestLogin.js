@@ -112,7 +112,7 @@ const RestLogin = (props, { ...others }) => {
                             });
 
                             if (response.data.status === 'success') {
-                                io('https://sma-socket-01.herokuapp.com/').emit('addUser', {
+                                io(configData.SOCKET_SERVER).emit('addUser', {
                                     userId: response.data._id,
                                     user: response.data
                                 });

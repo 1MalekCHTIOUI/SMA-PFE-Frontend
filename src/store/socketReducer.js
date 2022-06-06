@@ -1,15 +1,16 @@
 // action - state management
 import { io } from 'socket.io-client';
+import config from '../config';
 import { RECEIVING_CALL, CALL_ACCEPTED, CALL_DECLINED, CLEAR_DATA } from './actions';
 
 export const initialState = {
     isReceivingCall: false,
-    message: ""
+    message: ''
 };
 //-----------------------|| ACCOUNT REDUCER ||-----------------------//
 
 const socketReducer = (state = initialState, action) => {
-    const socket = io.connect("https://sma-socket-01.herokuapp.com/")
+    const socket = io.connect(config.SOCKET_SERVER);
     switch (action.type) {
         case RECEIVING_CALL: {
             const { isReceivingCall, message } = action.payload;
@@ -23,21 +24,21 @@ const socketReducer = (state = initialState, action) => {
             return {
                 ...state,
                 isReceivingCall: false,
-                message: "CALL ACCEPTED"
+                message: 'CALL ACCEPTED'
             };
         }
         case CALL_DECLINED: {
             return {
                 ...state,
                 isReceivingCall: false,
-                message: "CALL DECLINED"
+                message: 'CALL DECLINED'
             };
         }
         case CLEAR_DATA: {
             return {
                 ...state,
                 isReceivingCall: false,
-                message: ""
+                message: ''
             };
         }
         default: {

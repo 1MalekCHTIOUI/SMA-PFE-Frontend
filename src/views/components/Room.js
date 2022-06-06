@@ -148,7 +148,6 @@ export default function Room({ users, roomsLoading, onlineUsers, currentUser, mk
 
     React.useEffect(() => {
         setLoading(false);
-        console.log(group);
     }, [group]);
 
     return (

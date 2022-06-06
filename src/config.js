@@ -9,6 +9,8 @@ const config = {
     // HOST: 'http://localhost:5000/'
     API_SERVER: 'https://sma-backend-01.herokuapp.com/api/',
     HOST: 'https://sma-backend-01.herokuapp.com/',
+    SOCKET_SERVER: 'https://sma-socket-01.herokuapp.com',
+    // SOCKET_SERVER: 'http://localhost:8900/',
     CONTENT: 'https://res.cloudinary.com/sma-backend-storage/image/upload/v1653585335/sma_uploads/',
     VIDEO_CONTENT: 'https://res.cloudinary.com/sma-backend-storage/video/upload/v1654000382/sma_uploads/'
 };
