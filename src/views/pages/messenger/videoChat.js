@@ -308,7 +308,7 @@ const Room = (props) => {
             console.log(location.state);
         } else {
             history.push('/chat');
-            return <Modals show={show} allowed={location.state.allowed} message="Your're not allowed!" />;
+            // return <Modals show={show} allowed={location.state.allowed} message="Your're not allowed!" />;
         }
     }, []);
     // title={`${account.user.first_name} ${account.user.last_name}`}
@@ -323,19 +323,28 @@ const Room = (props) => {
                 }
                 className={classes.container}
             >
-                <div style={{ minHeight: '50vh' }}>
+                <div style={{ minHeight: '50vh', marginBottom: '3rem' }}>
                     {location.state.type === 'PRIVATE' && (
-                        <div className={classes.userContainer}>
+                        <Grid container xs={12} style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
                             <div>{joinedUsers === 0 && <CircularProgress />}</div>
                             {location.state.type === 'PRIVATE' && (
                                 <>
-                                    <Typography className={classes.typography} variant="overline">
+                                    {/* <Typography className={classes.typography} variant="overline">
                                         {peers[0]?.user.first_name + ' ' + peers[0]?.user.last_name}
-                                    </Typography>
-                                    {peers[0]?.peer.readable && <Video key={1} peer={peers[0].peer} />}
+                                    </Typography> */}
+                                    {peers[0]?.peer.readable && (
+                                        <GuestVideo
+                                            key={1}
+                                            peer={peers[0].peer}
+                                            user={peers[0].user.first_name + ' ' + peers[0].user.last_name}
+                                            isHovering={isHovering}
+                                            onMouseEnter={mouseEnter}
+                                            onMouseLeave={mouseLeave}
+                                        />
+                                    )}
                                 </>
                             )}
-                        </div>
+                        </Grid>
                     )}
                     {location.state.type === 'PUBLIC' && (
                         <Grid container xs={12} style={{ position: 'relative' }}>
@@ -343,7 +352,7 @@ const Room = (props) => {
                                 // ?.filter((p) => p.user._id !== account.user._id)
                                 .map((peer, index) => {
                                     return (
-                                        <Grid item xs style={{ display: 'flex', justifyContent: 'center' }}>
+                                        <Grid item xs spacing={2} style={{ display: 'flex', justifyContent: 'center' }}>
                                             <Typography className={classes.typography} variant="overline"></Typography>
                                             <GuestVideo
                                                 key={index}
@@ -362,7 +371,7 @@ const Room = (props) => {
                         </Grid>
                     )}
                 </div>
-                <div style={{ width: 'fit-content', height: '20vh', border: '1px solid red', position: 'relative' }}>
+                <div style={{ width: 'fit-content', height: '20vh', border: '1px solid red', position: 'relative', marginTop: '3rem' }}>
                     <Typography
                         className={classes.typography}
                         variant="overline"

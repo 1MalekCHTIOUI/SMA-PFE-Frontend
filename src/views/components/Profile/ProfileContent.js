@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, CircularProgress } from '@material-ui/core';
+import { Container, CircularProgress, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
 import Share from '../Share/Share';
@@ -36,7 +36,15 @@ const ProfileContent = ({ user, posts, setPosts, postsLoading }) => {
                 <div className={classes.center}>{postsLoading && <CircularProgress />}</div>
 
                 <div className={classes.postItems}>{user._id === account.user._id && <Share user={user} setPosts={setPosts} />}</div>
-
+                {postsLoading === false && posts?.length === 0 && (
+                    <Container
+                        style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '2rem' }}
+                    >
+                        <Typography variant="overline" style={{ textAlign: 'center', fontSize: 16 }}>
+                            No posts!
+                        </Typography>
+                    </Container>
+                )}
                 {posts &&
                     postsLoading === false &&
                     posts.map((post) => {

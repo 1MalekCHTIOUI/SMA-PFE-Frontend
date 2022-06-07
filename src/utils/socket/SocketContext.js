@@ -162,11 +162,8 @@ const ContextProvider = ({ children }) => {
         });
         socket.on('newPost', (data) => {
             if (account.user._id !== data.senderId) {
+                setNewPost(data.content);
                 openNotification('New post', data.content, 'notif');
-                saveNotificationToDB({
-                    actor: data.senderId,
-                    content: data.content
-                });
                 setArrivalNotification({
                     title: 'New post',
                     sender: data.senderId,
@@ -183,7 +180,9 @@ const ContextProvider = ({ children }) => {
         });
         socket.on('newLike', (data) => {
             if (account.user._id !== data.senderId) {
+                console.log('new like');
                 openNotification('New like', data.content, 'notif');
+                setNewLike({ userId: data.senderId, postId: data.postId });
                 setArrivalNotification({
                     title: 'New like',
                     sender: data.senderId,
@@ -193,9 +192,30 @@ const ContextProvider = ({ children }) => {
                 });
             }
         });
+        socket.on('newUnlike', (data) => {
+            if (account.user._id !== data.senderId) {
+                setNewUnlike({ userId: data.senderId, postId: data.postId });
+            }
+        });
+        socket.on('newComment', (data) => {
+            if (account.user._id !== data.senderId) {
+                setNewComment({ comment: data.comment });
+                openNotification('New comment', data.comment.content, 'notif');
+                setArrivalNotification({
+                    title: 'New Comment',
+                    sender: data.senderId,
+                    content: data.comment.content,
+                    createdAt: Date.now(),
+                    read: false
+                });
+            }
+        });
     }, [socket]);
     const [loaded, setLoaded] = React.useState(false);
-
+    const [newPost, setNewPost] = React.useState(false);
+    const [newLike, setNewLike] = React.useState(null);
+    const [newUnlike, setNewUnlike] = React.useState(null);
+    const [newComment, setNewComment] = React.useState(null);
     React.useEffect(() => {
         if (callData) {
             setLoaded(true);
@@ -266,6 +286,7 @@ const ContextProvider = ({ children }) => {
                 senderId: account.user._id,
                 content: `${u.data.first_name} ${u.data.last_name} uploaded a new ${priority ? 'announcement' : 'post'}!`
             });
+
             saveNotificationToDB({
                 actor: account.user._id,
                 content: `${u.data.first_name} ${u.data.last_name} uploaded a new ${priority ? 'announcement' : 'post'}!`
@@ -274,13 +295,41 @@ const ContextProvider = ({ children }) => {
             console.log(error);
         }
     };
-
-    const emitNewLike = async (senderId, receiverId) => {
+    const emitNewUnlike = async (senderId, receiverId, postId) => {
+        // sendNotification(account.user._id, m._id, `You have been removed from the group ${res.data.name}!`);
+        try {
+            socket.emit('newUnlike', {
+                senderId,
+                receiverId: receiverId,
+                postId: postId
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const emitNewComment = async (senderId, receiverId, comment) => {
+        // sendNotification(account.user._id, m._id, `You have been removed from the group ${res.data.name}!`);
+        try {
+            socket.emit('newComment', {
+                senderId,
+                receiverId: receiverId,
+                comment: comment
+            });
+            // saveNotificationToDB({
+            //     actor: account.user._id,
+            //     content: `${u.data.first_name} ${u.data.last_name} uploaded a new ${priority ? 'announcement' : 'post'}!`
+            // });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const emitNewLike = async (senderId, receiverId, postId) => {
         // sendNotification(account.user._id, m._id, `You have been removed from the group ${res.data.name}!`);
         try {
             socket.emit('newLike', {
                 senderId,
                 receiverId: receiverId,
+                postId: postId,
                 content: `${account.user.first_name} ${account.user.last_name} liked your post!`
             });
             saveNotificationToDB({
@@ -549,6 +598,15 @@ const ContextProvider = ({ children }) => {
                 callDeclined,
                 callerMsg,
                 ROOM_ID,
+                setNewPost,
+                emitNewComment,
+                newPost,
+                setNewLike,
+                newLike,
+                setNewUnlike,
+                newUnlike,
+                newComment,
+                setNewComment,
                 sendNotification,
                 removeMessagesFromRoom,
                 createGroup,
@@ -566,7 +624,8 @@ const ContextProvider = ({ children }) => {
                 handleCallButton,
                 exitGroup,
                 emitNewPost,
-                emitNewLike
+                emitNewLike,
+                emitNewUnlike
             }}
         >
             {children}

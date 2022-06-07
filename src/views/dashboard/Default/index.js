@@ -12,7 +12,9 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Divider
+    Divider,
+    Button,
+    Collapse
 } from '@material-ui/core';
 
 // project imports
@@ -124,7 +126,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 const Dashboard = () => {
     const [isLoading, setLoading] = useState(true);
-    const { onlineUsers } = useContext(SocketContext);
+    const { onlineUsers, newPost, setNewPost } = useContext(SocketContext);
     const account = useSelector((s) => s.account);
     const [roles, setRoles] = useState([]);
     const [posts, setPosts] = useState([]);
@@ -141,30 +143,15 @@ const Dashboard = () => {
     }, [onlineUsers]);
 
     const [usersLoading, setUsersLoading] = React.useState(false);
-    // React.useEffect(() => {
-    //     const getOnlineUsers = () => {
-    //         onlineUsers?.map(async (item) => {
-    //             try {
-    //                 setUsersLoading(true);
-    //                 const users = await axios.get(config.API_SERVER + 'user/users/' + item.userId);
-    //                 // onliners.map(item =>  {
-    //                 //     if(item._id )
-    //                 // })
-    //                 onliners.find((u) => u._id === users.data._id) === undefined && setOnliners((prev) => [...prev, users.data]);
-    //                 setUsersLoading(false);
-    //             } catch (error) {
-    //                 setUsersLoading(false);
-    //                 console.log(error);
-    //             }
-    //         });
-    //     };
-    //     getOnlineUsers();
-    // }, [onlineUsers]);
+    const refreshPosts = () => {
+        setPosts([]);
+        fetchPublicPosts();
+    };
     const fetchPublicPosts = async () => {
         try {
             setPostsLoading(true);
             const fetchPosts = await axios.get(config.API_SERVER + 'posts');
-            setPosts(fetchPosts.data.filter((p) => p.visibility === true).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+            setPosts(fetchPosts.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
             setPostsLoading(false);
         } catch (error) {
             setPostsLoading(false);
@@ -176,7 +163,9 @@ const Dashboard = () => {
     }, []);
     React.useEffect(() => {
         setTodaysPosts(posts.filter((p) => moment().diff(p.createdAt, 'hours') < 24).length);
-        fetchPublicPosts();
+        // fetchPublicPosts();
+        posts.length > 0 && setPosts(posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setNewPost(null);
     }, [posts]);
 
     React.useEffect(() => {
@@ -217,17 +206,22 @@ const Dashboard = () => {
                             </MainCard>
                         </Grid>
                     </Grid> */}
-                    <Grid item xs={12} style={{ display: 'flex', alignItems: 'center', marginTop: '10vh', height: '30vh' }}>
-                        <Container style={{ marginTop: '5vh' }} className={classes.anHolder}>
-                            {/* {postsLoading && <CircularProgress />} */}
-                            <Container className={classes.anItem}>
-                                {usersLoading === false &&
-                                    posts
-                                        ?.filter((p) => p.priority === true)
-                                        .map((post) => <Announcement post={post} posts={posts} setPosts={setPosts} />)}
+                    <Collapse in={posts?.filter((p) => p.visibility === true && p.priority === true).length > 0}>
+                        <Grid item xs={12} style={{ display: 'flex', alignItems: 'center', marginTop: '10vh', height: '30vh' }}>
+                            <Container style={{ marginTop: '5vh' }} className={classes.anHolder}>
+                                {/* {postsLoading && <CircularProgress />} */}
+
+                                <Container className={classes.anItem}>
+                                    {usersLoading === false &&
+                                        posts
+                                            ?.filter((p) => p.visibility === true && p.priority === true)
+
+                                            .map((post) => <Announcement post={post} posts={posts} setPosts={setPosts} />)}
+                                </Container>
                             </Container>
-                        </Container>
-                    </Grid>
+                        </Grid>
+                    </Collapse>
+
                     <Grid item xs={12}>
                         <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
                             <div className={classes.posts}>
@@ -262,6 +256,11 @@ const Dashboard = () => {
                                     <Typography variant="outlined" style={{ fontWeight: 'Bold' }}>
                                         Today: {todaysPosts}
                                     </Typography>
+                                    {newPost && (
+                                        <Button variant="outlined" onClick={refreshPosts}>
+                                            {newPost?.indexOf('post') != -1 ? 'New Post available' : 'New Announcement available'}
+                                        </Button>
+                                    )}
                                     {/* )} */}
                                     {usersLoading === false &&
                                         posts

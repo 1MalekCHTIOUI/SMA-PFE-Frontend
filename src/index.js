@@ -14,9 +14,8 @@ import config from './config';
 
 // style + assets
 import './assets/scss/style.scss';
-import {ContextProvider} from './utils/socket/SocketContext'
+import { ContextProvider } from './utils/socket/SocketContext';
 //-----------------------|| REACT DOM RENDER  ||-----------------------//
-
 ReactDOM.render(
     <Provider store={store}>
         <PersistGate loading={null} persistor={persister}>
@@ -25,7 +24,6 @@ ReactDOM.render(
                     <App />
                 </ContextProvider>
             </BrowserRouter>
-
         </PersistGate>
     </Provider>,
     document.getElementById('root')

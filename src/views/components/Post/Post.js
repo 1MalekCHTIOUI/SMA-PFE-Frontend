@@ -23,7 +23,7 @@ export default function Post({ post, posts, setPosts }) {
     const account = useSelector((s) => s.account);
     const [like, setLike] = useState(post.likes.length);
     const [isLiked, setIsLiked] = useState(post.likes.some((u) => u.userId === account?.user._id));
-    const { emitNewLike } = useContext(SocketContext);
+    const { emitNewLike, newLike, setNewLike, emitNewUnlike, newUnlike, newComment, emitNewComment } = useContext(SocketContext);
     const [user, setUser] = useState({});
     const [numberOfitemsShown, setNumberOfitemsShown] = useState(3);
 
@@ -69,7 +69,7 @@ export default function Post({ post, posts, setPosts }) {
                 userId: account.user._id,
                 username: `${user.first_name} ${user.last_name}`
             });
-            emitNewLike(account.user._id, post.userId);
+            emitNewLike(account.user._id, post.userId, post._id);
         } catch (error) {
             console.log(error);
         }
@@ -79,6 +79,7 @@ export default function Post({ post, posts, setPosts }) {
             await axios.put(config.API_SERVER + 'posts/unlike/' + post._id, {
                 userId: account.user._id
             });
+            emitNewUnlike(account.user._id, post.userId, post._id);
         } catch (error) {
             console.log(error);
         }
@@ -110,6 +111,19 @@ export default function Post({ post, posts, setPosts }) {
             console.log(error.message);
         }
     };
+    useEffect(() => {
+        if (newLike && post._id === newLike.postId) {
+            setLike(like + 1);
+        }
+        if (newUnlike && post._id === newUnlike.postId) {
+            setLike(like - 1);
+        }
+    }, [newLike, newUnlike]);
+    useEffect(() => {
+        if (newComment && post._id === newComment.comment.postId) {
+            setComments((prev) => [...prev, newComment.comment]);
+        }
+    }, [newComment]);
 
     const getPostComments = async () => {
         try {
@@ -149,6 +163,7 @@ export default function Post({ post, posts, setPosts }) {
         try {
             const res = await axios.post(config.API_SERVER + 'posts/comment', postedComment);
             setComments((prev) => [...prev, res.data]);
+            emitNewComment(account.user._id, post.userId, res.data);
             setComment('');
         } catch (error) {
             setPosting(false);
