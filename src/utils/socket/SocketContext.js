@@ -363,16 +363,22 @@ const ContextProvider = ({ children }) => {
             console.log(error);
         }
     };
-    const sendMessage = (senderId, receiverId, newMessage, currentChat, attachement = []) => {
-        sendMessageNotification(senderId, receiverId, newMessage);
-        console.log(currentChat);
-        socket.emit('sendMessage', {
-            senderId: senderId,
-            receiverId,
-            text: newMessage,
-            attachement,
-            currentChat
-        });
+    const sendMessage = async (senderId, receiverId, newMessage, currentChat, attachement = []) => {
+        try {
+            const user = await axios.get(config.API_SERVER + 'user/users/' + senderId);
+            const text = newMessage ? newMessage : `${user.data.first_name} ${user.data.last_name} has sent an attachment!`;
+            sendMessageNotification(senderId, receiverId, text);
+            console.log(currentChat);
+            socket.emit('sendMessage', {
+                senderId: senderId,
+                receiverId,
+                text: text,
+                attachement,
+                currentChat
+            });
+        } catch (e) {
+            console.log(e);
+        }
     };
 
     const removeMessagesFromRoom = async (roomId) => {
@@ -502,8 +508,7 @@ const ContextProvider = ({ children }) => {
                                 try {
                                     if (room.data.type === 'PUBLIC') {
                                         room.data.members?.map((member) => {
-                                            if (member.userId !== account.user._id)
-                                                sendMessage('CHAT', member.userId, res.data.text, currentChat._id);
+                                            sendMessage('CHAT', member.userId, res.data.text, currentChat._id);
                                         });
                                     }
                                     setAdminMessage(data);

@@ -131,18 +131,19 @@ const useStyles = makeStyles((theme) => ({
 
     X: {
         position: 'absolute',
-        top: 0,
+        top: '-5px',
         color: 'black',
-        left: '10vw',
+        // left: '10vw',
+        right: '15px',
         cursor: 'pointer'
     },
     selectedItem: {
-        padding: '10px',
+        // padding: '10px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '3rem',
-        width: '3rem',
+        height: '100%',
+        width: '5rem',
         position: 'relative'
     },
     disableTextSelection: {
@@ -407,6 +408,7 @@ const Chat = () => {
 
     const [file, setFile] = React.useState(null);
     // const [selectedFiles, setSelectedFiles] = React.useState([]);
+    const [uploadError, setUploadError] = React.useState('');
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (newMessage === '' && file === null) return;
@@ -425,23 +427,22 @@ const Chat = () => {
                 [receiverId.userId]: false
             }
         };
-
         if (message.text || file !== null) {
             try {
-                if (file !== null && Object.entries(file).length > 0) {
+                if (file !== null) {
                     console.log(file);
                     const x = await axios.post(configData.API_SERVER + 'upload', formData);
-                    if (file) {
-                        // file?.map((file) => {
-                        message.attachment = [
-                            ...message.attachment,
-                            {
-                                displayName: file.name,
-                                actualName: x.data.upload
-                            }
-                        ];
-                        // });
-                    }
+
+                    // file?.map((file) => {
+                    message.attachment = [
+                        ...message.attachment,
+                        {
+                            displayName: file.name,
+                            actualName: x.data.upload
+                        }
+                    ];
+                    // });
+                    setUploadError('');
                 }
                 console.log(message.attachment);
                 try {
@@ -453,11 +454,12 @@ const Chat = () => {
                     console.log(error.response.data.message);
                 }
             } catch (error) {
+                setUploadError(error.response.data.message);
                 console.log(error);
             }
         }
         // setSelectedFiles([]);
-        setFile({});
+        setFile(null);
     };
 
     const checkUserOnline = (id) => {
@@ -559,9 +561,9 @@ const Chat = () => {
         setOpenMenu(true);
         setGroupMembers(groupMembers.filter((m) => addedMembers.includes(m._id)));
     };
+    const [confirmExistGroup, setConfirmExistGroup] = React.useState(false);
     const exitFromGroup = () => {
-        setStatus(0);
-        setOpenConfirm(true);
+        setConfirmExistGroup(true);
     };
 
     const handleCreate = () => {
@@ -643,12 +645,13 @@ const Chat = () => {
 
     const onChangeFileUpload = (e) => {
         // setSelectedFiles((prev) => [...prev, e.target.files[0]]);
+        console.log(e.target.files[0]);
         setFile(e.target.files[0]);
     };
 
     const removeItem = (val) => {
         // setSelectedFiles((prev) => prev.filter((item) => item.name !== val));
-        setFile({});
+        setFile(null);
     };
 
     const handleGroupCallButton = () => {
@@ -684,8 +687,8 @@ const Chat = () => {
                 </ConfirmDialog>
                 <ConfirmDialog
                     title="Please confirm"
-                    openConfirm={openConfirm}
-                    setOpenConfirm={setOpenConfirm}
+                    openConfirm={confirmExistGroup}
+                    setOpenConfirm={setConfirmExistGroup}
                     onConfirm={() => exitGroup(currentChat, account.user)}
                     status={status}
                 >
@@ -895,21 +898,21 @@ const Chat = () => {
                                     <Grid item className={classes.messageArea}>
                                         {messagesLoading && <CircularProgress />}
 
-                                        <ScrollableFeed>
-                                            {messages &&
-                                                messages.map((m, i) => (
-                                                    <Message
-                                                        messagesLoading={messagesLoading}
-                                                        message={m}
-                                                        own={m.sender === account.user._id}
-                                                        type={currentChat.type}
-                                                        key={i}
-                                                        mk={i}
-                                                    />
-                                                ))}
-                                        </ScrollableFeed>
+                                        {/* <ScrollableFeed> */}
+                                        {messages &&
+                                            messages.map((m, i) => (
+                                                <Message
+                                                    messagesLoading={messagesLoading}
+                                                    message={m}
+                                                    own={m.sender === account.user._id}
+                                                    type={currentChat.type}
+                                                    key={i}
+                                                    mk={i}
+                                                />
+                                            ))}
+                                        {/* </ScrollableFeed> */}
 
-                                        {/* <div ref={scrollRef} /> */}
+                                        <div ref={scrollRef} />
                                     </Grid>
                                 ) : (
                                     <Container className={classes.center}>
@@ -964,15 +967,20 @@ const Chat = () => {
                                                 </ButtonGroup>
                                             </Grid>
                                         </Grid>
-                                        {file?.name && (
-                                            <Grid container style={{ padding: '20px', overflowY: 'auto', height: '10vh' }}>
+                                        {file !== null && (
+                                            <Grid container style={{ padding: '20px', overflowY: 'hidden', height: '15vh' }}>
                                                 <Grid item xs={10}>
-                                                    <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={100}>
+                                                    {uploadError && (
+                                                        <Typography variant="subtitle2" color="error">
+                                                            {uploadError}
+                                                        </Typography>
+                                                    )}
+                                                    <ImageList sx={{ width: 500, height: 500 }} cols={3} rowHeight={100}>
                                                         {/* {selectedFiles?.map((item, i) => { */}
                                                         {/* return ( */}
                                                         <ImageListItem>
                                                             {(file.name.includes('.png') || file.name.includes('.jpg')) && (
-                                                                <Container>
+                                                                <Container style={{ width: 'fit-content' }}>
                                                                     <img
                                                                         className={classes.selectedItem}
                                                                         src={`${URL.createObjectURL(file)}`}

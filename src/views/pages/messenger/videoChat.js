@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
 import styled from 'styled-components';
-import { CircularProgress, Grid, Modal, Box, Button, Typography } from '@material-ui/core';
+import { CircularProgress, Grid, Modal, Box, Button, Typography, Fade } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { PhoneDisabled } from '@material-ui/icons';
+import { PhoneDisabled, VolumeOff, VolumeUp } from '@material-ui/icons';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import MainCard from '../../../ui-component/cards/MainCard';
 import { useSelector } from 'react-redux';
@@ -45,7 +45,7 @@ const style = {
 
 const useStyles = makeStyles({
     container: {
-        height: '100vh',
+        minHeight: '100vh',
         position: 'relative'
     },
     chatContainer: {
@@ -105,14 +105,49 @@ const Video = (props) => {
 };
 const GuestVideo = (props) => {
     const ref = useRef();
-
+    const [muted, setMuted] = React.useState(false);
     useEffect(() => {
         props.peer.on('stream', (stream) => {
             ref.current.srcObject = stream;
         });
     }, []);
 
-    return <StyledGuestVideo muted playsInline autoPlay ref={ref} />;
+    return (
+        <div style={{ position: 'relative', width: 'fit-content', height: 'fit-content', display: 'flex', justifyContent: 'center' }}>
+            <StyledGuestVideo
+                muted={muted}
+                playsInline
+                autoPlay
+                ref={ref}
+                onMouseEnter={props.onMouseEnter}
+                onMouseLeave={props.onMouseLeave}
+            />
+            <Typography variant="overline" style={{ position: 'absolute', top: 0, textAlign: 'center', color: 'white' }}>
+                {props.user}
+            </Typography>
+            <Fade in={props.isHovering}>
+                <div style={{ position: 'absolute', bottom: 0 }} onClick={() => setMuted(!muted)}>
+                    {muted && (
+                        <VolumeOff
+                            onMouseEnter={props.onMouseEnter}
+                            onMouseLeave={props.onMouseLeave}
+                            style={{ width: '5vw', height: '5vh', cursor: 'pointer' }}
+                            color="error"
+                        />
+                    )}
+                    {muted === false && (
+                        <VolumeUp
+                            onMouseEnter={props.onMouseEnter}
+                            onMouseLeave={props.onMouseLeave}
+                            style={{ width: '5vw', height: '5vh', cursor: 'pointer' }}
+                            color="error"
+                        />
+                    )}
+                </div>
+            </Fade>
+            {/* )} */}
+        </div>
+    );
 };
 
 const videoConstraints = {
@@ -163,14 +198,8 @@ const Room = (props) => {
     }, []);
 
     React.useEffect(() => {
-        console.log(peers);
-
-        peers.map((peer) => {
-            if (peer.peer.streams.some((s) => s.active === true)) {
-                console.log(peer.user.first_name + ' VIDEO ACTIVE');
-            } else {
-                console.log(peer.user.first_name + ' DISCONNECTED');
-            }
+        peers?.map((p) => {
+            console.log(p.peer.readable ? 'ACTIVE' : 'NOT ACTIVE');
         });
     }, [peers]);
     useEffect(() => {
@@ -248,6 +277,14 @@ const Room = (props) => {
 
     const [show, setShow] = React.useState(false);
     const [isHovering, setIsHovering] = React.useState(false);
+    const mouseEnter = () => {
+        setIsHovering(true);
+        console.log('hovering');
+    };
+    const mouseLeave = () => {
+        setIsHovering(false);
+    };
+
     React.useEffect(() => {
         console.log(peersRef.current);
     }, [peersRef]);
@@ -307,12 +344,17 @@ const Room = (props) => {
                                 .map((peer, index) => {
                                     return (
                                         <Grid item xs style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <Typography className={classes.typography} variant="overline">
-                                                {peer.user.first_name + ' ' + peer.user.last_name}
-                                            </Typography>
-                                            <GuestVideo key={index} peer={peer.peer} />
+                                            <Typography className={classes.typography} variant="overline"></Typography>
+                                            <GuestVideo
+                                                key={index}
+                                                peer={peer.peer}
+                                                user={peer.user.first_name + ' ' + peer.user.last_name}
+                                                isHovering={isHovering}
+                                                onMouseEnter={mouseEnter}
+                                                onMouseLeave={mouseLeave}
+                                            />
 
-                                            <div>{joinedUsers === 0 && <CircularProgress />}</div>
+                                            <div>{(joinedUsers === 0 || peers.length === 0) && <CircularProgress />}</div>
                                         </Grid>
                                     );
                                     // }
