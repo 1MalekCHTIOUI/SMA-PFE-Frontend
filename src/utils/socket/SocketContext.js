@@ -180,7 +180,6 @@ const ContextProvider = ({ children }) => {
         });
         socket.on('newLike', (data) => {
             if (account.user._id !== data.senderId) {
-                console.log('new like');
                 openNotification('New like', data.content, 'notif');
                 setNewLike({ userId: data.senderId, postId: data.postId });
                 setArrivalNotification({
@@ -417,7 +416,13 @@ const ContextProvider = ({ children }) => {
             const user = await axios.get(config.API_SERVER + 'user/users/' + senderId);
             const text = newMessage ? newMessage : `${user.data.first_name} ${user.data.last_name} has sent an attachment!`;
             sendMessageNotification(senderId, receiverId, text);
-            console.log(currentChat);
+            console.log({
+                senderId: senderId,
+                receiverId,
+                text: text,
+                attachement,
+                currentChat
+            });
             socket.emit('sendMessage', {
                 senderId: senderId,
                 receiverId,

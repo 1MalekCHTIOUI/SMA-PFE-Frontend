@@ -414,7 +414,6 @@ const Chat = () => {
         if (newMessage === '' && file === null) return;
         const formData = new FormData();
 
-        formData.append('file', file);
         const receiverId = currentChat.members.find((m) => m.userId !== account.user._id);
 
         const message = {
@@ -427,39 +426,38 @@ const Chat = () => {
                 [receiverId.userId]: false
             }
         };
-        if (message.text || file !== null) {
-            try {
-                if (file !== null) {
-                    console.log(file);
+        try {
+            let success = true;
+            if (file !== null) {
+                formData.append('file', file);
+                try {
                     const x = await axios.post(configData.API_SERVER + 'upload', formData);
-
-                    // file?.map((file) => {
                     message.attachment = [
-                        ...message.attachment,
                         {
                             displayName: file.name,
                             actualName: x.data.upload
                         }
                     ];
-                    // });
+                    success = true;
                     setUploadError('');
-                }
-                console.log(message.attachment);
-                try {
-                    const res = await axios.post(configData.API_SERVER + 'messages', message);
-                    setMessages([...messages, res.data]);
-                    setNewMessage('');
-                    sendMessage(message.sender, receiverId.userId, newMessage, currentChat._id, message.attachment);
                 } catch (error) {
-                    console.log(error.response.data.message);
+                    setUploadError(error.response.data.message);
+                    console.log(error);
+                    success = false;
                 }
-            } catch (error) {
-                setUploadError(error.response.data.message);
-                console.log(error);
             }
+            console.log(message.attachment);
+            if (success) {
+                const res = await axios.post(configData.API_SERVER + 'messages', message);
+                setMessages([...messages, res.data]);
+                setNewMessage('');
+                sendMessage(message.sender, receiverId.userId, newMessage, currentChat._id, message.attachment);
+
+                setFile(null);
+            }
+        } catch (e) {
+            console.log(e);
         }
-        // setSelectedFiles([]);
-        setFile(null);
     };
 
     const checkUserOnline = (id) => {
@@ -979,7 +977,7 @@ const Chat = () => {
                                                         {/* {selectedFiles?.map((item, i) => { */}
                                                         {/* return ( */}
                                                         <ImageListItem>
-                                                            {(file.name.includes('.png') || file.name.includes('.jpg')) && (
+                                                            {(file?.name.includes('.png') || file?.name.includes('.jpg')) && (
                                                                 <Container style={{ width: 'fit-content' }}>
                                                                     <img
                                                                         className={classes.selectedItem}
@@ -988,14 +986,14 @@ const Chat = () => {
                                                                     <Close className={classes.X} onClick={() => removeItem(file.name)} />
                                                                 </Container>
                                                             )}
-                                                            {(file.name.includes('.pdf') || file.name.includes('.docx')) && (
+                                                            {(file?.name.includes('.pdf') || file?.name.includes('.docx')) && (
                                                                 <Typography className={classes.selectedItem}>
                                                                     <PictureAsPdf />
                                                                     {file.name}
                                                                     <Close className={classes.X} onClick={() => removeItem(file.name)} />
                                                                 </Typography>
                                                             )}
-                                                            {file.name.includes('.mp4') && (
+                                                            {file?.name.includes('.mp4') && (
                                                                 <Typography className={classes.selectedItem}>
                                                                     <video
                                                                         className={classes.selectedItem}

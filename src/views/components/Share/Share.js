@@ -77,7 +77,7 @@ const Share = ({ user, setPosts }) => {
             setPosts((prev) => [...prev, res.data]);
             setContent('');
             setSelectedFile(null);
-            emitNewPost(account.user._id, post.priority);
+            if (res.data.privacy === false) emitNewPost(account.user._id, post.priority);
             setPosting(false);
             setSuccess(true);
             setShareError('');

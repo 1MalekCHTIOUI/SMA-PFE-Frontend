@@ -23,7 +23,8 @@ export default function Post({ post, posts, setPosts }) {
     const account = useSelector((s) => s.account);
     const [like, setLike] = useState(post.likes.length);
     const [isLiked, setIsLiked] = useState(post.likes.some((u) => u.userId === account?.user._id));
-    const { emitNewLike, newLike, setNewLike, emitNewUnlike, newUnlike, newComment, emitNewComment } = useContext(SocketContext);
+    const { emitNewLike, newLike, setNewLike, emitNewUnlike, newUnlike, setNewUnlike, newComment, emitNewComment } =
+        useContext(SocketContext);
     const [user, setUser] = useState({});
     const [numberOfitemsShown, setNumberOfitemsShown] = useState(3);
 
@@ -114,11 +115,15 @@ export default function Post({ post, posts, setPosts }) {
     useEffect(() => {
         if (newLike && post._id === newLike.postId) {
             setLike(like + 1);
+            setNewLike(null);
         }
+    }, [newLike]);
+    useEffect(() => {
         if (newUnlike && post._id === newUnlike.postId) {
             setLike(like - 1);
+            setNewUnlike(null);
         }
-    }, [newLike, newUnlike]);
+    }, [newUnlike]);
     useEffect(() => {
         if (newComment && post._id === newComment.comment.postId) {
             setComments((prev) => [...prev, newComment.comment]);
