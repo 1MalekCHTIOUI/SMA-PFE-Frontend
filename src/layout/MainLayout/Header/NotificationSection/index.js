@@ -160,6 +160,7 @@ const NotificationSection = () => {
             const res = await axios.put(config.API_SERVER + 'notifications/all/' + account.user._id);
             console.log(res.data);
             resetNotifs();
+            setReadNotifs(true);
         } catch (error) {
             console.log(error);
         }
@@ -175,7 +176,6 @@ const NotificationSection = () => {
         try {
             const notifications = await axios.get(config.API_SERVER + 'notifications/' + account.user._id);
             setNotifs(notifications.data);
-            setReadNotifs(true);
         } catch (e) {
             console.log(e);
         }
@@ -186,7 +186,7 @@ const NotificationSection = () => {
         if (notifs) {
             notifs.map((notif, i) => {
                 if (notif.read === false) {
-                    setNotifLength(i + 1);
+                    setNotifLength(notifLength + 1);
                 } else {
                     console.log(notif);
                 }

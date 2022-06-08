@@ -58,7 +58,7 @@ const NotificationList = ({ setNotifLength, notifLength, notifs, readNotifs }) =
         try {
             await axios.put(config.API_SERVER + 'notifications/' + notifId);
             if (notifLength >= 0) {
-                setNotifLength((prev) => prev - 1);
+                setNotifLength(notifLength - 1);
             }
         } catch (e) {
             console.log(e);
