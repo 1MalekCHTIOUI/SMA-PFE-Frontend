@@ -153,9 +153,11 @@ const ContextProvider = ({ children }) => {
 
         socket.on('groupCreated', (data) => {
             console.log('New group created!');
+            console.log(data);
             setUserGroups((prev) => [...prev, data]);
         });
         socket.on('groupRemoved', (data) => {
+            console.log('Group removed!');
             console.log(data);
             setUserGroups((prev) => prev.filter((group) => group._id !== data._id));
             setCurrentChat(null);

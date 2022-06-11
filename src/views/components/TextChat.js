@@ -630,11 +630,9 @@ const Chat = () => {
         if (account.user.role[0] !== 'USER') {
             data.members.push({ userId: account.user._id, joinedIn: moment().toISOString(), leftIn: '' });
         }
-
         try {
             const res = await axios.post(config.API_SERVER + 'rooms/newGroup', data);
             createGroup(res.data);
-
             setStatus(1);
         } catch (e) {
             console.log(e);
