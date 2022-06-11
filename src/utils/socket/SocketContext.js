@@ -415,23 +415,27 @@ const ContextProvider = ({ children }) => {
     };
     const sendMessage = async (senderId, receiverId, newMessage, currentChat, attachement = []) => {
         try {
-            const user = await axios.get(config.API_SERVER + 'user/users/' + senderId);
-            const text = newMessage ? newMessage : `${user.data.first_name} ${user.data.last_name} has sent an attachment!`;
-            sendMessageNotification(senderId, receiverId, text);
-            console.log({
-                senderId: senderId,
-                receiverId,
-                text: text,
-                attachement,
-                currentChat
-            });
-            socket.emit('sendMessage', {
-                senderId: senderId,
-                receiverId,
-                text: text,
-                attachement,
-                currentChat
-            });
+            if (senderId !== 'CHAT') {
+                const user = await axios.get(config.API_SERVER + 'user/users/' + senderId);
+                const text = newMessage ? newMessage : `${user.data.first_name} ${user.data.last_name} has sent an attachment!`;
+                sendMessageNotification(senderId, receiverId, text);
+                socket.emit('sendMessage', {
+                    senderId: senderId,
+                    receiverId,
+                    text: text,
+                    attachement,
+                    currentChat
+                });
+            } else {
+                sendMessageNotification(senderId, receiverId, newMessage);
+                socket.emit('sendMessage', {
+                    senderId: senderId,
+                    receiverId,
+                    text: newMessage,
+                    attachement,
+                    currentChat
+                });
+            }
         } catch (e) {
             console.log(e);
         }
@@ -469,6 +473,7 @@ const ContextProvider = ({ children }) => {
                                 text: `${user.data.first_name} ${user.data.last_name} has been added to the group!`
                             };
                             const res = await axios.post(config.API_SERVER + 'messages', data);
+                            setAdminMessage(res.data);
                             try {
                                 const room = await axios.get(config.API_SERVER + 'rooms/room/' + currentChat._id);
                                 if (room.data.type === 'PUBLIC') {
@@ -476,7 +481,7 @@ const ContextProvider = ({ children }) => {
                                         sendMessage('CHAT', member.userId, res.data.text, currentChat._id);
                                     });
                                 }
-                                setAdminMessage(data);
+                                // setAdminMessage(data);
                             } catch (e) {
                                 console.log(e);
                             }
@@ -559,15 +564,17 @@ const ContextProvider = ({ children }) => {
                         };
                         try {
                             const res = await axios.post(config.API_SERVER + 'messages', data);
+                            setAdminMessage(res.data);
                             try {
                                 const room = await axios.get(config.API_SERVER + 'rooms/room/' + currentChat._id);
                                 try {
                                     if (room.data.type === 'PUBLIC') {
                                         room.data.members?.map((member) => {
+                                            console.log('sending CHAT MESSAEGE: ', member.userId, res.data.text, currentChat._id);
                                             sendMessage('CHAT', member.userId, res.data.text, currentChat._id);
                                         });
                                     }
-                                    setAdminMessage(data);
+                                    // setAdminMessage(data);
                                 } catch (e) {
                                     console.log(e);
                                 }
