@@ -23,7 +23,7 @@ export default function Post({ post, posts, setPosts }) {
     const account = useSelector((s) => s.account);
     const [like, setLike] = useState(post.likes.length);
     const [isLiked, setIsLiked] = useState(post.likes.some((u) => u.userId === account?.user._id));
-    const { emitNewLike, newLike, setNewLike, emitNewUnlike, newUnlike, setNewUnlike, newComment, emitNewComment } =
+    const { emitNewLike, newLike, setNewLike, setNewComment, emitNewUnlike, newUnlike, setNewUnlike, newComment, emitNewComment } =
         useContext(SocketContext);
     const [user, setUser] = useState({});
     const [numberOfitemsShown, setNumberOfitemsShown] = useState(3);
@@ -127,6 +127,7 @@ export default function Post({ post, posts, setPosts }) {
     useEffect(() => {
         if (newComment && post._id === newComment.comment.postId) {
             setComments((prev) => [...prev, newComment.comment]);
+            setNewComment(null);
         }
     }, [newComment]);
 
@@ -138,6 +139,10 @@ export default function Post({ post, posts, setPosts }) {
             console.log(error.message);
         }
     };
+    useEffect(() => {
+        getUser();
+        post && console.log(post);
+    }, [post]);
     const [posting, setPosting] = useState(false);
     const submitComment = async () => {
         if (comment === '' && selectedFiles === null) return;

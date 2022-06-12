@@ -464,6 +464,10 @@ const ContextProvider = ({ children }) => {
                     });
                     await sendNotification(account.user._id, m._id, `You have been added to the group ${res.data.name}!`);
                     socket.emit('addToGroup', { currentChat, addedUser: m._id });
+                    setCurrentChat((prev) => ({
+                        ...prev,
+                        members: [...prev.members, { userId: m._id, joinedIn: moment().toISOString(), leftIn: '' }]
+                    }));
                     try {
                         const user = await axios.get(config.API_SERVER + 'user/users/' + m._id);
                         try {
@@ -555,6 +559,10 @@ const ContextProvider = ({ children }) => {
                         content: `You have been removed from the group ${res.data.name}!`
                     });
                     socket.emit('removeFromGroup', { currentChat, removedUser: m._id });
+                    const members = currentChat.members.filter((u) => {
+                        return u.userId.includes(m._id) === false;
+                    });
+                    setCurrentChat((prev) => ({ ...prev, members: members }));
                     try {
                         const user = await axios.get(config.API_SERVER + 'user/users/' + m._id);
                         const data = {

@@ -302,8 +302,9 @@ const Chat = () => {
     }, [adminMessage]);
 
     React.useEffect(() => {
-        console.log(messages);
-    }, [messages]);
+        console.log('CHANGED');
+        console.log(currentChat);
+    }, [currentChat]);
 
     React.useEffect(() => {
         async function fetchUsers() {
@@ -388,22 +389,22 @@ const Chat = () => {
                 console.log(error.message);
             }
         };
-        const readMessages = async () => {
-            console.log('Setting as read');
-            messages?.map(async (m) => {
-                try {
-                    if (m.read[account.user._id] === false) {
-                        axios.put(config.API_SERVER + 'messages/readMessages/' + m.roomId, {
-                            currentUserId: account.user._id
-                        });
-                    }
-                } catch (error) {
-                    console.log(error.message);
-                }
-            });
-        };
+        // const readMessages = async () => {
+        //     console.log('Setting as read');
+        //     messages?.map(async (m) => {
+        //         try {
+        //             if (m.read[account.user._id] === false) {
+        //                 axios.put(config.API_SERVER + 'messages/readMessages/' + m.roomId, {
+        //                     currentUserId: account.user._id
+        //                 });
+        //             }
+        //         } catch (error) {
+        //             console.log(error.message);
+        //         }
+        //     });
+        // };
         getMessages();
-        readMessages();
+        // readMessages();
     }, [currentChat]);
 
     const [file, setFile] = React.useState(null);
@@ -414,7 +415,9 @@ const Chat = () => {
         if (newMessage === '' && file === null) return;
         const formData = new FormData();
 
-        const receiverId = currentChat.members.find((m) => m.userId !== account.user._id);
+        const receiverId = currentChat.members.find((m) => m.userId !== account.user._id)
+            ? currentChat.members.find((m) => m.userId !== account.user._id)
+            : null;
 
         const message = {
             roomId: currentChat._id,
@@ -727,6 +730,7 @@ const Chat = () => {
                     submitAddMember={submitAddMember}
                     submitRemoveMember={submitRemoveMember}
                     handleClose={handleClose}
+                    setCurrentChat={setCurrentChat}
                     status={status}
                     currentChat={currentChat}
                     setStatus={setStatus}
@@ -908,7 +912,7 @@ const Chat = () => {
                                             ))}
                                         {/* </ScrollableFeed> */}
 
-                                        <div ref={scrollRef} />
+                                        {/* <div ref={scrollRef} /> */}
                                     </Grid>
                                 ) : (
                                     <Container className={classes.center}>

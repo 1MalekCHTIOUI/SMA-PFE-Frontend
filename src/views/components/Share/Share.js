@@ -72,8 +72,8 @@ const Share = ({ user, setPosts }) => {
             }
         }
         try {
-            console.log(post);
             const res = await axios.post(config.API_SERVER + 'posts', post);
+            console.log(res.data);
             setPosts((prev) => [...prev, res.data]);
             setContent('');
             setSelectedFile(null);

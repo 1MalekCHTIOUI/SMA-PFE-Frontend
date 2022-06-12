@@ -186,7 +186,7 @@ const NotificationSection = () => {
         if (notifs) {
             notifs.map((notif, i) => {
                 if (notif.read === false) {
-                    setNotifLength(notifLength + 1);
+                    setNotifLength((prev) => prev + 1);
                 } else {
                     console.log(notif);
                 }

@@ -206,8 +206,18 @@ const Dashboard = () => {
                             </MainCard>
                         </Grid>
                     </Grid> */}
-                    <Collapse in={posts?.filter((p) => p.visibility === true && p.priority === true).length > 0}>
-                        <Grid item xs={12} style={{ display: 'flex', alignItems: 'center', marginTop: '10vh', height: '30vh' }}>
+                    <Grid
+                        item
+                        xs
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginTop: '10vh',
+                            maxHeight: '30vh'
+                        }}
+                    >
+                        <Collapse in={posts?.filter((p) => p.visibility === true && p.priority === true).length > 0}>
                             <Container style={{ marginTop: '5vh' }} className={classes.anHolder}>
                                 {/* {postsLoading && <CircularProgress />} */}
 
@@ -219,8 +229,8 @@ const Dashboard = () => {
                                             .map((post) => <Announcement post={post} posts={posts} setPosts={setPosts} />)}
                                 </Container>
                             </Container>
-                        </Grid>
-                    </Collapse>
+                        </Collapse>
+                    </Grid>
 
                     <Grid item xs={12}>
                         <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
